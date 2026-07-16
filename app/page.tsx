@@ -1,6 +1,7 @@
 import HalftoneInterfaceHero from "@/components/ui/halftone-interface-hero";
 import AsciiTvHero from "@/components/ui/ascii-tv-hero";
 import LineRise from "@/components/ui/line-rise";
+import TeamReveal from "@/components/ui/team-reveal";
 
 /**
  * Scroll story — halftone identity up top, a quiet library of practice and
@@ -180,6 +181,40 @@ export default function Home() {
               it get better every day.
             </p>
           </LineRise>
+        </div>
+      </section>
+
+      <section id="team" className="team" aria-labelledby="team-title">
+        <p className="section-label">the people</p>
+        <LineRise>
+          <h2 id="team-title">Two people. The whole practice.</h2>
+        </LineRise>
+        <TeamReveal />
+        <div className="team-captions">
+          <div>
+            <h3>
+              <a
+                href="https://tldr.aryank.space"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Aryan Kathawale <span aria-hidden="true">↗</span>
+              </a>
+            </h3>
+            <p>co-founder</p>
+          </div>
+          <div>
+            <h3>
+              <a
+                href="https://hitendrakawale.github.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Hitendra Kawale <span aria-hidden="true">↗</span>
+              </a>
+            </h3>
+            <p>co-founder</p>
+          </div>
         </div>
       </section>
 

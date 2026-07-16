@@ -337,6 +337,78 @@ body {
   margin-bottom: 0;
 }
 
+/* ── Team (ASCII image reveal) ───────────────────────────────── */
+
+.team {
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+  padding-block: clamp(5rem, 10vw, 9rem);
+  border-top: 1px solid var(--hairline);
+}
+
+.team h2 {
+  max-width: 14ch;
+  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  font-size: clamp(1.9rem, 3.6vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+/* Two square tiles instead of the component's 10-column stage; the wrapper
+   reserves the height so the lazy mount doesn't shift layout. */
+.team-reveal {
+  max-width: 52rem;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  aspect-ratio: 2.09 / 1;
+}
+
+.team-reveal .air-gallery {
+  padding: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: none;
+}
+
+.team-reveal .air-slot {
+  aspect-ratio: 1 / 1;
+}
+
+.team-captions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  max-width: 52rem;
+  margin-top: 1.25rem;
+}
+
+.team-captions h3 {
+  margin: 0;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.team-captions h3 a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.team-captions h3 a:hover {
+  color: var(--mint);
+}
+
+.team-captions h3 span {
+  font-size: 0.75em;
+}
+
+.team-captions p {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 /* ── Contact ─────────────────────────────────────────────────── */
 
 .contact-strip {
