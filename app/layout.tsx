@@ -14,7 +14,7 @@ const rethinkSans = localFont({
 export const metadata: Metadata = {
   title: "blank interfaces",
   description:
-    "agentic-first studio for interfaces that think with you. founded by aryan kathawale and hitendra kawale.",
+    "Independent product studio for strategy, interface design, software engineering, and applied AI.",
   keywords: [
     "blank interfaces",
     "agency",
@@ -29,7 +29,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "blank interfaces",
-    description: "agentic-first studio for interfaces that think with you.",
+    description:
+      "Independent product studio for strategy, design, engineering, and applied AI.",
     type: "website",
   },
 };

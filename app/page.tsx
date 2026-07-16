@@ -1,11 +1,10 @@
 import HalftoneInterfaceHero from "@/components/ui/halftone-interface-hero";
-import TerminalTextReveal from "@/components/ui/terminal-text-reveal";
 import AsciiTvHero from "@/components/ui/ascii-tv-hero";
 
 /**
- * Scroll story — three registry components, adapted only via public APIs:
+ * Scroll story — two interactive bookends with an editorial practice between:
  * 1. Halftone Interface Hero (identity)
- * 2. Terminal Text Reveal (editorial middle)
+ * 2. Studio practice and selected work
  * 3. ASCII TV Hero (finale)
  */
 
@@ -21,44 +20,32 @@ const UTILITY = [
   { label: "arth", href: "https://www.arthtechnologies.com/" },
 ];
 
-/** Coding / engineering stills (Unsplash — hotlinked, cover-cropped by the component). */
-const IMG = {
-  intro:
-    "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=2000&q=80",
-  banner:
-    "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=2000&q=80",
-  agentic:
-    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1600&q=80",
-  interfaces:
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80",
-  platform:
-    "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=1600&q=80",
-  delivery:
-    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80",
-} as const;
-
-const SERVICES = [
+const SKILLS = [
   {
-    title: "Product & research",
-    body: "We start by pinning the problem, the user, and the success metric. That means interviews, competitive scans, and a roadmap you can actually defend — so engineering never builds the wrong thing because the brief was vague.",
-    image: IMG.agentic,
+    number: "01",
+    title: "Product direction",
+    body: "Research, scope, architecture, and a roadmap built around what should exist — not just what could.",
+    tags: "Strategy / Research / Prototyping",
   },
   {
-    title: "Interfaces & systems",
-    body: "We design and implement the UI: design systems, interaction models, motion, and accessibility. Screens that stay coherent across releases, and feel intentional when someone uses them every day — not a pile of one-off mockups.",
-    image: IMG.interfaces,
+    number: "02",
+    title: "Interface design",
+    body: "Product UX, visual systems, and motion that make complex software feel obvious in the hand.",
+    tags: "UX / UI / Design systems / Motion",
   },
   {
-    title: "Software & AI",
-    body: "We ship web apps, APIs, and agentic systems that hold up in production. That includes LLM platforms, retrieval pipelines, evaluation hooks, and the boring parts — auth, caching, monitoring — so the product still works after launch week.",
-    image: IMG.platform,
+    number: "03",
+    title: "Software engineering",
+    body: "Web apps, platforms, APIs, and integrations engineered to survive the week after launch.",
+    tags: "Web / Mobile / Backend / Infrastructure",
   },
   {
-    title: "How we work",
-    body: "Projects run as frame, slice, and ship: lock outcomes first, cut vertical pieces that can go live, then reassemble with the same people still on the hook. No handoff graveyard between design and code. Client work also goes through ARTH when you need a full product team on the ground.",
-    image: IMG.delivery,
+    number: "04",
+    title: "Applied AI",
+    body: "Agents, retrieval, evaluation, and automation designed as useful product behaviour — not a demo bolted on top.",
+    tags: "Agents / RAG / Evals / Automation",
   },
-];
+] as const;
 
 export default function Home() {
   return (
@@ -79,28 +66,101 @@ export default function Home() {
         />
       </div>
 
-      {/* ── Middle: terminal text reveal (registry) ─────────────── */}
-      <div id="about">
-        <div id="practice">
-          <TerminalTextReveal
-            introImage={IMG.intro}
-            bannerImage={IMG.banner}
-            headline="We build software people can use"
-            intro="Blank Interfaces is a small agency founded by Aryan Kathawale and Hitendra Kawale. We take products from unclear idea to shipped interface and backend — strategy, design, and engineering in the same loop. If you need a team that can own the brief and the pull request, that is us."
-            services={SERVICES}
-            outro="Looking for clients. Tell us what you are building."
-            backgroundColor="#0a0a0a"
-            foregroundColor="#f3f3f1"
-            initialColor="#5c5c5c"
-            accentColor="#1cffaf"
-            finalColor="#f3f3f1"
-          />
+      {/* ── Middle: what the studio can do ─────────────────────── */}
+      <section id="about" className="studio-intro" aria-labelledby="studio-title">
+        <div className="section-meta" aria-hidden="true">
+          <span>independent product studio</span>
+          <span>london / mumbai</span>
         </div>
-      </div>
+        <div className="studio-intro-copy">
+          <h2 id="studio-title">
+            We turn difficult ideas into clear, useful products.
+          </h2>
+          <p>
+            Blank Interfaces is the independent practice of Aryan Kathawale
+            and Hitendra Kawale. Strategy, design, and engineering stay in the
+            same room from first sketch to production.
+          </p>
+        </div>
+        <p className="studio-method">
+          two people <span>→</span> one integrated practice <span>→</span> no
+          handoff theatre
+        </p>
+      </section>
+
+      <section
+        id="practice"
+        className="practice"
+        aria-labelledby="practice-title"
+      >
+        <div className="practice-heading">
+          <p className="section-label">what we do</p>
+          <h2 id="practice-title">From the question to the shipped thing.</h2>
+          <p>
+            Bring us the knotty part. We find the right shape, make it legible,
+            and build it properly.
+          </p>
+        </div>
+
+        <ol className="skill-list">
+          {SKILLS.map((skill) => (
+            <li key={skill.number} className="skill-row">
+              <span className="skill-number">{skill.number}</span>
+              <h3>{skill.title}</h3>
+              <p>{skill.body}</p>
+              <span className="skill-tags">{skill.tags}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="working-notes" aria-labelledby="working-title">
+        <div className="working-notes-heading">
+          <p className="section-label">how we behave</p>
+          <h2 id="working-title">Good work. Low ceremony.</h2>
+        </div>
+        <div className="working-notes-grid">
+          <p>
+            AI is in the workflow. So are taste, tests, and a human who picks
+            up the phone.
+          </p>
+          <p>
+            We do not need six discovery workshops to learn that your login is
+            broken.
+          </p>
+          <p>
+            One em dash survived the edit. It knows what it did.
+          </p>
+          <p>
+            Yes, we ship on Fridays. The deploy button also works on Mondays.
+          </p>
+        </div>
+      </section>
+
+      <section className="work-note" aria-labelledby="work-title">
+        <p className="section-label">one already out there</p>
+        <div className="work-note-main">
+          <h2 id="work-title">
+            <a
+              href="https://www.arthtechnologies.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              arthtechnologies.com
+              <span aria-hidden="true">↗</span>
+            </a>
+          </h2>
+          <p>One of our projects. More are taking shape, quietly.</p>
+        </div>
+      </section>
 
       <section id="contact" className="contact-strip">
         <div className="contact-strip-inner">
-          <p className="contact-kicker">contact</p>
+          <div className="contact-heading">
+            <p className="section-label">start somewhere</p>
+            <h2>Have a difficult idea?</h2>
+            <p>Bring us the rough version.</p>
+          </div>
           <ul className="contact-rows">
             <li>
               <a href="mailto:hello@aryank.space">hello@aryank.space</a>
