@@ -32,6 +32,8 @@ export interface AsciiTvHeroProps {
   cellSize?: number;
   /** Characters from densest ink to empty space. */
   glyphRamp?: string;
+  /** Own the scroll container; set false to ride the window scroll. */
+  embedded?: boolean;
   className?: string;
 }
 
@@ -286,6 +288,7 @@ export default function AsciiTvHero({
   scrollLength = 3,
   cellSize = 6,
   glyphRamp = DEFAULT_RAMP,
+  embedded = true,
   className,
 }: AsciiTvHeroProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -448,15 +451,20 @@ export default function AsciiTvHero({
 
     const updateScroll = () => {
       if (!baseWidth || !baseHeight) captureBase();
-      const distance = scope.offsetHeight - root.clientHeight;
-      const raw = distance > 4 ? clamp01(root.scrollTop / distance) : 0;
+      const viewHeight = embedded ? root.clientHeight : window.innerHeight;
+      const distance = scope.offsetHeight - viewHeight;
+      const scrolled = embedded
+        ? root.scrollTop
+        : -scope.getBoundingClientRect().top;
+      const raw = distance > 4 ? clamp01(scrolled / distance) : 0;
       const progress = clamp01(raw / EXPAND_END);
       tvness = 1 - progress;
       frame.style.width = `${lerp(baseWidth, root.clientWidth, progress)}px`;
-      frame.style.height = `${lerp(baseHeight, root.clientHeight, progress)}px`;
+      frame.style.height = `${lerp(baseHeight, viewHeight, progress)}px`;
       headlineEl.style.opacity = `${clamp01(1 - progress * 1.6)}`;
     };
-    root.addEventListener("scroll", updateScroll, { passive: true });
+    const scroller = embedded ? root : window;
+    scroller.addEventListener("scroll", updateScroll, { passive: true });
 
     const observer = new ResizeObserver(() => {
       baseWidth = 0;
@@ -533,7 +541,7 @@ export default function AsciiTvHero({
       cancelAnimationFrame(frameId);
       observer.disconnect();
       root.removeEventListener("pointermove", onPointerMove);
-      root.removeEventListener("scroll", updateScroll);
+      scroller.removeEventListener("scroll", updateScroll);
       video.pause();
       video.removeAttribute("src");
       video.load();
@@ -541,12 +549,12 @@ export default function AsciiTvHero({
       gl.deleteTexture(glyphTexture);
       gl.deleteProgram(program);
     };
-  }, [videoSrc, cellSize, glyphRamp]);
+  }, [videoSrc, cellSize, glyphRamp, embedded]);
 
   return (
     <div
       ref={rootRef}
-      className={`atv-root${className ? ` ${className}` : ""}`}
+      className={`atv-root${embedded ? "" : " atv-window"}${className ? ` ${className}` : ""}`}
     >
       <style>{`
         .atv-root {
@@ -557,6 +565,10 @@ export default function AsciiTvHero({
           overflow-x: hidden;
           background: #000;
           color: #f4f2ee;
+        }
+        .atv-root.atv-window {
+          height: auto;
+          overflow: visible;
         }
         .atv-scope { position: relative; }
         .atv-sticky {
@@ -601,11 +613,13 @@ export default function AsciiTvHero({
       <div
         ref={scopeRef}
         className="atv-scope"
-        style={{ height: `${scrollLength * 100}%` }}
+        style={{
+          height: embedded ? `${scrollLength * 100}%` : `${scrollLength * 100}svh`,
+        }}
       >
         <div
           className="atv-sticky"
-          style={{ height: `${100 / scrollLength}%` }}
+          style={{ height: embedded ? `${100 / scrollLength}%` : "100svh" }}
         >
           <div ref={frameRef} className="atv-frame">
             <canvas ref={canvasRef} />

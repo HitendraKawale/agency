@@ -1,17 +1,18 @@
 import HalftoneInterfaceHero from "@/components/ui/halftone-interface-hero";
 import AsciiTvHero from "@/components/ui/ascii-tv-hero";
+import LineRise from "@/components/ui/line-rise";
 
 /**
- * Scroll story — two interactive bookends with an editorial practice between:
- * 1. Halftone Interface Hero (identity)
- * 2. Studio practice and selected work
- * 3. ASCII TV Hero (finale)
+ * Scroll story — halftone identity up top, a quiet library of practice and
+ * projects, an ASCII TV interlude pinned mid-scroll, then philosophy, pace,
+ * and contact.
  */
 
 const NAV = [
   { label: "about", href: "#about" },
   { label: "practice", href: "#practice" },
-  { label: "watch", href: "#watch" },
+  { label: "projects", href: "/projects" },
+  { label: "philosophy", href: "#philosophy" },
   { label: "contact", href: "#contact" },
 ];
 
@@ -24,133 +25,161 @@ const SKILLS = [
   {
     number: "01",
     title: "Product direction",
-    body: "Research, scope, architecture, and a roadmap built around what should exist — not just what could.",
-    tags: "Strategy / Research / Prototyping",
+    body: "Research, scope, and a roadmap built around what should exist.",
+    category: "Strategy",
   },
   {
     number: "02",
     title: "Interface design",
-    body: "Product UX, visual systems, and motion that make complex software feel obvious in the hand.",
-    tags: "UX / UI / Design systems / Motion",
+    body: "UX, visual systems, and motion that make complex software feel obvious.",
+    category: "Design",
   },
   {
     number: "03",
     title: "Software engineering",
-    body: "Web apps, platforms, APIs, and integrations engineered to survive the week after launch.",
-    tags: "Web / Mobile / Backend / Infrastructure",
+    body: "Web apps, platforms, and APIs engineered to survive the week after launch.",
+    category: "Engineering",
   },
   {
     number: "04",
     title: "Applied AI",
-    body: "Agents, retrieval, evaluation, and automation designed as useful product behaviour — not a demo bolted on top.",
-    tags: "Agents / RAG / Evals / Automation",
+    body: "Agents, retrieval, and evaluation designed as useful product behaviour.",
+    category: "AI",
   },
 ] as const;
 
 export default function Home() {
   return (
-    <main id="top" className="min-h-full bg-[#121212] text-[#f3f3f1]">
+    <main id="top" className="min-h-full bg-black text-[#f3f3f1]">
       {/* ── Open: halftone identity ──────────────────────────────── */}
-      <div className="h-[100svh] w-full overflow-hidden bg-[#121212]">
+      <div className="h-[100svh] w-full overflow-hidden bg-black">
         <HalftoneInterfaceHero
           headline={["blank", "interfaces"]}
           brand={["blank", "interfaces"]}
           navigation={NAV}
           utilityLinks={UTILITY}
           footerLabel="© 2026 blank interfaces"
-          locationLabel="ldn / bom"
+          locationLabel="bom / uk"
           timeZone="Europe/London"
-          background="#121212"
+          background="#000000"
           foreground="#f3f3f1"
           accentColors={["#ff266c", "#1cffaf", "#5848ff"]}
         />
       </div>
 
-      {/* ── Middle: what the studio can do ─────────────────────── */}
+      {/* ── Middle: quiet library ────────────────────────────────── */}
       <section id="about" className="studio-intro" aria-labelledby="studio-title">
         <div className="section-meta" aria-hidden="true">
           <span>independent product studio</span>
-          <span>london / mumbai</span>
+          <span>mumbai · uk · remote</span>
         </div>
         <div className="studio-intro-copy">
-          <h2 id="studio-title">
-            We turn difficult ideas into clear, useful products.
-          </h2>
-          <p>
-            Blank Interfaces is the independent practice of Aryan Kathawale
-            and Hitendra Kawale. Strategy, design, and engineering stay in the
-            same room from first sketch to production.
-          </p>
+          <LineRise>
+            <h2 id="studio-title">
+              We turn difficult ideas into clear, useful products.
+            </h2>
+          </LineRise>
+          <LineRise delay={0.15}>
+            <p>
+              Blank Interfaces is the independent practice of Aryan Kathawale
+              and Hitendra Kawale. Strategy, design, and engineering stay in
+              the same room from first sketch to production — from Mumbai and
+              the UK, working remotely with teams anywhere.
+            </p>
+          </LineRise>
         </div>
-        <p className="studio-method">
-          two people <span>→</span> one integrated practice <span>→</span> no
-          handoff theatre
-        </p>
       </section>
 
       <section
         id="practice"
-        className="practice"
+        className="library"
         aria-labelledby="practice-title"
       >
-        <div className="practice-heading">
-          <p className="section-label">what we do</p>
-          <h2 id="practice-title">From the question to the shipped thing.</h2>
-          <p>
-            Bring us the knotty part. We find the right shape, make it legible,
-            and build it properly.
-          </p>
+        <h2 id="practice-title" className="library-title">
+          Practice
+        </h2>
+        <div className="library-head" aria-hidden="true">
+          <span>discipline</span>
+          <span>category</span>
+          <span>no.</span>
         </div>
-
-        <ol className="skill-list">
-          {SKILLS.map((skill) => (
-            <li key={skill.number} className="skill-row">
-              <span className="skill-number">{skill.number}</span>
-              <h3>{skill.title}</h3>
-              <p>{skill.body}</p>
-              <span className="skill-tags">{skill.tags}</span>
+        <ol className="library-list">
+          {SKILLS.map((skill, i) => (
+            <li key={skill.number} className="library-row">
+              <div className="library-name">
+                <LineRise delay={i * 0.08}>
+                  <h3>{skill.title}</h3>
+                  <p>{skill.body}</p>
+                </LineRise>
+              </div>
+              <span className="library-category">{skill.category}</span>
+              <span className="library-index">{skill.number}</span>
             </li>
           ))}
         </ol>
+        <p className="library-footnote">
+          Selected work lives on its own page —{" "}
+          <a className="page-back" href="/projects">
+            projects ↗
+          </a>
+        </p>
       </section>
 
-      <section className="working-notes" aria-labelledby="working-title">
-        <div className="working-notes-heading">
-          <p className="section-label">how we behave</p>
-          <h2 id="working-title">Good work. Low ceremony.</h2>
-        </div>
-        <div className="working-notes-grid">
-          <p>
-            AI is in the workflow. So are taste, tests, and a human who picks
-            up the phone.
-          </p>
-          <p>
-            We do not need six discovery workshops to learn that your login is
-            broken.
-          </p>
-          <p>
-            One em dash survived the edit. It knows what it did.
-          </p>
-          <p>
-            Yes, we ship on Fridays. The deploy button also works on Mondays.
-          </p>
-        </div>
+      {/* ── Interlude: ASCII TV expands mid-scroll ───────────────── */}
+      <section id="watch" className="tv-break" aria-label="ASCII television">
+        <AsciiTvHero
+          embedded={false}
+          headline={[
+            "Interfaces, motion and code.",
+            "One integrated practice.",
+          ]}
+          tailLabel="watch us do something special for you"
+          scrollLength={3}
+        />
       </section>
 
-      <section className="work-note" aria-labelledby="work-title">
-        <p className="section-label">one already out there</p>
-        <div className="work-note-main">
-          <h2 id="work-title">
-            <a
-              href="https://www.arthtechnologies.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              arthtechnologies.com
-              <span aria-hidden="true">↗</span>
-            </a>
+      <section
+        id="philosophy"
+        className="philosophy"
+        aria-labelledby="philosophy-title"
+      >
+        <p className="section-label">philosophy</p>
+        <LineRise>
+          <h2 id="philosophy-title">
+            We believe in quiet conviction. Work that speaks softly and
+            lingers long. Interfaces as clarity, not decoration. Software that
+            earns attention instead of demanding it. Create with purpose —
+            everything else is noise.
           </h2>
-          <p>One of our projects. More are taking shape, quietly.</p>
+        </LineRise>
+      </section>
+
+      <section className="story" aria-labelledby="story-title">
+        <div className="story-col">
+          <p className="section-label">how long it takes</p>
+          <LineRise>
+            <h2 id="story-title">About a month, start to ship.</h2>
+          </LineRise>
+        </div>
+        <div className="story-col">
+          <LineRise>
+            <p>
+              Most projects run about a month. Not because we rush — because
+              we don&apos;t dilute. One project at a time, both of us on it,
+              from first sketch to production.
+            </p>
+            <p>
+              Week one finds the shape: research, scope, a working prototype.
+              Weeks two and three are the build — design and engineering in
+              the same room, shipping continuously. Week four is polish,
+              launch, and a handover that actually holds.
+            </p>
+            <p>
+              No account managers. No handoff theatre. No six-week discovery.
+              You talk directly to the people making the thing, and you watch
+              it get better every day.
+            </p>
+          </LineRise>
         </div>
       </section>
 
@@ -184,24 +213,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Close: ASCII TV finale ───────────────────────────────── */}
-      <section
-        id="watch"
-        className="finale"
-        aria-label="ASCII television finale"
-      >
-        <AsciiTvHero
-          headline={[
-            "Interfaces, motion and code.",
-            "One integrated practice.",
-          ]}
-          tailLabel="watch us do something special for you"
-          scrollLength={3}
-        />
-      </section>
-
       <footer className="site-footer">
-        <p>© 2026 blank interfaces</p>
+        <p>© 2026 blank interfaces · mumbai / uk / remote</p>
         <a
           href="https://www.arthtechnologies.com/"
           target="_blank"
