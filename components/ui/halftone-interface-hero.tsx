@@ -247,13 +247,7 @@ function createWordmarkTexture(headline: [string, string]) {
     weight: number,
   ) => {
     ctx.save();
-    const family =
-      typeof document !== "undefined"
-        ? getComputedStyle(document.documentElement)
-            .getPropertyValue("--font-rethink-sans")
-            .trim() || "Rethink Sans, Helvetica, Arial, sans-serif"
-        : "Rethink Sans, Helvetica, Arial, sans-serif";
-    ctx.font = `${weight} ${fontSize}px ${family}`;
+    ctx.font = `${weight} ${fontSize}px Helvetica Neue, Helvetica, Arial, sans-serif`;
     const measuredWidth = Math.max(1, ctx.measureText(text).width);
     ctx.translate(x, 0);
     ctx.scale(targetWidth / measuredWidth, 1);
@@ -730,7 +724,7 @@ const styles = `
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: var(--font-rethink-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
   line-height: 1;
   letter-spacing: -0.035em;
