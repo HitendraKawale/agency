@@ -18,7 +18,7 @@ const NAV = [
 ];
 
 const UTILITY = [
-  { label: "follow", href: "https://x.com/blank_spacets" },
+  { label: "follow on x.", href: "https://x.com/blank_spacets" },
 ];
 
 const SKILLS = [
