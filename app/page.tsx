@@ -19,7 +19,6 @@ const NAV = [
 
 const UTILITY = [
   { label: "follow", href: "https://x.com/blank_spacets" },
-  { label: "arth", href: "https://www.arthtechnologies.com/" },
 ];
 
 const SKILLS = [
