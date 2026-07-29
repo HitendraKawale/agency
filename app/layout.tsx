@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { FaviconHeatmap } from "@/components/favicon-heatmap";
 import "./globals.css";
 import "./agency.css";
 
@@ -45,7 +46,10 @@ export default function RootLayout({
       lang="en"
       className={`h-full dark ${rethinkSans.variable} ${rethinkSans.className}`}
     >
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body className="min-h-full flex flex-col antialiased">
+        <FaviconHeatmap />
+        {children}
+      </body>
     </html>
   );
 }
