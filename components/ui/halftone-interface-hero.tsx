@@ -683,10 +683,7 @@ export default function HalftoneInterfaceHero({
       </div>
 
       <header className="hih-header">
-        <a className="hih-brand" href="#top" aria-label={brand.join(" ")}>
-          <span>{brand[0]}</span>
-          <span>{brand[1]}</span>
-        </a>
+        <a className="hih-brand" href="#top" aria-label={brand.join(" ")} />
 
         <nav className="hih-navigation" aria-label="Primary navigation">
           {navigation.map((link) => (
@@ -790,23 +787,12 @@ const styles = `
 }
 
 .hih-brand {
-  display: flex;
-  flex-direction: column;
-  width: 6.2rem;
-  font-size: 1.45rem;
-  line-height: 0.78;
-  letter-spacing: -0.075em;
-  text-transform: lowercase;
-  transform: scaleX(0.92);
-  transform-origin: left center;
-}
-
-.hih-brand span:first-child::before {
-  content: "✣";
-  display: inline-block;
-  margin-right: 0.1em;
-  font-size: 0.62em;
-  transform: translateY(-0.18em);
+  display: block;
+  width: 2.1rem;
+  height: 2.1rem;
+  background: url("/mark.webp") center / contain no-repeat;
+  /* the mark ships as a black box on transparent; invert it to read on the dark header */
+  filter: invert(1);
 }
 
 .hih-navigation {
@@ -871,8 +857,8 @@ const styles = `
   }
 
   .hih-brand {
-    width: 4.9rem;
-    font-size: 1.15rem;
+    width: 1.7rem;
+    height: 1.7rem;
   }
 
   .hih-navigation {
