@@ -58,7 +58,7 @@ const CASE = {
         { name: "Vercel", logo: "/logos/vercel.svg" },
         { name: "Neon", logo: "/logos/neon.svg" },
       ],
-      note: "Sixteen product families generated from one typed catalogue, server-rendered, deployed to the edge, with an admin the team owns.",
+      note: "All products generated from one typed catalogue, server-rendered, deployed to the edge, with an admin the team owns.",
     },
   },
   seo: {
