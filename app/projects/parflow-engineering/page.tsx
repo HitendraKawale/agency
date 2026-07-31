@@ -365,7 +365,7 @@ export default function ParflowCaseStudy() {
                 &amp; Bleed Valves](<i>/products/double-block-bleed-valves</i>)
                 {"\n"}- [Instrument Manifolds](<i>/products/instrument-manifolds</i>
                 ){"\n"}
-                <em> … 13 more, one per product family</em>
+                <em> … 13 more, one per product category</em>
                 {"\n\n"}
                 <b>## Contact</b>
                 {"\n"}- Vasai, Maharashtra, India · +91 98920 81861
