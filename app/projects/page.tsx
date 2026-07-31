@@ -16,6 +16,13 @@ const PROJECTS = [
     status: "live",
   },
   {
+    name: "parflow engineering",
+    href: "/projects/parflow-engineering",
+    internal: true,
+    category: "Case study",
+    status: "live",
+  },
+  {
     name: "Unannounced",
     category: "Product",
     status: "soon",
@@ -56,14 +63,21 @@ export default function ProjectsPage() {
                 <LineRise delay={i * 0.08}>
                   <h3>
                     {"href" in project ? (
-                      <a
-                        href={project.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {project.name}
-                        <span aria-hidden="true"> ↗</span>
-                      </a>
+                      "internal" in project ? (
+                        <Link href={project.href}>
+                          {project.name}
+                          <span aria-hidden="true"> →</span>
+                        </Link>
+                      ) : (
+                        <a
+                          href={project.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {project.name}
+                          <span aria-hidden="true"> ↗</span>
+                        </a>
+                      )
                     ) : (
                       <>
                         {project.name}

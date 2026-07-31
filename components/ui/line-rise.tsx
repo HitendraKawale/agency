@@ -69,6 +69,18 @@ export default function LineRise({
         start: "top 75%",
         once: true,
       },
+      // The mask exists only to hide the line while it travels. Left in place it
+      // keeps clipping, and any glyph that overshoots the line box — a descender
+      // under tight leading, an accent above it — gets cut off for good. Release
+      // it once the reveal has landed.
+      onComplete: () => {
+        for (const line of lines) {
+          const mask = (line as HTMLElement).parentElement;
+          if (mask?.classList.contains("rise-line-mask")) {
+            mask.style.overflow = "visible";
+          }
+        }
+      },
     });
 
     // Line breaks were measured at hydration; re-sync trigger positions once
