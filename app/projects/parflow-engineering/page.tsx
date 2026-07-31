@@ -5,7 +5,7 @@ import ParflowMarkEditor from "@/components/ui/parflow-mark-editor";
 import ScoreRing from "@/components/ui/score-ring";
 
 /**
- * Parflow Engineering — case study.
+ * Parflow Engineering , case study.
  *
  * Facts come from the parflow-engineering project record and proposal PF-01:
  * instrumentation tube fittings & valves, Vasai; WordPress/Elementor replaced
@@ -16,16 +16,16 @@ import ScoreRing from "@/components/ui/score-ring";
 
 const CASE = {
   client: "Parflow Engineering",
-  eyebrow: "case study — 2026",
+  eyebrow: "case study , 2026",
   standfirst:
     "Instrumentation tube fittings and valves, machined in Vasai to tolerances you cannot see. We rebuilt the company's website from a WordPress theme into a product.",
   embed: {
     src: "https://embed.mckp.live/embed.html?uid=413939d5-2b4e-480f-989f-d8d71cea9294&cursor-range=1-50-1-50&click-range=8-8-7-7&camera-zoom=30",
-    title: "Parflow Engineering — interactive product mockup",
+    title: "Parflow Engineering",
   },
   facts: [
     { label: "client", value: "Parflow Engineering" },
-    { label: "field", value: "Instrumentation tube fittings & valves" },
+    { label: "field", value: "Industrial Engineering website" },
     { label: "based", value: "Vasai, Maharashtra" },
     { label: "shipped", value: "30 July 2026" },
     {
@@ -35,14 +35,14 @@ const CASE = {
     },
   ],
   identity: {
-    label: "identity",
-    heading: "The mark became a system.",
-    body: "The swirl was already theirs. What it lacked was a definition — one vector source, one blue, one set of curves that every page, favicon and datasheet is cut from. It is drawn once and used everywhere, instead of redrawn slightly wrong each time.",
-    hint: "This is the real mark. Pull a point.",
+    label: "Ideation",
+    heading: "What makes this website what it is now.",
+    body: "This website was genuinely maximalist and hard to ideate, but back and forth and inspiration from other sites made it possible",
+    hint: "design of page heavily inspired from this logo",
   },
   architecture: {
     label: "architecture",
-    heading: "WordPress → Next.js + Vercel.",
+    heading: "Comfort + speed",
     before: {
       when: "until july 2026",
       chips: [{ name: "WordPress", logo: "/logos/wordpress.svg" }],
@@ -62,9 +62,9 @@ const CASE = {
     },
   },
   seo: {
-    label: "seo — aeo",
+    label: "seo , aeo",
     heading: "Indexed is the floor. Cited is the point.",
-    body: "Every product page states the definition, the operating principle, the specification and the questions a buyer actually asks — then says the same thing again in a form a machine can quote without guessing.",
+    body: "Every product page states the definition, the operating principle, the specification and the questions a buyer actually asks , then says the same thing again in a form a machine can quote without guessing.",
     schemaLabel: "structured as",
     schema: [
       "Organization",
@@ -83,12 +83,12 @@ const CASE = {
       "Google-Extended",
       "Bingbot",
     ],
-    specCaption: "parflowengineering.com/llms.txt — generated from the catalogue",
+    specCaption: "parflowengineering.com/llms.txt contains all the catalogue of all the llm surfaces",
   },
   ledger: {
     label: "the ledger",
-    heading: "A proposal is a promise. Here is the accounting.",
-    note: "Proposal PF-01, issued 4 July 2026 — eleven lines, ₹40,000, four weeks.",
+    heading: "A proposal is a promise, we delivered",
+    note: "here is a list of things we fixed and added.",
     items: [
       {
         no: "01",
@@ -100,7 +100,7 @@ const CASE = {
         no: "02",
         asked: "Design and UX rebuild",
         shipped:
-          "A custom system — black capitals, blue accent, chamfered-octagon line art — and a component library the team recombines instead of redraws.",
+          "A custom system , black capitals, blue accent, chamfered-octagon line art , and a component library the team recombines instead of redraws.",
       },
       {
         no: "03",
@@ -180,16 +180,16 @@ const CASE = {
   },
   coda: {
     text: "A fitting either seals or it does not. We wanted a website with the same manners.",
-    attribution: "blank interfaces — on the Parflow rebuild",
+    attribution: "blank interfaces , on the Parflow rebuild",
   },
 } as const;
 
 export const metadata: Metadata = {
-  title: "parflow engineering — blank interfaces",
+  title: "parflow engineering , blank interfaces",
   description:
-    "Case study: WordPress replaced by Next.js 16 on Vercel for Parflow Engineering — instrumentation tube fittings and valves. 99/100/100/100 on PageSpeed.",
+    "Case study: WordPress replaced by Next.js 16 on Vercel for Parflow Engineering , instrumentation tube fittings and valves. 99/100/100/100 on PageSpeed.",
   openGraph: {
-    title: "parflow engineering — blank interfaces",
+    title: "parflow engineering , blank interfaces",
     description:
       "WordPress replaced by Next.js 16 on Vercel, built to be cited by answer engines.",
     type: "article",
@@ -349,7 +349,7 @@ export default function ParflowCaseStudy() {
           </div>
 
           <div>
-            {/* Real output, trimmed — the file is generated from the catalogue,
+            {/* Real output, trimmed , the file is generated from the catalogue,
                 so it cannot drift from the product pages. */}
             <div className="spec">
               <pre>
