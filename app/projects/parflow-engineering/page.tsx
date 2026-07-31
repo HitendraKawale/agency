@@ -18,7 +18,7 @@ const CASE = {
   client: "Parflow Engineering",
   eyebrow: "case study , 2026",
   standfirst:
-    "Instrumentation tube fittings and valves, machined in Vasai to tolerances you cannot see. We rebuilt the company's website from a WordPress theme into a product.",
+    " We rebuilt the company's website from a WordPress theme into a product.",
   embed: {
     src: "https://embed.mckp.live/embed.html?uid=413939d5-2b4e-480f-989f-d8d71cea9294&cursor-range=1-50-1-50&click-range=8-8-7-7&camera-zoom=30",
     title: "Parflow Engineering",
