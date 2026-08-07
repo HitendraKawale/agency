@@ -5,7 +5,7 @@ import LineRise from "@/components/ui/line-rise";
 export const metadata: Metadata = {
   title: "projects — blank interfaces",
   description:
-    "Selected projects by blank interfaces — built remotely from Mumbai and the UK.",
+    "Selected 0→1 work by blank interfaces — built alongside founding teams, remotely from Mumbai and the UK.",
 };
 
 const PROJECTS = [
@@ -93,8 +93,8 @@ export default function ProjectsPage() {
           ))}
         </ol>
         <p className="library-footnote">
-          All projects run remotely — Mumbai, the UK, and wherever you are.
-          More are taking shape, quietly.
+          Every one of these was built alongside the team that owns it —
+          Mumbai, the UK, and wherever you are. More are taking shape, quietly.
         </p>
         <p className="library-footnote">
           <a className="page-back" href="mailto:hello@aryank.space">

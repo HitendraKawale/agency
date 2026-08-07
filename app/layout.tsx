@@ -15,10 +15,11 @@ const rethinkSans = localFont({
 export const metadata: Metadata = {
   title: "blank interfaces",
   description:
-    "Independent product studio for strategy, interface design, software engineering, and applied AI.",
+    "A craft-led studio for 0→1 brand, interface, and product design. We embed with founding teams to build tempo and momentum.",
   keywords: [
     "blank interfaces",
-    "agency",
+    "design studio",
+    "0 to 1 product design",
     "agentic AI",
     "interface design",
     "Aryan Kathawale",
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "blank interfaces",
     description:
-      "Independent product studio for strategy, design, engineering, and applied AI.",
+      "A craft-led studio for 0→1 brand, interface, and product design. We embed with founding teams to build tempo and momentum.",
     type: "website",
   },
 };

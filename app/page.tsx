@@ -25,25 +25,25 @@ const SKILLS = [
   {
     number: "01",
     title: "Product direction",
-    body: "Research, scope, and a roadmap built around what should exist.",
+    body: "We find clarity in the ambiguity — what to build, what to leave, what happens first.",
     category: "Strategy",
   },
   {
     number: "02",
     title: "Interface design",
-    body: "UX, visual systems, and motion that make complex software feel obvious.",
+    body: "Brand, UX, and motion made together, so complex software reads as obvious.",
     category: "Design",
   },
   {
     number: "03",
     title: "Software engineering",
-    body: "Web apps, platforms, and APIs engineered to survive the week after launch.",
+    body: "Web apps, platforms, and APIs built to hold up the week after launch.",
     category: "Engineering",
   },
   {
     number: "04",
     title: "Applied AI",
-    body: "Agents, retrieval, and evaluation designed as useful product behaviour.",
+    body: "Agents, retrieval, and evaluation shaped as product behaviour, not demos.",
     category: "AI",
   },
 ] as const;
@@ -70,21 +70,22 @@ export default function Home() {
       {/* ── Middle: quiet library ────────────────────────────────── */}
       <section id="about" className="studio-intro" aria-labelledby="studio-title">
         <div className="section-meta" aria-hidden="true">
-          <span>independent product studio</span>
+          <span>craft-led product studio</span>
           <span>mumbai · uk · remote</span>
         </div>
         <div className="studio-intro-copy">
           <LineRise>
             <h2 id="studio-title">
-              We turn difficult ideas into clear, useful products.
+              A craft-led studio for 0→1 brand, interface, and product.
             </h2>
           </LineRise>
           <LineRise delay={0.15}>
             <p>
-              Blank Interfaces is the independent practice of Aryan Kathawale
-              and Hitendra Kawale. Strategy, design, and engineering stay in
-              the same room from first sketch to production — from Mumbai and
-              the UK, working remotely with teams anywhere.
+              You pull us in when the idea is real but the shape isn&apos;t yet
+              — when a product needs tempo. Blank Interfaces is the practice of
+              Aryan Kathawale and Hitendra Kawale. We embed with your founding
+              team and stay in the room from first sketch to production, from
+              Mumbai and the UK, working remotely with teams anywhere.
             </p>
           </LineRise>
         </div>
@@ -130,10 +131,10 @@ export default function Home() {
         <AsciiTvHero
           embedded={false}
           headline={[
-            "Interfaces, motion and code.",
-            "One integrated practice.",
+            "Brand, interface, and code.",
+            "One room, one team.",
           ]}
-          tailLabel="watch us do something special for you"
+          tailLabel="watch us build something alongside you"
           scrollLength={3}
         />
       </section>
@@ -146,17 +147,18 @@ export default function Home() {
         <p className="section-label">philosophy</p>
         <LineRise>
           <h2 id="philosophy-title">
-            We believe in quiet conviction. Work that speaks softly and
-            lingers long. Interfaces as clarity, not decoration. Software that
-            earns attention instead of demanding it. Create with purpose —
-            everything else is noise.
+            We believe the best work comes from proximity. Sit close to the
+            problem, stay close to the people solving it. Interfaces as
+            clarity, not decoration. Craft as the thing that compounds. We
+            walk alongside you while you build the vision — everything else is
+            noise.
           </h2>
         </LineRise>
       </section>
 
       <section className="story" aria-labelledby="story-title">
         <div className="story-col">
-          <p className="section-label">how long it takes</p>
+          <p className="section-label">tempo</p>
           <LineRise>
             <h2 id="story-title">About a month, start to ship.</h2>
           </LineRise>
@@ -165,7 +167,7 @@ export default function Home() {
           <LineRise>
             <p>
               Most projects run about a month. Not because we rush — because
-              we don&apos;t dilute. One project at a time, both of us on it,
+              momentum is the point. One project at a time, both of us on it,
               from first sketch to production.
             </p>
             <p>
@@ -176,8 +178,8 @@ export default function Home() {
             </p>
             <p>
               No account managers. No handoff theatre. No six-week discovery.
-              You talk directly to the people making the thing, and you watch
-              it get better every day.
+              You sit with the people making the thing, and you watch it get
+              better every day.
             </p>
           </LineRise>
         </div>
@@ -186,7 +188,7 @@ export default function Home() {
       <section id="team" className="team" aria-labelledby="team-title">
         <p className="section-label">the people</p>
         <LineRise>
-          <h2 id="team-title">Two people. The whole practice.</h2>
+          <h2 id="team-title">Led by two. Embedded with yours.</h2>
         </LineRise>
         <TeamReveal />
         <div className="team-captions">
@@ -221,7 +223,7 @@ export default function Home() {
         <div className="contact-strip-inner">
           <div className="contact-heading">
             <p className="section-label">start somewhere</p>
-            <h2>Have a difficult idea?</h2>
+            <h2>Building something from zero?</h2>
             <p>Bring us the rough version.</p>
           </div>
           <ul className="contact-rows">
