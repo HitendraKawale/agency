@@ -1276,3 +1276,86 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Legal pages ──────────────────────────────────────────────────────────
+   Long-form prose. The library grid elsewhere is built for rows, so legal
+   copy gets its own measure: narrow column, generous leading, hairline rules
+   between sections to keep it scannable rather than a wall.                */
+
+.legal {
+  padding-bottom: clamp(4rem, 8vw, 7rem);
+}
+
+.legal-lede {
+  max-width: 38rem;
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+  line-height: 1.35;
+  letter-spacing: -0.035em;
+  text-wrap: pretty;
+}
+
+.legal-meta {
+  margin: 0 0 clamp(2.5rem, 5vw, 4rem);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legal h2 {
+  max-width: 38rem;
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0.9rem;
+  padding-top: clamp(1.5rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--hairline);
+  font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.legal h3 {
+  max-width: 38rem;
+  margin: clamp(1.75rem, 3vw, 2.5rem) 0 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legal p {
+  max-width: 38rem;
+  margin: 0 0 1rem;
+  font-size: clamp(0.95rem, 1.15vw, 1.05rem);
+  line-height: 1.55;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+  text-wrap: pretty;
+}
+
+.legal-list {
+  max-width: 38rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.legal-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: clamp(0.95rem, 1.15vw, 1.05rem);
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+  text-wrap: pretty;
+}
+
+.legal-list li strong {
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.legal a {
+  color: inherit;
+}
