@@ -207,7 +207,7 @@ export default function Home() {
           <div>
             <h3>
               <a
-                href="https://hitendrakawale.github.io/"
+                href="https://hitendra.dev"
                 target="_blank"
                 rel="noopener noreferrer"
               >
