@@ -64,7 +64,7 @@ More are taking shape, quietly.
 Led by two. Embedded with yours.
 
 **Aryan Kathawale**, co-founder — [tldr.aryank.space](https://tldr.aryank.space)
-**Hitendra Kawale**, co-founder — [hitendra.dev](https://hitendra.dev)
+**Hitendra Kawale**, co-founder — [hitendra.dev](https://hitendra.dev/tldr)
 
 ## start somewhere
 
