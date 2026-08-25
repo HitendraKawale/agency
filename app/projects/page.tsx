@@ -8,13 +8,17 @@ export const metadata: Metadata = {
     "Selected 0→1 work by blank interfaces — built alongside founding teams, remotely from Mumbai and the UK.",
 };
 
-const PROJECTS = [
-  {
-    name: "arth technologies",
-    href: "https://www.arthtechnologies.com/",
-    category: "Platform",
-    status: "live",
-  },
+type Project = {
+  name: string;
+  category: string;
+  status: "live" | "soon";
+  /** Omit for unannounced work — the row renders as a muted "soon" badge. */
+  href?: string;
+  /** Internal hrefs route through <Link>; external ones open in a new tab. */
+  internal?: boolean;
+};
+
+const PROJECTS: Project[] = [
   {
     name: "parflow engineering",
     href: "/projects/parflow-engineering",
@@ -32,7 +36,7 @@ const PROJECTS = [
     category: "Interface",
     status: "soon",
   },
-] as const;
+];
 
 export default function ProjectsPage() {
   return (
@@ -62,8 +66,8 @@ export default function ProjectsPage() {
               <div className="library-name">
                 <LineRise delay={i * 0.08}>
                   <h3>
-                    {"href" in project ? (
-                      "internal" in project ? (
+                    {project.href ? (
+                      project.internal ? (
                         <Link href={project.href}>
                           {project.name}
                           <span aria-hidden="true"> →</span>

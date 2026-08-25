@@ -207,7 +207,7 @@ export default function Home() {
           <div>
             <h3>
               <a
-                href="https://hitendrakawale.github.io/"
+                href="https://hitendra.dev"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -251,13 +251,6 @@ export default function Home() {
 
       <footer className="site-footer">
         <p>© 2026 blank interfaces · mumbai / uk / remote</p>
-        <a
-          href="https://www.arthtechnologies.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          arth technologies
-        </a>
       </footer>
     </main>
   );

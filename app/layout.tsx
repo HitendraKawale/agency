@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   ],
   authors: [
     { name: "Aryan Kathawale", url: "https://tldr.aryank.space" },
-    { name: "Hitendra Kawale", url: "https://hitendrakawale.github.io/" },
+    { name: "Hitendra Kawale", url: "https://hitendra.dev" },
   ],
   openGraph: {
     title: "blank interfaces",
