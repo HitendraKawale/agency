@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     "How Blank Interfaces collects, uses, and protects personal data — including business contact details used for outreach.",
   robots: { index: true, follow: true },
+  alternates: { canonical: "/privacy" },
 };
 
 /**
