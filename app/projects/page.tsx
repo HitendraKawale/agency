@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "projects — blank interfaces",
   description:
     "Selected 0→1 work by blank interfaces — built alongside founding teams, remotely from Mumbai and the UK.",
+  alternates: { canonical: "/projects" },
 };
 
 type Project = {

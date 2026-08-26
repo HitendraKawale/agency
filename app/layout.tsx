@@ -12,10 +12,16 @@ const rethinkSans = localFont({
   fallback: ["Helvetica", "Arial", "sans-serif"],
 });
 
+const DESCRIPTION =
+  "A craft-led studio for 0→1 brand, interface, and product design. We embed with founding teams to build tempo and momentum.";
+
 export const metadata: Metadata = {
+  // Canonical home of the site. Every relative URL in metadata below — and in
+  // each page's own `alternates.canonical` — resolves against this, so the
+  // studio reads as one site even while other hostnames still serve the app.
+  metadataBase: new URL("https://blankinterfaces.com"),
   title: "blank interfaces",
-  description:
-    "A craft-led studio for 0→1 brand, interface, and product design. We embed with founding teams to build tempo and momentum.",
+  description: DESCRIPTION,
   keywords: [
     "blank interfaces",
     "design studio",
@@ -29,11 +35,19 @@ export const metadata: Metadata = {
     { name: "Aryan Kathawale", url: "https://tldr.aryank.space" },
     { name: "Hitendra Kawale", url: "https://hitendra.dev/tldr" },
   ],
+  alternates: { canonical: "/" },
   openGraph: {
     title: "blank interfaces",
-    description:
-      "A craft-led studio for 0→1 brand, interface, and product design. We embed with founding teams to build tempo and momentum.",
+    description: DESCRIPTION,
     type: "website",
+    url: "/",
+    siteName: "blank interfaces",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "blank interfaces",
+    description: DESCRIPTION,
+    creator: "@blank_spacets",
   },
 };
 
