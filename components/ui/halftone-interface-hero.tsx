@@ -14,7 +14,16 @@
  * BLANK, aryank.space
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+const INTERACTIVE = "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+const canInteract = () => window.matchMedia(INTERACTIVE).matches;
+const serverInteraction = () => false;
+function subscribeInteraction(notify: () => void) {
+  const media = window.matchMedia(INTERACTIVE);
+  media.addEventListener("change", notify);
+  return () => media.removeEventListener("change", notify);
+}
 
 export interface HalftoneHeroLink {
   label: string;
@@ -285,6 +294,7 @@ function HalftoneCanvas({
   foreground: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const interactive = useSyncExternalStore(subscribeInteraction, canInteract, serverInteraction);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -398,7 +408,7 @@ function HalftoneCanvas({
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (compact) return;
+      if (compact || !interactive) return;
       const rect = parent.getBoundingClientRect();
       pointer.targetX = (event.clientX - rect.left) * ratio;
       pointer.targetY = (rect.height - (event.clientY - rect.top)) * ratio;
@@ -443,6 +453,7 @@ function HalftoneCanvas({
       renderContext.activeTexture(renderContext.TEXTURE0);
       renderContext.bindTexture(renderContext.TEXTURE_2D, texture);
       renderContext.drawArrays(renderContext.TRIANGLES, 0, 3);
+      renderCanvas.dataset.ready = "true";
 
       const settled =
         Math.abs(pointer.targetX - pointer.currentX) < 0.25 &&
@@ -463,24 +474,34 @@ function HalftoneCanvas({
     const observer = new ResizeObserver(resize);
     observer.observe(parent);
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerleave", onPointerLeave);
+    if (interactive) {
+      parent.addEventListener("pointermove", onPointerMove, { passive: true });
+      parent.addEventListener("pointerleave", onPointerLeave);
+    }
+    const onContextLost = () => {
+      delete canvas.dataset.ready;
+      window.cancelAnimationFrame(frame);
+      running = false;
+    };
+    canvas.addEventListener("webglcontextlost", onContextLost);
 
     return () => {
+      delete canvas.dataset.ready;
+      canvas.removeEventListener("webglcontextlost", onContextLost);
       window.cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerleave", onPointerLeave);
+      parent.removeEventListener("pointermove", onPointerMove);
+      parent.removeEventListener("pointerleave", onPointerLeave);
       gl.deleteProgram(program);
       gl.deleteShader(vertexShader);
       gl.deleteShader(fragmentShader);
       gl.deleteBuffer(triangle);
       gl.deleteTexture(texture);
     };
-  }, [foreground, headline]);
+  }, [foreground, headline, interactive]);
 
-  return <canvas ref={canvasRef} className="hih-halftone" />;
+  return <canvas ref={canvasRef} className="hih-halftone" aria-hidden="true" />;
 }
 
 function PointerTrail({
@@ -489,14 +510,17 @@ function PointerTrail({
   accentColors: [string, string, string];
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const interactive = useSyncExternalStore(subscribeInteraction, canInteract, serverInteraction);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const parent = canvas?.parentElement;
     if (!canvas || !parent) return;
 
+    if (!interactive) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    canvas.dataset.active = "true";
 
     let ratio = Math.min(window.devicePixelRatio || 1, 2);
     const particles: TrailParticle[] = [];
@@ -616,19 +640,21 @@ function PointerTrail({
     const observer = new ResizeObserver(resize);
     observer.observe(parent);
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerleave", onPointerLeave);
+    parent.addEventListener("pointermove", onPointerMove, { passive: true });
+    parent.addEventListener("pointerleave", onPointerLeave);
 
     return () => {
+      delete canvas.dataset.active;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       window.cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerleave", onPointerLeave);
+      parent.removeEventListener("pointermove", onPointerMove);
+      parent.removeEventListener("pointerleave", onPointerLeave);
     };
-  }, [accentColors]);
+  }, [accentColors, interactive]);
 
-  return <canvas ref={canvasRef} className="hih-trail" />;
+  return <canvas ref={canvasRef} className="hih-trail" aria-hidden="true" />;
 }
 
 function formatTime(timeZone: string) {
@@ -702,7 +728,7 @@ export default function HalftoneInterfaceHero({
         </nav>
       </header>
 
-      <h1 className="hih-visually-hidden">{headline.join(" ")}</h1>
+      <h1 className="hih-heading"><span>{headline[0]}</span><span>{headline[1]}</span></h1>
 
       <footer className="hih-footer">
         <p>{footerLabel}</p>
@@ -721,8 +747,8 @@ const styles = `
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 18px;
+  font-family: var(--font-rethink-sans), Helvetica, Arial, sans-serif;
+  font-size: 16px;
   line-height: 1;
   letter-spacing: -0.035em;
 }
@@ -731,6 +757,9 @@ const styles = `
   position: absolute;
   inset: 0 0 5rem;
   overflow: hidden;
+}
+
+.hih-field:has(.hih-trail[data-active="true"]) {
   cursor: none;
 }
 
@@ -761,7 +790,7 @@ const styles = `
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: 2rem;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
 }
 
 .hih-header {
@@ -771,26 +800,29 @@ const styles = `
 }
 
 .hih-header a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: inherit;
   text-decoration: none;
-  transition: opacity 180ms ease;
+  transition: color 180ms ease;
 }
 
-.hih-header a:hover,
-.hih-header a:focus-visible {
-  opacity: 0.58;
+.hih-header a:hover {
+  color: var(--mint);
 }
 
 .hih-header a:focus-visible {
-  outline: 1px solid currentColor;
+  outline: 2px solid var(--mint);
   outline-offset: 5px;
 }
 
 .hih-brand {
   display: block;
-  width: 2.1rem;
-  height: 2.1rem;
-  background: url("/mark.webp") center / contain no-repeat;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  background: url("/mark.webp") center / 2.1rem no-repeat;
   /* the mark ships as a black box on transparent; invert it to read on the dark header */
   filter: invert(1);
 }
@@ -814,7 +846,9 @@ const styles = `
 .hih-footer {
   bottom: 0;
   align-items: flex-end;
-  padding-block: 1.25rem;
+  gap: 0.5rem 1.5rem;
+  flex-wrap: wrap;
+  padding-block: 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
   line-height: 1.55;
 }
 
@@ -826,7 +860,19 @@ const styles = `
   font-variant-numeric: tabular-nums;
 }
 
-.hih-visually-hidden {
+.hih-heading {
+  position: absolute;
+  inset: 0 9% 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  font: 400 clamp(2.25rem, 10vw, 10rem) / 0.95 Helvetica, Arial, sans-serif;
+  letter-spacing: -0.055em;
+  pointer-events: none;
+}
+
+.hih-root:has(.hih-halftone[data-ready="true"]) .hih-heading {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -848,33 +894,36 @@ const styles = `
 
   .hih-header,
   .hih-footer {
-    padding-inline: 1rem;
+    padding-inline: clamp(1.25rem, 4vw, 4rem);
   }
 
   .hih-header {
     min-height: 4.5rem;
-    padding-block: 1rem;
+    padding-block: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
   }
 
   .hih-brand {
-    width: 1.7rem;
-    height: 1.7rem;
+    background-size: 1.7rem;
   }
 
   .hih-navigation {
-    display: none;
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    transform: none;
+    margin-left: auto;
   }
 
   .hih-utilities {
-    gap: 1rem;
-  }
-
-  .hih-utilities a:first-child {
     display: none;
   }
 
   .hih-footer {
-    padding-block: 1rem;
+    font-size: 0.8rem;
+    padding-block: 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
   }
 
   .hih-trail {

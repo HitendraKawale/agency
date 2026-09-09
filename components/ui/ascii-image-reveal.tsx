@@ -11,7 +11,15 @@
  * BLANK - aryank.space
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const serverMotion = () => false;
+function subscribeMotion(notify: () => void) {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", notify);
+  return () => media.removeEventListener("change", notify);
+}
 
 export interface AsciiImageRevealProps {
   images?: string[];
@@ -108,8 +116,10 @@ function AsciiRevealTile({
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [revealed, setRevealed] = useState(false);
+  const reduce = useSyncExternalStore(subscribeMotion, reducedMotion, serverMotion);
 
   useEffect(() => {
+    if (reduce) return;
     const img = imageRef.current;
     const canvas = canvasRef.current;
     if (!img || !canvas) return;
@@ -322,6 +332,7 @@ function AsciiRevealTile({
       img.removeEventListener("load", startEffect);
     };
   }, [
+    reduce,
     src,
     index,
     chars,
@@ -341,7 +352,7 @@ function AsciiRevealTile({
   return (
     <div className={revealed ? "air-tile air-revealed" : "air-tile"}>
       <img ref={imageRef} src={src} alt={alt} crossOrigin="anonymous" />
-      <canvas ref={canvasRef} />
+      <canvas ref={canvasRef} aria-hidden="true" />
     </div>
   );
 }
@@ -505,12 +516,17 @@ const styles = `
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: none;
     min-height: auto;
-    gap: clamp(0.75rem, 4vw, 1.25rem);
+    gap: var(--air-gap);
   }
 
   .air-slot {
     grid-column: auto;
     grid-row: auto;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .air-tile img { opacity: 1; transition: none; }
+  .air-tile canvas { display: none; }
 }
 `;

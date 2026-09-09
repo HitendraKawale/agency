@@ -10,10 +10,8 @@ import TeamReveal from "@/components/ui/team-reveal";
  */
 
 const NAV = [
-  { label: "about", href: "#about" },
-  { label: "practice", href: "#practice" },
   { label: "projects", href: "/projects" },
-  { label: "philosophy", href: "#philosophy" },
+  { label: "studio", href: "#about" },
   { label: "contact", href: "#contact" },
 ];
 
@@ -52,7 +50,7 @@ export default function Home() {
   return (
     <main id="top" className="min-h-full bg-black text-[#f3f3f1]">
       {/* ── Open: halftone identity ──────────────────────────────── */}
-      <div className="h-[100svh] w-full overflow-hidden bg-black">
+      <div className="home-hero">
         <HalftoneInterfaceHero
           headline={["blank", "interfaces"]}
           brand={["blank", "interfaces"]}
@@ -79,7 +77,6 @@ export default function Home() {
               A craft-led studio for 0→1 brand, interface, and product.
             </h2>
           </LineRise>
-          <LineRise delay={0.15}>
             <p>
               You pull us in when the idea is real but the shape isn&apos;t yet
               — when a product needs tempo. Blank Interfaces is the practice of
@@ -87,7 +84,6 @@ export default function Home() {
               team and stay in the room from first sketch to production, from
               Mumbai and the UK, working remotely with teams anywhere.
             </p>
-          </LineRise>
         </div>
       </section>
 
@@ -105,13 +101,11 @@ export default function Home() {
           <span>no.</span>
         </div>
         <ol className="library-list">
-          {SKILLS.map((skill, i) => (
+          {SKILLS.map((skill) => (
             <li key={skill.number} className="library-row">
               <div className="library-name">
-                <LineRise delay={i * 0.08}>
-                  <h3>{skill.title}</h3>
-                  <p>{skill.body}</p>
-                </LineRise>
+                <h3>{skill.title}</h3>
+                <p>{skill.body}</p>
               </div>
               <span className="library-category">{skill.category}</span>
               <span className="library-index">{skill.number}</span>
@@ -164,7 +158,6 @@ export default function Home() {
           </LineRise>
         </div>
         <div className="story-col">
-          <LineRise>
             <p>
               Most projects run about a month. Not because we rush — because
               momentum is the point. One project at a time, both of us on it,
@@ -181,7 +174,6 @@ export default function Home() {
               You sit with the people making the thing, and you watch it get
               better every day.
             </p>
-          </LineRise>
         </div>
       </section>
 
@@ -251,13 +243,6 @@ export default function Home() {
 
       <footer className="site-footer">
         <p>© 2026 blank interfaces · mumbai / uk / remote</p>
-        <a
-          href="https://www.arthtechnologies.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          arth technologies
-        </a>
       </footer>
     </main>
   );

@@ -296,6 +296,9 @@ export default function AsciiTvHero({
   const frameRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const controlRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -303,29 +306,38 @@ export default function AsciiTvHero({
     const frame = frameRef.current;
     const headlineEl = headlineRef.current;
     const canvas = canvasRef.current;
-    if (!root || !scope || !frame || !headlineEl || !canvas) return;
+    const sticky = stickyRef.current;
+    const video = videoRef.current;
+    const control = controlRef.current;
+    if (!root || !scope || !frame || !headlineEl || !canvas || !sticky || !video || !control) return;
+
+    delete root.dataset.unavailable;
+    control.disabled = false;
+    let frameId = 0;
+    let unavailable = false;
+    const fail = () => {
+      unavailable = true;
+      root.dataset.unavailable = "true";
+      cancelAnimationFrame(frameId);
+      video.pause();
+      control.disabled = true;
+      control.textContent = "Film unavailable";
+      frame.style.width = "";
+      frame.style.height = "";
+      headlineEl.style.opacity = "1";
+    };
 
     const gl = canvas.getContext("webgl", {
       alpha: true,
       antialias: false,
       premultipliedAlpha: true,
     });
-    if (!gl) return;
+    if (!gl) { fail(); return; }
 
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    const video = document.createElement("video");
-    video.src = videoSrc;
-    video.muted = true;
-    video.loop = true;
-    video.autoplay = true;
-    video.playsInline = true;
-    video.crossOrigin = "anonymous";
-
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let reducedMotion = motion.matches;
     const program = compileProgram(gl, VERTEX, FRAGMENT);
-    if (!program) return;
+    if (!program) { fail(); return; }
     // biome-ignore lint/correctness/useHookAtTopLevel: WebGL API method, not a React Hook.
     gl.useProgram(program);
 
@@ -389,6 +401,7 @@ export default function AsciiTvHero({
     let lastPointer = { x: 0.5, y: 0.5, has: false };
 
     const onPointerMove = (event: PointerEvent) => {
+      if (reducedMotion || video.paused || event.pointerType === "touch") return;
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
       if (
@@ -450,8 +463,16 @@ export default function AsciiTvHero({
     };
 
     const updateScroll = () => {
+      if (reducedMotion || unavailable) {
+        frame.style.width = "";
+        frame.style.height = "";
+        headlineEl.style.opacity = "1";
+        tvness = 1;
+        requestRender();
+        return;
+      }
       if (!baseWidth || !baseHeight) captureBase();
-      const viewHeight = embedded ? root.clientHeight : window.innerHeight;
+      const viewHeight = embedded ? root.clientHeight : sticky.clientHeight;
       const distance = scope.offsetHeight - viewHeight;
       const scrolled = embedded
         ? root.scrollTop
@@ -462,6 +483,7 @@ export default function AsciiTvHero({
       frame.style.width = `${lerp(baseWidth, root.clientWidth, progress)}px`;
       frame.style.height = `${lerp(baseHeight, viewHeight, progress)}px`;
       headlineEl.style.opacity = `${clamp01(1 - progress * 1.6)}`;
+      requestRender();
     };
     const scroller = embedded ? root : window;
     scroller.addEventListener("scroll", updateScroll, { passive: true });
@@ -472,10 +494,12 @@ export default function AsciiTvHero({
       updateScroll();
     });
     observer.observe(root);
-    updateScroll();
+    observer.observe(sticky);
 
-    let frameId = 0;
     let dpr = 1;
+    function requestRender() {
+      if (!frameId && !unavailable) frameId = requestAnimationFrame(render);
+    }
 
     const resizeCanvas = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -489,23 +513,24 @@ export default function AsciiTvHero({
     };
 
     const render = () => {
-      frameId = requestAnimationFrame(render);
+      frameId = 0;
+      if (unavailable) return;
       resizeCanvas();
-      if (!reducedMotion) stepTrail();
+      if (!reducedMotion && !video.paused) stepTrail();
 
       if (video.readyState < 2) return;
 
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, videoTexture);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        video,
-      );
+      try {
+        gl.texImage2D(
+          gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video,
+        );
+      } catch {
+        fail();
+        return;
+      }
       gl.uniform1i(uniforms.video, 0);
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, glyphTexture);
@@ -528,23 +553,59 @@ export default function AsciiTvHero({
       gl.uniform1f(uniforms.warp, 46.5 * dpr);
       gl.uniform1f(uniforms.mouseRadius, 108 * dpr);
       gl.uniform1f(uniforms.mouseStrength, reducedMotion ? 0 : 0.12);
-      gl.uniform1f(uniforms.time, performance.now() * 0.001);
+      gl.uniform1f(uniforms.time, video.currentTime);
       gl.uniform1f(uniforms.trailCount, trail.length);
       gl.uniform4fv(uniforms.trail, trailData);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      if (!video.paused && !document.hidden) requestRender();
     };
 
-    video.play().catch(() => {});
-    frameId = requestAnimationFrame(render);
+    const syncPlayback = () => {
+      if (unavailable) return;
+      control.textContent = video.paused ? "Play animation" : "Pause animation";
+      cancelAnimationFrame(frameId);
+      frameId = 0;
+      requestRender();
+    };
+    const changeMotion = () => {
+      reducedMotion = motion.matches;
+      if (reducedMotion) video.pause();
+      trail.length = 0;
+      trailData.fill(0);
+      baseWidth = baseHeight = 0;
+      updateScroll();
+    };
+    const togglePlayback = () => {
+      if (video.paused) video.play().catch(syncPlayback);
+      else video.pause();
+    };
+    control.addEventListener("click", togglePlayback);
+    video.addEventListener("play", syncPlayback);
+    video.addEventListener("pause", syncPlayback);
+    video.addEventListener("loadeddata", requestRender);
+    video.addEventListener("error", fail);
+    canvas.addEventListener("webglcontextlost", fail);
+    motion.addEventListener("change", changeMotion);
+    document.addEventListener("visibilitychange", syncPlayback);
+    updateScroll();
+    if (!reducedMotion) video.play().catch(syncPlayback);
+    else video.load();
 
     return () => {
       cancelAnimationFrame(frameId);
       observer.disconnect();
+      control.removeEventListener("click", togglePlayback);
+      video.removeEventListener("play", syncPlayback);
+      video.removeEventListener("pause", syncPlayback);
+      video.removeEventListener("loadeddata", requestRender);
+      video.removeEventListener("error", fail);
+      canvas.removeEventListener("webglcontextlost", fail);
+      motion.removeEventListener("change", changeMotion);
+      document.removeEventListener("visibilitychange", syncPlayback);
       root.removeEventListener("pointermove", onPointerMove);
       scroller.removeEventListener("scroll", updateScroll);
       video.pause();
-      video.removeAttribute("src");
-      video.load();
+
       gl.deleteTexture(videoTexture);
       gl.deleteTexture(glyphTexture);
       gl.deleteProgram(program);
@@ -556,6 +617,7 @@ export default function AsciiTvHero({
       ref={rootRef}
       className={`atv-root${embedded ? "" : " atv-window"}${className ? ` ${className}` : ""}`}
     >
+      <video ref={videoRef} src={videoSrc} muted loop playsInline crossOrigin="anonymous" preload="auto" hidden aria-hidden="true" />
       <style>{`
         .atv-root {
           position: relative;
@@ -571,6 +633,8 @@ export default function AsciiTvHero({
           overflow: visible;
         }
         .atv-scope { position: relative; }
+        .atv-window .atv-scope { height: calc(var(--atv-length) * 100svh); }
+        .atv-window .atv-sticky { height: 100svh; }
         .atv-sticky {
           position: sticky;
           top: 0;
@@ -591,8 +655,9 @@ export default function AsciiTvHero({
         }
         .atv-headline {
           position: absolute;
-          left: clamp(16px, 2.5vw, 40px);
-          bottom: clamp(16px, 2.5vw, 40px);
+          left: clamp(1.25rem, 4vw, 4rem);
+          right: clamp(1.25rem, 4vw, 4rem);
+          bottom: 6rem;
           font-size: clamp(24px, 3.4vw, 52px);
           line-height: 1.08;
           letter-spacing: -0.02em;
@@ -607,28 +672,68 @@ export default function AsciiTvHero({
           font-size: clamp(14px, 1.2vw, 18px);
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          color: #8a877f;
+          color: var(--muted);
+        }
+        .atv-control {
+          position: absolute;
+          bottom: 1.5rem;
+          left: clamp(1.25rem, 4vw, 4rem);
+          min-height: 44px;
+          padding: 0.65rem 1rem;
+          border: 1px solid var(--hairline);
+          border-radius: 999px;
+          background: #000;
+          color: var(--fg);
+          font: inherit;
+          font-size: 0.875rem;
+          cursor: pointer;
+        }
+        .atv-control:hover:not(:disabled) { border-color: var(--mint); }
+        .atv-control:disabled { cursor: default; color: var(--muted); }
+        .atv-status { display: none; }
+        .atv-root[data-unavailable] .atv-scope { height: auto; }
+        .atv-root[data-unavailable] .atv-sticky { position: relative; height: auto; min-height: 20rem; }
+        .atv-root[data-unavailable] .atv-frame { display: none; }
+        .atv-root[data-unavailable] .atv-status { display: block; align-self: start; padding: 2rem; color: var(--muted); }
+        @media (max-width: 767px) {
+          .atv-window .atv-scope { height: 180svh; }
+          .atv-window .atv-frame { width: 90%; }
+          .atv-window .atv-tail {
+            min-height: 0;
+            padding: 3rem clamp(1.25rem, 4vw, 4rem);
+            justify-content: flex-start;
+            letter-spacing: 0;
+            text-transform: none;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .atv-root .atv-scope { height: auto; }
+          .atv-root .atv-sticky { position: relative; height: auto; min-height: 28rem; padding-block: 2rem 12rem; }
         }
       `}</style>
       <div
         ref={scopeRef}
         className="atv-scope"
         style={{
-          height: embedded ? `${scrollLength * 100}%` : `${scrollLength * 100}svh`,
+          height: embedded ? `${scrollLength * 100}%` : undefined,
+          ...{ "--atv-length": scrollLength },
         }}
       >
         <div
+          ref={stickyRef}
           className="atv-sticky"
-          style={{ height: embedded ? `${100 / scrollLength}%` : "100svh" }}
+          style={{ height: embedded ? `${100 / scrollLength}%` : undefined }}
         >
           <div ref={frameRef} className="atv-frame">
-            <canvas ref={canvasRef} />
+            <canvas ref={canvasRef} aria-hidden="true" />
           </div>
           <div ref={headlineRef} className="atv-headline">
             {headline[0]}
             <br />
             {headline[1]}
           </div>
+          <p className="atv-status" role="status">Film unavailable</p>
+          <button ref={controlRef} className="atv-control" type="button">Play animation</button>
         </div>
       </div>
       <div className="atv-tail">{tailLabel}</div>

@@ -10,15 +10,8 @@ export const metadata: Metadata = {
 
 const PROJECTS = [
   {
-    name: "arth technologies",
-    href: "https://www.arthtechnologies.com/",
-    category: "Platform",
-    status: "live",
-  },
-  {
     name: "parflow engineering",
     href: "/projects/parflow-engineering",
-    internal: true,
     category: "Case study",
     status: "live",
   },
@@ -63,21 +56,10 @@ export default function ProjectsPage() {
                 <LineRise delay={i * 0.08}>
                   <h3>
                     {"href" in project ? (
-                      "internal" in project ? (
-                        <Link href={project.href}>
-                          {project.name}
-                          <span aria-hidden="true"> →</span>
-                        </Link>
-                      ) : (
-                        <a
-                          href={project.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {project.name}
-                          <span aria-hidden="true"> ↗</span>
-                        </a>
-                      )
+                      <Link href={project.href}>
+                        {project.name}
+                        <span aria-hidden="true"> →</span>
+                      </Link>
                     ) : (
                       <>
                         {project.name}

@@ -40,7 +40,7 @@ export default function TeamReveal() {
           aspectHeight={1}
           background="#000"
           canvasBackground="#000"
-          gap="2rem"
+          gap="var(--team-gap)"
           embedded
         />
       )}

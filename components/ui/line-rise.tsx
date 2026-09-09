@@ -1,14 +1,6 @@
 "use client";
 
-/**
- * LineRise — copy blocks split into masked lines that rise from behind their
- * baseline as they scroll into view. Extracted from the line-rise-text
- * registry item (ui.aryank.space) and adapted to ride the window scroll.
- *
- * Wrap one heading or several paragraphs; all children split together and
- * share one scroll trigger (grouped reveal). Text-indent is moved onto the
- * first split line only (indent-aware split).
- */
+/** Masked line reveals, with ordinary text restored after the animation. */
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -31,67 +23,38 @@ export default function LineRise({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const elements = el.children.length
-      ? (Array.from(el.children) as HTMLElement[])
-      : [el];
-
-    const splits: SplitText[] = [];
-    const lines: Element[] = [];
-    for (const element of elements) {
-      const split = SplitText.create(element, {
-        type: "lines",
-        mask: "lines",
-        linesClass: "rise-line",
-        lineThreshold: 0.1,
-      });
-      splits.push(split);
-
-      const textIndent = window.getComputedStyle(element).textIndent;
-      if (textIndent && textIndent !== "0px") {
-        const first = split.lines[0] as HTMLElement | undefined;
-        if (first) first.style.paddingLeft = textIndent;
-        element.style.textIndent = "0";
-      }
-      lines.push(...split.lines);
-    }
-
-    gsap.set(lines, { y: "100%" });
-    const tween = gsap.to(lines, {
-      y: "0%",
-      duration: 1,
-      stagger: 0.1,
-      ease: "power4.out",
-      delay,
-      scrollTrigger: {
-        trigger: el,
-        start: "top 75%",
-        once: true,
-      },
-      // The mask exists only to hide the line while it travels. Left in place it
-      // keeps clipping, and any glyph that overshoots the line box — a descender
-      // under tight leading, an accent above it — gets cut off for good. Release
-      // it once the reveal has landed.
-      onComplete: () => {
-        for (const line of lines) {
-          const mask = (line as HTMLElement).parentElement;
-          if (mask?.classList.contains("rise-line-mask")) {
-            mask.style.overflow = "visible";
-          }
-        }
-      },
+    const media = gsap.matchMedia();
+    media.add("(prefers-reduced-motion: no-preference)", () => {
+      const elements = el.children.length ? Array.from(el.children) : [el];
+      const splits = elements.map((element) =>
+        SplitText.create(element, {
+          type: "lines",
+          mask: "lines",
+          linesClass: "rise-line",
+          lineThreshold: 0.1,
+          autoSplit: true,
+          onSplit(self) {
+            return gsap.from(self.lines, {
+              yPercent: 100,
+              duration: 1,
+              stagger: 0.1,
+              ease: "power4.out",
+              delay,
+              scrollTrigger: {
+                trigger: element,
+                start: "top 75%",
+                once: true,
+              },
+              onComplete: () => self.revert(),
+            });
+          },
+        }),
+      );
+      return () => {
+        for (const split of splits) split.revert();
+      };
     });
-
-    // Line breaks were measured at hydration; re-sync trigger positions once
-    // the webfont has finished loading.
-    document.fonts.ready.then(() => ScrollTrigger.refresh());
-
-    return () => {
-      tween.scrollTrigger?.kill();
-      tween.kill();
-      for (const s of splits) s.revert();
-    };
+    return () => media.revert();
   }, [delay]);
 
   return (
