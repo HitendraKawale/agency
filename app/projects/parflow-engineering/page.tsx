@@ -188,6 +188,7 @@ export const metadata: Metadata = {
   title: "parflow engineering , blank interfaces",
   description:
     "Case study: WordPress replaced by Next.js 16 on Vercel for Parflow Engineering , instrumentation tube fittings and valves. 99/100/100/100 on PageSpeed.",
+  alternates: { canonical: "/projects/parflow-engineering" },
   openGraph: {
     title: "parflow engineering , blank interfaces",
     description:

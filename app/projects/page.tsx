@@ -6,12 +6,24 @@ export const metadata: Metadata = {
   title: "projects — blank interfaces",
   description:
     "Selected 0→1 work by blank interfaces — built alongside founding teams, remotely from Mumbai and the UK.",
+  alternates: { canonical: "/projects" },
 };
 
-const PROJECTS = [
+type Project = {
+  name: string;
+  category: string;
+  status: "live" | "soon";
+  /** Omit for unannounced work — the row renders as a muted "soon" badge. */
+  href?: string;
+  /** Internal hrefs route through <Link>; external ones open in a new tab. */
+  internal?: boolean;
+};
+
+const PROJECTS: Project[] = [
   {
     name: "parflow engineering",
     href: "/projects/parflow-engineering",
+    internal: true,
     category: "Case study",
     status: "live",
   },
@@ -25,7 +37,7 @@ const PROJECTS = [
     category: "Interface",
     status: "soon",
   },
-] as const;
+];
 
 export default function ProjectsPage() {
   return (
@@ -55,11 +67,22 @@ export default function ProjectsPage() {
               <div className="library-name">
                 <LineRise delay={i * 0.08}>
                   <h3>
-                    {"href" in project ? (
-                      <Link href={project.href}>
-                        {project.name}
-                        <span aria-hidden="true"> →</span>
-                      </Link>
+                    {project.href ? (
+                      project.internal ? (
+                        <Link href={project.href}>
+                          {project.name}
+                          <span aria-hidden="true"> →</span>
+                        </Link>
+                      ) : (
+                        <a
+                          href={project.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {project.name}
+                          <span aria-hidden="true"> ↗</span>
+                        </a>
+                      )
                     ) : (
                       <>
                         {project.name}

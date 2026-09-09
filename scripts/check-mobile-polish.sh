@@ -33,6 +33,16 @@ if (document.querySelector('.atv-scope').offsetHeight <= Number(sessionStorage.g
   throw new Error('Mobile TV sequence must be shorter than desktop');
 JS
 printf 'PASS: mobile navigation, overflow, team alignment, and TV pacing\n'
+agent-browser errors --json | node -e '
+let input = "";
+process.stdin.on("data", chunk => input += chunk);
+process.stdin.on("end", () => {
+  const result = JSON.parse(input);
+  if (!result.success || result.data.errors.length) {
+    console.error(result.data?.errors || result.error);
+    process.exitCode = 1;
+  }
+});'
 agent-browser eval 'document.documentElement.style.scrollBehavior = "auto"'
 agent-browser scrollintoview '.atv-control'
 agent-browser wait --text 'Pause animation'
@@ -83,3 +93,14 @@ if (!document.querySelector('.atv-control').disabled || document.querySelector('
   throw new Error('Unavailable TV must disable playback and collapse its scroll scope');
 JS
 printf 'PASS: static initial state and WebGL fallback\n'
+agent-browser close
+agent-browser open about:blank
+agent-browser network route '**/hero-footage.mp4' --abort
+agent-browser open "$url"
+agent-browser wait '.hih-halftone[data-ready="true"]'
+agent-browser wait '.atv-status'
+agent-browser eval --stdin <<'JS'
+if (!document.querySelector('.atv-control').disabled || document.querySelector('.atv-scope').offsetHeight > innerHeight)
+  throw new Error('Blocked video must show a compact, non-interactive fallback');
+JS
+printf 'PASS: blocked video fallback\n'

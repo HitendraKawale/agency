@@ -588,7 +588,8 @@ export default function AsciiTvHero({
     motion.addEventListener("change", changeMotion);
     document.addEventListener("visibilitychange", syncPlayback);
     updateScroll();
-    if (!reducedMotion) video.play().catch(syncPlayback);
+    if (video.error) fail();
+    else if (!reducedMotion) video.play().catch(syncPlayback);
     else video.load();
 
     return () => {

@@ -14,9 +14,9 @@
  * BLANK, aryank.space
  */
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
-const INTERACTIVE = "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+const INTERACTIVE = "(min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 const canInteract = () => window.matchMedia(INTERACTIVE).matches;
 const serverInteraction = () => false;
 function subscribeInteraction(notify: () => void) {
@@ -672,6 +672,11 @@ function formatTime(timeZone: string) {
   }
 }
 
+function subscribeClock(notify: () => void) {
+  const timer = window.setInterval(notify, 30_000);
+  return () => window.clearInterval(timer);
+}
+
 export default function HalftoneInterfaceHero({
   headline = DEFAULT_HEADLINE,
   navigation = DEFAULT_NAVIGATION,
@@ -685,16 +690,11 @@ export default function HalftoneInterfaceHero({
   accentColors = DEFAULT_ACCENTS,
   className = "",
 }: HalftoneInterfaceHeroProps) {
-  const [clock, setClock] = useState(() => formatTime(timeZone));
-
-  useEffect(() => {
-    setClock(formatTime(timeZone));
-    const timer = window.setInterval(
-      () => setClock(formatTime(timeZone)),
-      30_000,
-    );
-    return () => window.clearInterval(timer);
-  }, [timeZone]);
+  const clock = useSyncExternalStore(
+    subscribeClock,
+    () => formatTime(timeZone),
+    () => "",
+  );
 
   return (
     <section
