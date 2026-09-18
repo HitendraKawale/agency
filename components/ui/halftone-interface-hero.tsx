@@ -1,29 +1,8 @@
 "use client";
 
-/**
- * Halftone Interface Hero
- *
- * A full-screen identity field with a WebGL halftone wordmark and a separate
- * RGB particle trail. The shader treats the wordmark as a height map: ordered
- * dithering, directional lighting, cursor-steered normals, and offset color
- * samples give each grid cell its dimensional, chromatic response.
- *
- * The wordmark texture is generated at runtime, so the component has no image,
- * font, or animation-library dependency.
- *
- * BLANK, aryank.space
- */
-
-import { useEffect, useRef, useSyncExternalStore } from "react";
-
-const INTERACTIVE = "(min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
-const canInteract = () => window.matchMedia(INTERACTIVE).matches;
-const serverInteraction = () => false;
-function subscribeInteraction(notify: () => void) {
-  const media = window.matchMedia(INTERACTIVE);
-  media.addEventListener("change", notify);
-  return () => media.removeEventListener("change", notify);
-}
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 export interface HalftoneHeroLink {
   label: string;
@@ -40,904 +19,264 @@ export interface HalftoneInterfaceHeroProps {
   timeZone?: string;
   background?: string;
   foreground?: string;
-  accentColors?: [string, string, string];
   className?: string;
 }
 
-type TrailParticle = {
-  x: number;
-  y: number;
-  velocityX: number;
-  velocityY: number;
-  life: number;
-  size: number;
-};
-
-const DEFAULT_NAVIGATION: HalftoneHeroLink[] = [
-  { label: "events", href: "#events" },
-  { label: "interfaces", href: "#interfaces" },
-  { label: "people", href: "#people" },
-  { label: "about", href: "#about" },
+const BUTTON_CLASS = "flex items-center gap-2 rounded-md bg-[var(--button-bg)] p-2 text-sm font-light leading-snug text-[var(--fg)] backdrop-blur-md transition-colors duration-300 ease-out";
+const KBD_CLASS = "font-mono text-[11px] font-normal leading-none opacity-60";
+const CONTACT_EMAIL = "hello@aryank.space";
+const DEFAULT_NAVIGATION = [
+  { label: "projects", href: "/projects" },
+];
+const SEARCH_SECTIONS = [
+  { label: "Parflow Engineering", href: "/projects/parflow-engineering", detail: "Selected project" },
 ];
 
-const DEFAULT_UTILITY_LINKS: HalftoneHeroLink[] = [
-  { label: "follow", href: "#follow" },
-  { label: "subscribe", href: "#subscribe" },
-];
-
-const DEFAULT_HEADLINE: [string, string] = ["blank", "interfaces"];
-const DEFAULT_BRAND: [string, string] = ["blank", "interfaces"];
-const DEFAULT_ACCENTS: [string, string, string] = [
-  "#ff266c",
-  "#1cffaf",
-  "#5848ff",
-];
-
-const VERTEX_SHADER = `#version 300 es
-in vec2 position;
-
-void main() {
-  gl_Position = vec4(position, 0.0, 1.0);
-}
-`;
-
-const FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-
-out vec4 color;
-
-uniform vec2 resolution;
-uniform vec2 pointer;
-uniform float hover;
-uniform float pixelRatio;
-uniform sampler2D wordmark;
-uniform float wordmarkAspect;
-uniform vec3 inkColor;
-uniform float compact;
-
-vec2 fittedWordmarkSize() {
-  float horizontalFill = mix(0.82, 0.92, compact);
-  float verticalFill = mix(0.66, 0.58, compact);
-  float fittedWidth = min(
-    resolution.x * horizontalFill,
-    resolution.y * verticalFill * wordmarkAspect
-  );
-  return vec2(fittedWidth, fittedWidth / wordmarkAspect);
+function contact() {
+  window.location.href = `mailto:${CONTACT_EMAIL}`;
 }
 
-float sampleWordmark(vec2 pixel) {
-  vec2 center = vec2(resolution.x * 0.5, resolution.y * 0.47);
-  vec2 uv = (pixel - center) / fittedWordmarkSize() + 0.5;
-  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-    return 0.0;
-  }
-  vec4 sampleColor = texture(wordmark, uv);
-  return sampleColor.a * max(max(sampleColor.r, sampleColor.g), sampleColor.b);
+function subscribeMotion(callback: () => void) {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
 }
 
-float orderedDither(ivec2 cell) {
-  int x = cell.x & 3;
-  int y = cell.y & 3;
-  int index = y * 4 + x;
-  float matrix[16] = float[16](
-    0.0, 8.0, 2.0, 10.0,
-    12.0, 4.0, 14.0, 6.0,
-    3.0, 11.0, 1.0, 9.0,
-    15.0, 7.0, 13.0, 5.0
-  );
-  return (matrix[index] + 0.5) / 16.0;
-}
-
-void main() {
-  vec2 pixel = gl_FragCoord.xy;
-  float pointerDistance = distance(pixel, pointer);
-
-  float lightRadius = max(resolution.x, resolution.y) * mix(0.50, 0.26, compact);
-  float proximity = 1.0 - smoothstep(0.0, lightRadius, pointerDistance);
-  proximity = pow(proximity, mix(0.55, 0.85, compact));
-  float idleRelief = mix(0.55, 0.18, compact);
-  float relief = proximity * (idleRelief + 0.65 * hover);
-
-  float colorRadius = min(resolution.x, resolution.y) * mix(0.22, 0.14, compact);
-  float colorInfluence = (1.0 - smoothstep(0.0, colorRadius, pointerDistance)) * hover;
-
-  float cellSize = mix(10.0, 3.75, compact) * pixelRatio;
-  vec2 cellIndex = floor(pixel / cellSize);
-  vec2 cellCenter = (cellIndex + 0.5) * cellSize;
-
-  vec2 radialDirection = normalize(pixel - pointer + vec2(0.0001));
-  float colorOffset = colorInfluence * mix(11.0, 5.0, compact) * pixelRatio;
-
-  float centerHeight = sampleWordmark(cellCenter);
-  float warmHeight = sampleWordmark(cellCenter + radialDirection * colorOffset);
-  float coolHeight = sampleWordmark(cellCenter - radialDirection * colorOffset);
-  float heightX = sampleWordmark(cellCenter + vec2(cellSize, 0.0));
-  float heightY = sampleWordmark(cellCenter + vec2(0.0, cellSize));
-
-  float raisedHeight = centerHeight * relief;
-  vec3 surfaceNormal = normalize(vec3(
-    centerHeight - heightX,
-    centerHeight - heightY,
-    0.55 - raisedHeight * 0.45
-  ));
-
-  vec3 restingLight = normalize(vec3(-0.35, 0.4, 0.85));
-  vec3 cursorLight = normalize(vec3(normalize(pointer - cellCenter + vec2(0.0001)), 0.8));
-  vec3 lightDirection = normalize(mix(restingLight, cursorLight, relief));
-  float diffuse = max(dot(surfaceNormal, lightDirection), 0.0);
-  float highlight = pow(diffuse, 18.0) * relief;
-  float lighting = clamp(0.45 + 0.65 * diffuse + highlight, 0.0, 1.4);
-
-  float threshold = orderedDither(ivec2(cellIndex));
-  float binaryTone = step(threshold, lighting);
-  float tone = mix(
-    lighting,
-    binaryTone * (0.55 + 0.45 * lighting),
-    mix(0.5, 0.1, compact)
-  );
-
-  // A circle larger than half a grid cell is clipped by that cell. The result
-  // is the rounded-square tile visible in the reference rather than a circle.
-  float distanceFromCellCenter = distance(pixel, cellCenter);
-  float antialias = 1.2 * pixelRatio;
-  float warmRadius = sqrt(warmHeight) * cellSize * mix(0.64, 0.72, compact);
-  float centerRadius = sqrt(centerHeight) * cellSize * mix(0.64, 0.72, compact);
-  float coolRadius = sqrt(coolHeight) * cellSize * mix(0.64, 0.72, compact);
-
-  float warmInk = 1.0 - smoothstep(
-    warmRadius - antialias,
-    warmRadius + antialias,
-    distanceFromCellCenter
-  );
-  float centerInk = 1.0 - smoothstep(
-    centerRadius - antialias,
-    centerRadius + antialias,
-    distanceFromCellCenter
-  );
-  float coolInk = 1.0 - smoothstep(
-    coolRadius - antialias,
-    coolRadius + antialias,
-    distanceFromCellCenter
-  );
-
-  float coverage = max(centerHeight, max(warmHeight, coolHeight));
-  float coverageGate = smoothstep(0.015, 0.12, coverage);
-  vec3 channels = vec3(warmInk, centerInk, coolInk) * tone;
-
-  vec3 finalInk = inkColor * channels.g;
-  vec3 fringe = (channels - vec3(channels.g)) * colorInfluence * 2.2;
-  fringe = vec3(
-    fringe.r + fringe.g * 0.04 + fringe.b * 0.09,
-    fringe.r * 0.02 + fringe.g + fringe.b * 0.05,
-    fringe.r * 0.07 + fringe.g * 0.03 + fringe.b
-  );
-  finalInk = clamp(finalInk + fringe, 0.0, 1.0);
-
-  float alpha = max(max(channels.r, channels.g), channels.b) * coverageGate;
-  color = vec4(finalInk, clamp(alpha, 0.0, 1.0));
-}
-`;
-
-function hexToRgb(color: string): [number, number, number] {
-  const value = color.trim().replace(/^#/, "");
-  const expanded =
-    value.length === 3
-      ? value
-          .split("")
-          .map((character) => character + character)
-          .join("")
-      : value;
-  if (!/^[\da-f]{6}$/i.test(expanded)) return [1, 1, 1];
-  return [
-    Number.parseInt(expanded.slice(0, 2), 16) / 255,
-    Number.parseInt(expanded.slice(2, 4), 16) / 255,
-    Number.parseInt(expanded.slice(4, 6), 16) / 255,
-  ];
-}
-
-function createWordmarkTexture(headline: [string, string]) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1912;
-  canvas.height = 758;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return canvas;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#fff";
-  ctx.textBaseline = "alphabetic";
-  ctx.fontKerning = "normal";
-
-  const drawFittedLine = (
-    text: string,
-    x: number,
-    baseline: number,
-    targetWidth: number,
-    fontSize: number,
-    weight: number,
-  ) => {
-    ctx.save();
-    ctx.font = `${weight} ${fontSize}px Helvetica Neue, Helvetica, Arial, sans-serif`;
-    const measuredWidth = Math.max(1, ctx.measureText(text).width);
-    ctx.translate(x, 0);
-    ctx.scale(targetWidth / measuredWidth, 1);
-    ctx.fillText(text, 0, baseline);
-    ctx.restore();
-  };
-
-  drawFittedLine(headline[0], 15, 306, 960, 383, 500);
-  drawFittedLine(headline[1], 20, 690, 1870, 504, 400);
-  return canvas;
-}
-
-function compileShader(
-  gl: WebGL2RenderingContext,
-  kind: number,
-  source: string,
-) {
-  const shader = gl.createShader(kind);
-  if (!shader) return null;
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error(gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
-    return null;
-  }
-  return shader;
-}
-
-function HalftoneCanvas({
-  headline,
-  foreground,
-}: {
-  headline: [string, string];
-  foreground: string;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const interactive = useSyncExternalStore(subscribeInteraction, canInteract, serverInteraction);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const parent = canvas?.parentElement;
-    if (!canvas || !parent) return;
-
-    const gl = canvas.getContext("webgl2", {
-      alpha: true,
-      antialias: true,
-      premultipliedAlpha: false,
-    });
-    if (!gl) return;
-
-    const vertexShader = compileShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
-    const fragmentShader = compileShader(
-      gl,
-      gl.FRAGMENT_SHADER,
-      FRAGMENT_SHADER,
-    );
-    if (!vertexShader || !fragmentShader) return;
-
-    const program = gl.createProgram();
-    if (!program) return;
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error(gl.getProgramInfoLog(program));
-      return;
-    }
-    // biome-ignore lint/correctness/useHookAtTopLevel: WebGL API method, not a React Hook.
-    gl.useProgram(program);
-
-    const triangle = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangle);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 3, -1, -1, 3]),
-      gl.STATIC_DRAW,
-    );
-    const position = gl.getAttribLocation(program, "position");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-
-    const uniforms = {
-      resolution: gl.getUniformLocation(program, "resolution"),
-      pointer: gl.getUniformLocation(program, "pointer"),
-      hover: gl.getUniformLocation(program, "hover"),
-      pixelRatio: gl.getUniformLocation(program, "pixelRatio"),
-      wordmark: gl.getUniformLocation(program, "wordmark"),
-      wordmarkAspect: gl.getUniformLocation(program, "wordmarkAspect"),
-      inkColor: gl.getUniformLocation(program, "inkColor"),
-      compact: gl.getUniformLocation(program, "compact"),
-    };
-
-    const textureSource = createWordmarkTexture(headline);
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      textureSource,
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-    const inkColor = hexToRgb(foreground);
-    const pointer = {
-      currentX: 0,
-      currentY: 0,
-      targetX: 0,
-      targetY: 0,
-      hover: 0,
-      targetHover: 0,
-    };
-    let ratio = 1;
-    let compact = 0;
-    let frame = 0;
-    let running = false;
-
-    const requestDraw = () => {
-      if (running) return;
-      running = true;
-      frame = window.requestAnimationFrame(draw);
-    };
-
-    const resize = () => {
-      const width = parent.clientWidth;
-      const height = parent.clientHeight;
-      if (!width || !height) return;
-      compact = Number(width < 768);
-      ratio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(width * ratio);
-      canvas.height = Math.floor(height * ratio);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      if (pointer.currentX === 0 && pointer.currentY === 0) {
-        pointer.currentX = canvas.width / 2;
-        pointer.currentY = canvas.height / 2;
-        pointer.targetX = pointer.currentX;
-        pointer.targetY = pointer.currentY;
-      }
-      requestDraw();
-    };
-
-    const onPointerMove = (event: PointerEvent) => {
-      if (compact || !interactive) return;
-      const rect = parent.getBoundingClientRect();
-      pointer.targetX = (event.clientX - rect.left) * ratio;
-      pointer.targetY = (rect.height - (event.clientY - rect.top)) * ratio;
-      pointer.targetHover = 1;
-      requestDraw();
-    };
-
-    const onPointerLeave = () => {
-      pointer.targetHover = 0;
-      requestDraw();
-    };
-
-    const renderContext: WebGL2RenderingContext = gl;
-    const renderCanvas: HTMLCanvasElement = canvas;
-
-    function draw() {
-      pointer.currentX += (pointer.targetX - pointer.currentX) * 0.18;
-      pointer.currentY += (pointer.targetY - pointer.currentY) * 0.18;
-      pointer.hover += (pointer.targetHover - pointer.hover) * 0.08;
-
-      renderContext.uniform2f(
-        uniforms.resolution,
-        renderCanvas.width,
-        renderCanvas.height,
-      );
-      renderContext.uniform2f(
-        uniforms.pointer,
-        pointer.currentX,
-        pointer.currentY,
-      );
-      renderContext.uniform1f(uniforms.hover, pointer.hover);
-      renderContext.uniform1f(uniforms.pixelRatio, ratio);
-      renderContext.uniform1i(uniforms.wordmark, 0);
-      renderContext.uniform1f(
-        uniforms.wordmarkAspect,
-        textureSource.width / textureSource.height,
-      );
-      renderContext.uniform3fv(uniforms.inkColor, inkColor);
-      renderContext.uniform1f(uniforms.compact, compact);
-      renderContext.clearColor(0, 0, 0, 0);
-      renderContext.clear(renderContext.COLOR_BUFFER_BIT);
-      renderContext.activeTexture(renderContext.TEXTURE0);
-      renderContext.bindTexture(renderContext.TEXTURE_2D, texture);
-      renderContext.drawArrays(renderContext.TRIANGLES, 0, 3);
-      renderCanvas.dataset.ready = "true";
-
-      const settled =
-        Math.abs(pointer.targetX - pointer.currentX) < 0.25 &&
-        Math.abs(pointer.targetY - pointer.currentY) < 0.25 &&
-        Math.abs(pointer.targetHover - pointer.hover) < 0.0015;
-      if (settled) {
-        pointer.currentX = pointer.targetX;
-        pointer.currentY = pointer.targetY;
-        pointer.hover = pointer.targetHover;
-        running = false;
-        frame = 0;
-        return;
-      }
-      frame = window.requestAnimationFrame(draw);
-    }
-
-    resize();
-    const observer = new ResizeObserver(resize);
-    observer.observe(parent);
-    window.addEventListener("resize", resize);
-    if (interactive) {
-      parent.addEventListener("pointermove", onPointerMove, { passive: true });
-      parent.addEventListener("pointerleave", onPointerLeave);
-    }
-    const onContextLost = () => {
-      delete canvas.dataset.ready;
-      window.cancelAnimationFrame(frame);
-      running = false;
-    };
-    canvas.addEventListener("webglcontextlost", onContextLost);
-
-    return () => {
-      delete canvas.dataset.ready;
-      canvas.removeEventListener("webglcontextlost", onContextLost);
-      window.cancelAnimationFrame(frame);
-      observer.disconnect();
-      window.removeEventListener("resize", resize);
-      parent.removeEventListener("pointermove", onPointerMove);
-      parent.removeEventListener("pointerleave", onPointerLeave);
-      gl.deleteProgram(program);
-      gl.deleteShader(vertexShader);
-      gl.deleteShader(fragmentShader);
-      gl.deleteBuffer(triangle);
-      gl.deleteTexture(texture);
-    };
-  }, [foreground, headline, interactive]);
-
-  return <canvas ref={canvasRef} className="hih-halftone" aria-hidden="true" />;
-}
-
-function PointerTrail({
-  accentColors,
-}: {
-  accentColors: [string, string, string];
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const interactive = useSyncExternalStore(subscribeInteraction, canInteract, serverInteraction);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const parent = canvas?.parentElement;
-    if (!canvas || !parent) return;
-
-    if (!interactive) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    canvas.dataset.active = "true";
-
-    let ratio = Math.min(window.devicePixelRatio || 1, 2);
-    const particles: TrailParticle[] = [];
-    let pointerX = window.innerWidth / 2;
-    let pointerY = window.innerHeight / 2;
-    let previousX = pointerX;
-    let previousY = pointerY;
-    let pointerVisible = false;
-    let frame = 0;
-    let running = false;
-
-    const resize = () => {
-      const width = parent.clientWidth;
-      const height = parent.clientHeight;
-      if (!width || !height) return;
-      ratio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(width * ratio);
-      canvas.height = Math.floor(height * ratio);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-    };
-
-    const requestDraw = () => {
-      if (running) return;
-      running = true;
-      frame = window.requestAnimationFrame(draw);
-    };
-
-    const onPointerMove = (event: PointerEvent) => {
-      const rect = parent.getBoundingClientRect();
-      pointerX = event.clientX - rect.left;
-      pointerY = event.clientY - rect.top;
-      pointerVisible = true;
-
-      const deltaX = pointerX - previousX;
-      const deltaY = pointerY - previousY;
-      const count =
-        1 + Math.floor(Math.min(Math.hypot(deltaX, deltaY), 60) / 12);
-      for (let index = 0; index < count; index += 1) {
-        particles.push({
-          x: pointerX + (Math.random() - 0.5) * 4,
-          y: pointerY + (Math.random() - 0.5) * 4,
-          velocityX: -deltaX * 0.04 + (Math.random() - 0.5) * 0.6,
-          velocityY: -deltaY * 0.04 + (Math.random() - 0.5) * 0.6,
-          life: 1,
-          size: 3 + Math.random() * 3,
-        });
-      }
-      previousX = pointerX;
-      previousY = pointerY;
-      requestDraw();
-    };
-
-    const onPointerLeave = () => {
-      pointerVisible = false;
-      requestDraw();
-    };
-
-    const snap = (value: number) => Math.round(value / 3) * 3;
-    const drawingContext: CanvasRenderingContext2D = ctx;
-    const drawingCanvas: HTMLCanvasElement = canvas;
-
-    function draw() {
-      drawingContext.setTransform(ratio, 0, 0, ratio, 0, 0);
-      drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      drawingContext.globalCompositeOperation = "lighter";
-
-      for (let index = particles.length - 1; index >= 0; index -= 1) {
-        const particle = particles[index];
-        particle.x += particle.velocityX;
-        particle.y += particle.velocityY;
-        particle.velocityX *= 0.92;
-        particle.velocityY *= 0.92;
-        particle.life -= 0.03;
-        if (particle.life <= 0) {
-          particles.splice(index, 1);
-          continue;
-        }
-
-        const alpha = particle.life * 0.55;
-        const separation = (1 - particle.life) * 5 + 1.5;
-        const size = particle.size * particle.life;
-        const x = snap(particle.x);
-        const y = snap(particle.y);
-        drawingContext.globalAlpha = alpha;
-        drawingContext.fillStyle = accentColors[0];
-        drawingContext.fillRect(x - separation, y, size, size);
-        drawingContext.fillStyle = accentColors[1];
-        drawingContext.fillRect(x, y, size, size);
-        drawingContext.fillStyle = accentColors[2];
-        drawingContext.fillRect(x + separation, y, size, size);
-      }
-
-      if (pointerVisible) {
-        const x = snap(pointerX);
-        const y = snap(pointerY);
-        drawingContext.globalAlpha = 0.9;
-        drawingContext.fillStyle = accentColors[0];
-        drawingContext.fillRect(x - 2, y - 3, 6, 6);
-        drawingContext.fillStyle = accentColors[1];
-        drawingContext.fillRect(x, y - 3, 6, 6);
-        drawingContext.fillStyle = accentColors[2];
-        drawingContext.fillRect(x + 2, y - 3, 6, 6);
-      }
-
-      drawingContext.globalAlpha = 1;
-      drawingContext.globalCompositeOperation = "source-over";
-      if (particles.length === 0 && !pointerVisible) {
-        running = false;
-        frame = 0;
-        return;
-      }
-      frame = window.requestAnimationFrame(draw);
-    }
-
-    resize();
-    const observer = new ResizeObserver(resize);
-    observer.observe(parent);
-    window.addEventListener("resize", resize);
-    parent.addEventListener("pointermove", onPointerMove, { passive: true });
-    parent.addEventListener("pointerleave", onPointerLeave);
-
-    return () => {
-      delete canvas.dataset.active;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      window.cancelAnimationFrame(frame);
-      observer.disconnect();
-      window.removeEventListener("resize", resize);
-      parent.removeEventListener("pointermove", onPointerMove);
-      parent.removeEventListener("pointerleave", onPointerLeave);
-    };
-  }, [accentColors, interactive]);
-
-  return <canvas ref={canvasRef} className="hih-trail" aria-hidden="true" />;
-}
-
-function formatTime(timeZone: string) {
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-      .format(new Date())
-      .toLowerCase();
-  } catch {
-    return "time unavailable";
-  }
-}
-
-function subscribeClock(notify: () => void) {
-  const timer = window.setInterval(notify, 30_000);
-  return () => window.clearInterval(timer);
-}
-
+/** The source animation owns its document, so its timers cannot survive a hero unmount. */
 export default function HalftoneInterfaceHero({
-  headline = DEFAULT_HEADLINE,
   navigation = DEFAULT_NAVIGATION,
-  utilityLinks = DEFAULT_UTILITY_LINKS,
-  brand = DEFAULT_BRAND,
-  footerLabel = "© 2026 BLANK interfaces",
-  locationLabel = "nyc",
-  timeZone = "America/New_York",
-  background = "#121212",
-  foreground = "#f3f3f1",
-  accentColors = DEFAULT_ACCENTS,
+  utilityLinks = [],
+  background = "#f8f8f5",
+  foreground = "#111111",
   className = "",
 }: HalftoneInterfaceHeroProps) {
-  const clock = useSyncExternalStore(
-    subscribeClock,
-    () => formatTime(timeZone),
-    () => "",
+  const router = useRouter();
+  // Retain the contents while the native dialog finishes its closing transition.
+  const [{ panel, isOpen }, setDialog] = useState<{
+    panel: "menu" | "search" | null;
+    isOpen: boolean;
+  }>({ panel: null, isOpen: false });
+  const [query, setQuery] = useState("");
+  const [activeResult, setActiveResult] = useState(0);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const reducedMotion = useSyncExternalStore(
+    subscribeMotion,
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => true,
   );
+  const entries = [
+    ...navigation.map((link) => ({ ...link, detail: "" })),
+    ...SEARCH_SECTIONS,
+  ];
+  const results = entries.filter((entry) =>
+    `${entry.label} ${entry.detail} ${entry.href}`.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+  const selectedIndex = Math.min(activeResult, Math.max(0, results.length - 1));
+
+  function openSearch() {
+    setQuery("");
+    setActiveResult(0);
+    setDialog({ panel: "search", isOpen: true });
+  }
+
+  function closePanel() {
+    setDialog((dialog) => ({ ...dialog, isOpen: false }));
+  }
+
+  function visit(href: string) {
+    closePanel();
+    router.push(href);
+  }
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isOpen) {
+      if (!dialog.open) dialog.showModal();
+      if (panel === "search") inputRef.current?.focus();
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [panel, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isOpen]);
+
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      const key = event.key.toLowerCase();
+      if ((event.metaKey || event.ctrlKey) && key === "k") {
+        event.preventDefault();
+        setQuery("");
+        setActiveResult(0);
+        setDialog((dialog) => ({ panel: "search", isOpen: !(dialog.panel === "search" && dialog.isOpen) }));
+        return;
+      }
+      const target = event.target;
+      if (event.metaKey || event.ctrlKey || event.altKey ||
+        target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable=true]")) return;
+      if (key === "m") {
+        event.preventDefault();
+        setDialog((dialog) => ({ panel: "menu", isOpen: !(dialog.panel === "menu" && dialog.isOpen) }));
+      } else if (key === "k") {
+        event.preventDefault();
+        setQuery("");
+        setActiveResult(0);
+        setDialog((dialog) => ({ panel: "search", isOpen: !(dialog.panel === "search" && dialog.isOpen) }));
+      } else if (key === "c") {
+        event.preventDefault();
+        contact();
+      } else if (key === "escape") {
+        setDialog((dialog) => ({ ...dialog, isOpen: false }));
+      }
+    }
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
 
   return (
-    <section
-      className={`hih-root ${className}`}
-      style={{ background, color: foreground }}
-    >
+    <section className={`hih-root ${className}`} style={{ background, color: foreground }} aria-label="Blank Interfaces">
       <style>{styles}</style>
-
-      <div className="hih-field">
-        <HalftoneCanvas headline={headline} foreground={foreground} />
-        <PointerTrail accentColors={accentColors} />
-      </div>
-
       <header className="hih-header">
-        <a className="hih-brand" href="#top" aria-label={brand.join(" ")} />
-
-        <nav className="hih-navigation" aria-label="Primary navigation">
-          {navigation.map((link) => (
-            <a href={link.href} key={`${link.label}-${link.href}`}>
-              {link.label}
-            </a>
-          ))}
-        </nav>
-
-        <nav className="hih-utilities" aria-label="Utility navigation">
-          {utilityLinks.map((link) => (
-            <a href={link.href} key={`${link.label}-${link.href}`}>
-              {link.label}
-            </a>
-          ))}
-        </nav>
+        <h1 className="hih-wordmark">
+          <a href="#top" aria-label="Blank Interfaces home">
+            <Image src="/blank-interfaces-lockup.svg" alt="Blank Interfaces" width={1045} height={575} preload />
+          </a>
+        </h1>
+        <button type="button" className={`${BUTTON_CLASS} hih-menu-trigger`} aria-label="Open menu" aria-expanded={panel === "menu" && isOpen} aria-controls="hero-dialog" aria-keyshortcuts="M" onClick={() => setDialog({ panel: "menu", isOpen: true })}>
+          <span>Menu</span><kbd className={KBD_CLASS}>M</kbd>
+        </button>
       </header>
 
-      <h1 className="hih-heading"><span>{headline[0]}</span><span>{headline[1]}</span></h1>
+      <div className="hih-animation">
+        {reducedMotion ? (
+          <p className="hih-static">Context is not stored in a single location. It emerges from interactions between many tokens.</p>
+        ) : (
+          <iframe src="/animations/self-attention/index.html" title="Token generation and attention visualization" className="hih-animation-frame" />
+        )}
+      </div>
+      <p className="hih-caption">Autoregressive generation predicts token fragments, with attention links showing context behind each choice.</p>
+      <div className="hih-find">
+        <button type="button" className={BUTTON_CLASS} aria-label="Find on this site" aria-haspopup="dialog" aria-controls="hero-dialog" aria-keyshortcuts="K Meta+K Control+K" onClick={openSearch}>
+          <span>Find</span><kbd className={`${KBD_CLASS} inline-flex items-center gap-1`}><span>⌘</span><span>K</span></kbd>
+        </button>
+      </div>
 
-      <footer className="hih-footer">
-        <p>{footerLabel}</p>
-        <p className="hih-clock">
-          {locationLabel} {clock}
-        </p>
-      </footer>
+      <dialog id="hero-dialog" ref={dialogRef} className={`hih-dialog hih-dialog--${panel ?? "closed"}`} aria-label={panel === "menu" ? "Site menu" : "Find on this site"} onClose={closePanel} onCancel={(event) => { event.preventDefault(); closePanel(); }} onClick={(event) => { if (event.target === event.currentTarget) closePanel(); }}>
+        {panel === "menu" ? (
+          <div className="hih-menu-panel">
+            <a className="hih-menu-logo" href="#top" onClick={closePanel} aria-label="Blank Interfaces home">
+              <Image src="/blank-interfaces-lockup.svg" alt="Blank Interfaces" width={1045} height={575} />
+            </a>
+            <button type="button" className={`${BUTTON_CLASS} hih-menu-close`} onClick={closePanel} aria-label="Close menu"><span>Close</span><kbd className={KBD_CLASS}>esc</kbd></button>
+            <nav className="hih-menu-links" aria-label="Main navigation">
+              {navigation.map((link) => <a href={link.href} key={link.href} onClick={(event) => { event.preventDefault(); visit(link.href); }}>{link.label}</a>)}
+              {utilityLinks.map((link) => <a href={link.href} key={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a>)}
+              <button type="button" onClick={contact} aria-label={`Contact us at ${CONTACT_EMAIL}`} aria-keyshortcuts="C" className={BUTTON_CLASS}>
+                <span>Contact</span><kbd className={KBD_CLASS}>C</kbd>
+              </button>
+            </nav>
+          </div>
+        ) : panel === "search" ? (
+          <>
+            <div className="hih-search-panel">
+              <label htmlFor="hero-search" className="sr-only">Search Blank Interfaces</label>
+              <input ref={inputRef} id="hero-search" placeholder="blank/" value={query} role="combobox" aria-expanded="true" aria-controls="hero-results" aria-autocomplete="list" aria-activedescendant={results.length ? `hero-result-${selectedIndex}` : undefined} onChange={(event) => { setQuery(event.target.value); setActiveResult(0); }} onKeyDown={(event) => {
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                  event.preventDefault();
+                  setActiveResult((index) => results.length ? (index + (event.key === "ArrowDown" ? 1 : -1) + results.length) % results.length : 0);
+                } else if (event.key === "Enter" && results[selectedIndex]) {
+                  event.preventDefault();
+                  visit(results[selectedIndex].href);
+                }
+              }} />
+              <div id="hero-results" role="listbox" aria-label="Search results">
+                {results.map((entry, index) => <button type="button" role="option" id={`hero-result-${index}`} aria-selected={index === selectedIndex} tabIndex={-1} className="hih-search-result" key={entry.href} onMouseMove={() => setActiveResult(index)} onClick={() => visit(entry.href)}><span>{entry.label}</span><span>{entry.href}</span></button>)}
+                {!results.length && <p className="hih-no-results" role="status">No results for &quot;{query}&quot;.</p>}
+              </div>
+              <div className="hih-search-help"><span>↑ ↓ to select</span><span>enter to visit</span></div>
+            </div>
+            <div className="hih-search-close"><button type="button" className={BUTTON_CLASS} onClick={closePanel}><span>Close</span><kbd className={KBD_CLASS}>esc</kbd></button></div>
+          </>
+        ) : null}
+      </dialog>
     </section>
   );
 }
 
 const styles = `
 .hih-root {
+  --button-bg: rgba(0, 0, 0, .90);
+  --fg: #fff;
   position: relative;
   isolation: isolate;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: var(--font-rethink-sans), Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1;
-  letter-spacing: -0.035em;
+  font-family: var(--font-rethink-sans), Arial, sans-serif;
+  letter-spacing: 0;
 }
-
-.hih-field {
-  position: absolute;
-  inset: 0 0 5rem;
-  overflow: hidden;
+.hih-root button { cursor: pointer; }
+.hih-root button.bg-\\[var\\(--button-bg\\)\\]:hover { --button-bg: #333; }
+.hih-root :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.hih-header { position: absolute; inset: 0 0 auto; height: 108px; z-index: 2; }
+.hih-wordmark { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; width: 190px; }
+.hih-wordmark img, .hih-menu-logo img { display: block; width: 100%; height: auto; }
+.hih-menu-trigger, .hih-menu-close { position: absolute; top: 20px; right: 24px; }
+.hih-animation { position: absolute; inset: 108px 0 0; }
+.hih-animation-frame { display: block; width: 100%; height: 100%; border: 0; }
+.hih-static { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); width: min(640px, calc(100% - 48px)); font: 14px/1.7 ui-monospace, monospace; }
+.hih-caption { position: absolute; left: 24px; bottom: 64px; width: 290px; max-width: calc(100% - 48px); margin: 0; font: 11px/1.4 ui-monospace, monospace; }
+.hih-find { position: absolute; bottom: 24px; left: 50%; z-index: 2; transform: translateX(-50%); }
+.hih-dialog {
+  position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0; background: transparent; color: #111;
+  opacity: 0;
+  transition: opacity 300ms ease-out, display 300ms allow-discrete, overlay 300ms allow-discrete;
 }
-
-.hih-field:has(.hih-trail[data-active="true"]) {
-  cursor: none;
+.hih-dialog[open] { opacity: 1; }
+.hih-dialog::backdrop {
+  background: rgb(0 0 0 / 0); backdrop-filter: blur(0);
+  transition: background-color 300ms ease-out, backdrop-filter 300ms ease-out, display 300ms allow-discrete, overlay 300ms allow-discrete;
 }
-
-.hih-halftone,
-.hih-trail {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
+.hih-dialog[open]::backdrop { background: rgb(0 0 0 / .08); backdrop-filter: blur(8px); }
+.hih-dialog--search[open] { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: #e2e1d9; transform: translateY(-12px); transition: transform 300ms ease-out; }
+.hih-menu-logo { position: absolute; left: 24px; top: 20px; width: 100px; }
+.hih-menu-links { margin-left: 78%; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; padding-right: 70px; font-size: 18px; line-height: 1.25; }
+.hih-menu-links a { color: #111; text-decoration: none; white-space: nowrap; }
+.hih-menu-links a:hover { text-decoration: underline; text-underline-offset: .2em; }
+.hih-search-panel { width: min(626px, calc(100% - 32px)); max-height: calc(100dvh - 140px); overflow-y: auto; padding: 16px; border-radius: 12px; background: #fff; color: #111; font: 12px/1.5 ui-monospace, monospace; transform: translateY(12px); transition: transform 300ms ease-out; }
+.hih-dialog[open] .hih-menu-panel, .hih-dialog[open] .hih-search-panel { transform: translateY(0); }
+@starting-style {
+  .hih-dialog[open] { opacity: 0; }
+  .hih-dialog[open]::backdrop { background: rgb(0 0 0 / 0); backdrop-filter: blur(0); }
+  .hih-dialog[open] .hih-menu-panel { transform: translateY(-12px); }
+  .hih-dialog[open] .hih-search-panel { transform: translateY(12px); }
 }
-
-.hih-halftone {
-  z-index: 1;
-  touch-action: pan-y;
-}
-
-.hih-trail {
-  z-index: 10;
-  pointer-events: none;
-}
-
-.hih-header,
-.hih-footer {
-  position: absolute;
-  inset-inline: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-inline: clamp(1.25rem, 4vw, 4rem);
-}
-
-.hih-header {
-  top: 0;
-  min-height: 5.25rem;
-  padding-block: 1.5rem;
-}
-
-.hih-header a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: inherit;
-  text-decoration: none;
-  transition: color 180ms ease;
-}
-
-.hih-header a:hover {
-  color: var(--mint);
-}
-
-.hih-header a:focus-visible {
-  outline: 2px solid var(--mint);
-  outline-offset: 5px;
-}
-
-.hih-brand {
-  display: block;
-  width: 44px;
-  height: 44px;
-  flex: none;
-  background: url("/mark.webp") center / 2.1rem no-repeat;
-  /* the mark ships as a black box on transparent; invert it to read on the dark header */
-  filter: invert(1);
-}
-
-.hih-navigation {
-  position: absolute;
-  left: 50%;
-  display: flex;
-  gap: 2rem;
-  line-height: 1.55;
-  transform: translateX(-50%);
-}
-
-.hih-utilities {
-  display: flex;
-  gap: 1.25rem;
-  margin-left: auto;
-  line-height: 1.55;
-}
-
-.hih-footer {
-  bottom: 0;
-  align-items: flex-end;
-  gap: 0.5rem 1.5rem;
-  flex-wrap: wrap;
-  padding-block: 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
-  line-height: 1.55;
-}
-
-.hih-footer p {
-  margin: 0;
-}
-
-.hih-clock {
-  font-variant-numeric: tabular-nums;
-}
-
-.hih-heading {
-  position: absolute;
-  inset: 0 9% 5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin: 0;
-  font: 400 clamp(2.25rem, 10vw, 10rem) / 0.95 Helvetica, Arial, sans-serif;
-  letter-spacing: -0.055em;
-  pointer-events: none;
-}
-
-.hih-root:has(.hih-halftone[data-ready="true"]) .hih-heading {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
+.hih-search-panel input { width: 100%; padding: 4px 0 24px; border: 0; border-radius: 0; outline: none; background: transparent; color: inherit; font: inherit; }
+.hih-search-panel input::placeholder { color: #555; }
+.hih-search-result { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; padding: 8px; margin-inline: -8px; box-sizing: content-box; border: 0; border-radius: 4px; background: transparent; color: inherit; text-align: left; font: inherit; }
+.hih-search-result[aria-selected=true] { background: #f1f1ef; }
+.hih-search-result span:last-child { color: #666; font-size: 11px; overflow-wrap: anywhere; }
+.hih-search-help { display: flex; justify-content: space-between; padding-top: 40px; color: #666; font-size: 11px; }
+.hih-no-results { padding-block: 16px; }
+.hih-search-close { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); }
 @media (max-width: 767px) {
-  .hih-root {
-    font-size: 15px;
-  }
-
-  .hih-field {
-    bottom: 4rem;
-    cursor: auto;
-  }
-
-  .hih-header,
-  .hih-footer {
-    padding-inline: clamp(1.25rem, 4vw, 4rem);
-  }
-
-  .hih-header {
-    min-height: 4.5rem;
-    padding-block: 0.75rem;
-    flex-wrap: wrap;
-    gap: 0.25rem 0.75rem;
-  }
-
-  .hih-brand {
-    background-size: 1.7rem;
-  }
-
-  .hih-navigation {
-    position: static;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    transform: none;
-    margin-left: auto;
-  }
-
-  .hih-utilities {
-    display: none;
-  }
-
-  .hih-footer {
-    font-size: 0.8rem;
-    padding-block: 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
-  }
-
-  .hih-trail {
-    display: none;
-  }
+  .hih-caption { left: 50%; bottom: 72px; transform: translateX(-50%); width: 290px; text-align: center; font-size: 10px; }
+  .hih-menu-trigger, .hih-menu-close { right: 16px; }
+  .hih-wordmark { left: 16px; transform: none; width: 110px; }
+  .hih-menu-panel { min-height: 55svh; padding-top: 96px; }
+  .hih-menu-links { margin-left: 50%; padding-right: 0; }
+  .hih-menu-logo { left: 16px; width: 110px; }
+  .hih-search-panel { max-height: calc(100dvh - 160px); }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .hih-header a {
-    transition: none;
-  }
-
-  .hih-trail {
-    display: none;
-  }
+  .hih-root button, .hih-dialog, .hih-dialog::backdrop, .hih-menu-panel, .hih-search-panel { transition: none; }
 }
 `;
