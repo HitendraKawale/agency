@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Search } from "lucide-react";
 import { CommandButton } from "@/components/evil-buttons/command-button";
+import GrainGradientField from "@/components/ui/grain-gradient-field";
 
 export interface HalftoneHeroLink {
   label: string;
@@ -133,8 +134,26 @@ export default function HalftoneInterfaceHero({
   }, []);
 
   return (
-    <section className={`hih-root ${className}`} style={{ background, color: foreground }} aria-label="Blank Interfaces">
+    <section className={`hih-root ${className}`} style={{ backgroundColor: background, color: foreground }} aria-label="Blank Interfaces">
       <style>{styles}</style>
+      <div className="hih-field-layer" aria-hidden="true">
+        <GrainGradientField
+          className="hih-field"
+          baseColor={background}
+          shapeColor="#D1D2CB"
+          shapeSrc="/assets/grain-gradient/shape-wave.png"
+          fadeTop={0}
+          fadeBottom={0}
+          paused={reducedMotion}
+          config={{
+            shapeY: 0.76,
+            grainAmount: 0.18,
+            blurAmount: 0.11,
+            waveAmplitude: 0.52,
+            trailStrength: 0.55,
+          }}
+        />
+      </div>
       <header className="hih-header">
         <h1 className="hih-wordmark">
           <a href="#top" aria-label="Blank Interfaces home">
@@ -233,6 +252,16 @@ const styles = `
   font-family: "Search System Pro Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: 0;
 }
+.hih-field-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: .38;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0 36%, transparent 66% 100%);
+  mask-image: linear-gradient(to bottom, #000 0 36%, transparent 66% 100%);
+}
+.hih-field { width: 100%; height: 100%; }
 .hih-root button { cursor: pointer; }
 .hih-root button.bg-\\[var\\(--button-bg\\)\\]:hover { --button-bg: rgb(237 237 237 / .76); }
 .hih-root .hih-command-button {
@@ -262,10 +291,10 @@ const styles = `
 .hih-wordmark { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; width: 190px; }
 .hih-wordmark img, .hih-menu-logo img { display: block; width: 100%; height: auto; }
 .hih-menu-trigger, .hih-menu-close { position: absolute; top: 20px; right: 24px; }
-.hih-animation { position: absolute; inset: 108px 0 0; }
+.hih-animation { position: absolute; inset: 108px 0 0; z-index: 1; }
 .hih-animation-frame { display: block; width: 100%; height: 100%; border: 0; }
 .hih-static { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); width: min(640px, calc(100% - 48px)); font: 14px/1.7 "Search System Pro Mono", ui-monospace, monospace; }
-.hih-caption { position: absolute; left: 24px; bottom: 64px; width: 290px; max-width: calc(100% - 48px); margin: 0; font: 11px/1.4 "Search System Pro Mono", ui-monospace, monospace; }
+.hih-caption { position: absolute; left: 24px; bottom: 64px; z-index: 2; width: 290px; max-width: calc(100% - 48px); margin: 0; font: 11px/1.4 "Search System Pro Mono", ui-monospace, monospace; }
 .hih-find { position: absolute; bottom: 24px; left: 50%; z-index: 2; transform: translateX(-50%); }
 .hih-dialog {
   position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
@@ -362,6 +391,10 @@ const styles = `
 .hih-search-result[aria-selected=true] { background: rgb(17 17 17 / .07); }
 .hih-no-results { margin: 0; padding: 22px 13px; color: rgb(17 17 17 / .52); font: 500 13px/1.4 "Search System Pro Mono", ui-monospace, monospace; }
 @media (max-width: 767px) {
+  .hih-field-layer {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0 40%, transparent 70% 100%);
+    mask-image: linear-gradient(to bottom, #000 0 40%, transparent 70% 100%);
+  }
   .hih-caption { left: 50%; bottom: 72px; transform: translateX(-50%); width: 290px; text-align: center; font-size: 10px; }
   .hih-menu-trigger, .hih-menu-close { right: 16px; }
   .hih-wordmark { left: 16px; transform: none; width: 110px; }

@@ -19,7 +19,7 @@ const ot=`
     position: relative;
     width: 100%;
     height: 100%;
-    background-color: var(--sa-surface);
+    background-color: transparent;
     color: var(--sa-ink);
     overflow: hidden;
     font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
