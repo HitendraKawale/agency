@@ -48,7 +48,7 @@ function subscribeMotion(callback: () => void) {
 export default function HalftoneInterfaceHero({
   navigation = DEFAULT_NAVIGATION,
   utilityLinks = [],
-  background = "#FFFFFF",
+  background = "#ECECE8",
   foreground = "#111111",
   className = "",
 }: HalftoneInterfaceHeroProps) {
@@ -280,7 +280,7 @@ const styles = `
 }
 .hih-dialog[open]::backdrop { background: rgb(17 17 17 / .12); backdrop-filter: blur(14px) saturate(115%); }
 .hih-dialog--search[open] { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: #FFF; transform: translateY(-12px); transition: transform 300ms ease-out; }
+.hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: #ECECE8; transform: translateY(-12px); transition: transform 300ms ease-out; }
 .hih-menu-logo { position: absolute; left: 24px; top: 20px; width: 100px; }
 .hih-menu-links { margin-left: 78%; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; padding-right: 70px; font-size: 18px; line-height: 1.25; }
 .hih-menu-links a { color: #111; text-decoration: none; white-space: nowrap; }

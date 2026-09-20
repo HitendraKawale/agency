@@ -4,7 +4,7 @@ const ot=`
    hook. Secondary inks are the primary ink mixed toward transparent; knockout halos use
    the page surface so they mask correctly on either background. Green accent is constant. */
 :host {
-    --sa-surface: var(--color-surface-default, #ffffff);
+    --sa-surface: var(--color-surface-default, #ecece8);
     --sa-ink: var(--color-text-default, #000000);
     --sa-accent: #00ff41;
     --sa-ink-88: color-mix(in srgb, var(--sa-ink) 88%, transparent);
