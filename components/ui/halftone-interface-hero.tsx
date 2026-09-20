@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Search } from "lucide-react";
 import { CommandButton } from "@/components/evil-buttons/command-button";
 
 export interface HalftoneHeroLink {
@@ -28,9 +29,9 @@ const KBD_CLASS = "font-mono text-[11px] font-normal leading-none opacity-60";
 const CONTACT_EMAIL = "hello@aryank.space";
 const DEFAULT_NAVIGATION = [
   { label: "projects", href: "/projects" },
-];
-const SEARCH_SECTIONS = [
-  { label: "Parflow Engineering", href: "/projects/parflow-engineering", detail: "Selected project" },
+  { label: "about us", href: "/about" },
+  { label: "blog", href: "/blog" },
+  { label: "contact", href: `mailto:${CONTACT_EMAIL}` },
 ];
 
 function contact() {
@@ -66,10 +67,7 @@ export default function HalftoneInterfaceHero({
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     () => true,
   );
-  const entries = [
-    ...navigation.map((link) => ({ ...link, detail: "" })),
-    ...SEARCH_SECTIONS,
-  ];
+  const entries = navigation.map((link) => ({ ...link, detail: "" }));
   const results = entries.filter((entry) =>
     `${entry.label} ${entry.detail} ${entry.href}`.toLowerCase().includes(query.trim().toLowerCase()),
   );
@@ -87,6 +85,10 @@ export default function HalftoneInterfaceHero({
 
   function visit(href: string) {
     closePanel();
+    if (href.startsWith("mailto:")) {
+      window.location.assign(href);
+      return;
+    }
     router.push(href);
   }
 
@@ -190,16 +192,14 @@ export default function HalftoneInterfaceHero({
             <nav className="hih-menu-links" aria-label="Main navigation">
               {navigation.map((link) => <a href={link.href} key={link.href} onClick={(event) => { event.preventDefault(); visit(link.href); }}>{link.label}</a>)}
               {utilityLinks.map((link) => <a href={link.href} key={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a>)}
-              <button type="button" onClick={contact} aria-label={`Contact us at ${CONTACT_EMAIL}`} aria-keyshortcuts="C" className={BUTTON_CLASS}>
-                <span>Contact</span><kbd className={KBD_CLASS}>C</kbd>
-              </button>
             </nav>
           </div>
         ) : panel === "search" ? (
-          <>
-            <div className="hih-search-panel">
-              <label htmlFor="hero-search" className="sr-only">Search Blank Interfaces</label>
-              <input ref={inputRef} id="hero-search" placeholder="blank/" value={query} role="combobox" aria-expanded="true" aria-controls="hero-results" aria-autocomplete="list" aria-activedescendant={results.length ? `hero-result-${selectedIndex}` : undefined} onChange={(event) => { setQuery(event.target.value); setActiveResult(0); }} onKeyDown={(event) => {
+          <div className="hih-search-panel">
+            <label htmlFor="hero-search" className="sr-only">Search Blank Interfaces</label>
+            <div className="hih-search-field">
+              <Search aria-hidden="true" />
+              <input ref={inputRef} id="hero-search" placeholder="Search blank/" value={query} role="combobox" aria-expanded="true" aria-controls="hero-results" aria-autocomplete="list" aria-activedescendant={results.length ? `hero-result-${selectedIndex}` : undefined} onChange={(event) => { setQuery(event.target.value); setActiveResult(0); }} onKeyDown={(event) => {
                 if (event.key === "ArrowDown" || event.key === "ArrowUp") {
                   event.preventDefault();
                   setActiveResult((index) => results.length ? (index + (event.key === "ArrowDown" ? 1 : -1) + results.length) % results.length : 0);
@@ -208,14 +208,13 @@ export default function HalftoneInterfaceHero({
                   visit(results[selectedIndex].href);
                 }
               }} />
-              <div id="hero-results" role="listbox" aria-label="Search results">
-                {results.map((entry, index) => <button type="button" role="option" id={`hero-result-${index}`} aria-selected={index === selectedIndex} tabIndex={-1} className="hih-search-result" key={entry.href} onMouseMove={() => setActiveResult(index)} onClick={() => visit(entry.href)}><span>{entry.label}</span><span>{entry.href}</span></button>)}
-                {!results.length && <p className="hih-no-results" role="status">No results for &quot;{query}&quot;.</p>}
-              </div>
-              <div className="hih-search-help"><span>↑ ↓ to select</span><span>enter to visit</span></div>
+              <button type="button" className="hih-search-field-close" onClick={closePanel} aria-label="Close search"><kbd>esc</kbd></button>
             </div>
-            <div className="hih-search-close"><button type="button" className={BUTTON_CLASS} onClick={closePanel}><span>Close</span><kbd className={KBD_CLASS}>esc</kbd></button></div>
-          </>
+            <div id="hero-results" role="listbox" aria-label="Search results">
+              {results.map((entry, index) => <button type="button" role="option" id={`hero-result-${index}`} aria-selected={index === selectedIndex} tabIndex={-1} className="hih-search-result" key={entry.href} onMouseMove={() => setActiveResult(index)} onClick={() => visit(entry.href)}>{entry.label}</button>)}
+              {!results.length && <p className="hih-no-results" role="status">No results for &quot;{query}&quot;.</p>}
+            </div>
+          </div>
         ) : null}
       </dialog>
     </section>
@@ -272,36 +271,96 @@ const styles = `
   position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
   margin: 0; padding: 0; border: 0; background: transparent; color: #111;
   opacity: 0;
-  transition: opacity 300ms ease-out, display 300ms allow-discrete, overlay 300ms allow-discrete;
+  transition: opacity 240ms ease-out;
 }
 .hih-dialog[open] { opacity: 1; }
 .hih-dialog::backdrop {
   background: rgb(0 0 0 / 0); backdrop-filter: blur(0);
-  transition: background-color 300ms ease-out, backdrop-filter 300ms ease-out, display 300ms allow-discrete, overlay 300ms allow-discrete;
+  transition: background-color 240ms ease-out, backdrop-filter 240ms ease-out;
 }
-.hih-dialog[open]::backdrop { background: rgb(0 0 0 / .08); backdrop-filter: blur(8px); }
+.hih-dialog[open]::backdrop { background: rgb(17 17 17 / .12); backdrop-filter: blur(14px) saturate(115%); }
 .hih-dialog--search[open] { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: #e2e1d9; transform: translateY(-12px); transition: transform 300ms ease-out; }
 .hih-menu-logo { position: absolute; left: 24px; top: 20px; width: 100px; }
 .hih-menu-links { margin-left: 78%; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; padding-right: 70px; font-size: 18px; line-height: 1.25; }
 .hih-menu-links a { color: #111; text-decoration: none; white-space: nowrap; }
 .hih-menu-links a:hover { text-decoration: underline; text-underline-offset: .2em; }
-.hih-search-panel { width: min(626px, calc(100% - 32px)); max-height: calc(100dvh - 140px); overflow-y: auto; padding: 16px; border-radius: 12px; background: #fff; color: #111; font: 12px/1.5 ui-monospace, monospace; transform: translateY(12px); transition: transform 300ms ease-out; }
-.hih-dialog[open] .hih-menu-panel, .hih-dialog[open] .hih-search-panel { transform: translateY(0); }
+.hih-search-panel {
+  width: min(560px, calc(100% - 32px));
+  max-height: calc(100dvh - 140px);
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid rgb(255 255 255 / .62);
+  border-radius: 14px;
+  background: rgb(245 245 240 / .42);
+  color: #111;
+  box-shadow:
+    0 20px 54px rgb(17 17 17 / .13),
+    inset 0 1px 0 rgb(255 255 255 / .72);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  transform: translateY(12px) scale(.985);
+  transition: transform 240ms ease-out;
+}
+.hih-dialog[open] .hih-menu-panel { transform: translateY(0); }
+.hih-dialog[open] .hih-search-panel { transform: translateY(0) scale(1); }
 @starting-style {
   .hih-dialog[open] { opacity: 0; }
   .hih-dialog[open]::backdrop { background: rgb(0 0 0 / 0); backdrop-filter: blur(0); }
   .hih-dialog[open] .hih-menu-panel { transform: translateY(-12px); }
-  .hih-dialog[open] .hih-search-panel { transform: translateY(12px); }
+  .hih-dialog[open] .hih-search-panel { transform: translateY(12px) scale(.985); }
 }
-.hih-search-panel input { width: 100%; padding: 4px 0 24px; border: 0; border-radius: 0; outline: none; background: transparent; color: inherit; font: inherit; }
-.hih-search-panel input::placeholder { color: #555; }
-.hih-search-result { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; padding: 8px; margin-inline: -8px; box-sizing: content-box; border: 0; border-radius: 4px; background: transparent; color: inherit; text-align: left; font: inherit; }
-.hih-search-result[aria-selected=true] { background: #f1f1ef; }
-.hih-search-result span:last-child { color: #666; font-size: 11px; overflow-wrap: anywhere; }
-.hih-search-help { display: flex; justify-content: space-between; padding-top: 40px; color: #666; font-size: 11px; }
-.hih-no-results { padding-block: 16px; }
-.hih-search-close { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); }
+.hih-search-field {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 10px 14px;
+  border: 0;
+  border-bottom: 1px solid rgb(17 17 17 / .09);
+  border-radius: 0;
+  background: transparent;
+}
+.hih-search-field > svg { width: 17px; height: 17px; flex: none; opacity: .52; stroke-width: 1.7; }
+.hih-search-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none !important;
+  background: transparent;
+  color: inherit;
+  font: 500 15px/1.35 var(--font-rethink-sans), Arial, sans-serif;
+}
+.hih-search-field input:focus-visible { outline: none !important; }
+.hih-search-field input::placeholder { color: rgb(17 17 17 / .45); }
+.hih-search-field-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 4px 6px;
+  border: 1px solid rgb(17 17 17 / .12);
+  border-radius: 5px;
+  background: rgb(17 17 17 / .04);
+  color: rgb(17 17 17 / .48);
+}
+.hih-search-field-close:hover { background: rgb(17 17 17 / .06); color: #111; }
+.hih-search-field-close kbd { font: 500 10px/1 ui-monospace, monospace; }
+#hero-results { display: grid; gap: 4px; margin-top: 8px; }
+.hih-search-result {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: 500 14px/1.3 var(--font-rethink-sans), Arial, sans-serif;
+  transition: background-color 140ms ease-out;
+}
+.hih-search-result[aria-selected=true] { background: rgb(17 17 17 / .07); }
+.hih-no-results { margin: 0; padding: 22px 13px; color: rgb(17 17 17 / .52); font: 500 13px/1.4 var(--font-rethink-sans), Arial, sans-serif; }
 @media (max-width: 767px) {
   .hih-caption { left: 50%; bottom: 72px; transform: translateX(-50%); width: 290px; text-align: center; font-size: 10px; }
   .hih-menu-trigger, .hih-menu-close { right: 16px; }
