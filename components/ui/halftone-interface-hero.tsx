@@ -48,7 +48,7 @@ function subscribeMotion(callback: () => void) {
 export default function HalftoneInterfaceHero({
   navigation = DEFAULT_NAVIGATION,
   utilityLinks = [],
-  background = "#f8f8f5",
+  background = "#FFFFFF",
   foreground = "#111111",
   className = "",
 }: HalftoneInterfaceHeroProps) {
@@ -223,8 +223,8 @@ export default function HalftoneInterfaceHero({
 
 const styles = `
 .hih-root {
-  --button-bg: rgba(0, 0, 0, .90);
-  --fg: #fff;
+  --button-bg: rgb(237 237 237 / .58);
+  --fg: #111;
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -234,27 +234,27 @@ const styles = `
   letter-spacing: 0;
 }
 .hih-root button { cursor: pointer; }
-.hih-root button.bg-\\[var\\(--button-bg\\)\\]:hover { --button-bg: #333; }
+.hih-root button.bg-\\[var\\(--button-bg\\)\\]:hover { --button-bg: rgb(237 237 237 / .76); }
 .hih-root .hih-command-button {
-  border-color: rgb(255 255 255 / .68) !important;
-  background: linear-gradient(180deg, rgb(255 255 255 / .24), rgb(255 255 255 / .10)) !important;
+  border-color: rgb(255 255 255 / .78) !important;
+  background: linear-gradient(180deg, rgb(237 237 237 / .58), rgb(237 237 237 / .32)) !important;
   color: #111 !important;
   padding: 8px 10px;
   gap: 8px;
   font-weight: 400;
   box-shadow:
-    0 8px 24px rgb(0 0 0 / .07),
-    inset 0 1px 0 rgb(255 255 255 / .9),
-    inset 0 -1px 0 rgb(17 17 17 / .05);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+    0 8px 24px rgb(15 23 42 / .08),
+    inset 0 1px 0 rgb(255 255 255 / .88),
+    inset 0 -1px 0 rgb(15 23 42 / .05);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
 }
-.hih-root .hih-command-button:hover { background: linear-gradient(180deg, rgb(255 255 255 / .34), rgb(255 255 255 / .18)) !important; }
+.hih-root .hih-command-button:hover { background: linear-gradient(180deg, rgb(237 237 237 / .72), rgb(237 237 237 / .46)) !important; }
 .hih-root .hih-command-button > span[aria-hidden] { background: #111 !important; }
 .hih-root .hih-command-button kbd {
-  border-color: rgb(17 17 17 / .18) !important;
-  background: rgb(17 17 17 / .07) !important;
-  color: rgb(17 17 17 / .72) !important;
+  border-color: #D5D8DD !important;
+  background: #F7F7F7 !important;
+  color: #666B73 !important;
   font-weight: 500;
 }
 .hih-root :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
@@ -280,7 +280,7 @@ const styles = `
 }
 .hih-dialog[open]::backdrop { background: rgb(17 17 17 / .12); backdrop-filter: blur(14px) saturate(115%); }
 .hih-dialog--search[open] { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: #e2e1d9; transform: translateY(-12px); transition: transform 300ms ease-out; }
+.hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: #FFF; transform: translateY(-12px); transition: transform 300ms ease-out; }
 .hih-menu-logo { position: absolute; left: 24px; top: 20px; width: 100px; }
 .hih-menu-links { margin-left: 78%; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; padding-right: 70px; font-size: 18px; line-height: 1.25; }
 .hih-menu-links a { color: #111; text-decoration: none; white-space: nowrap; }
@@ -290,13 +290,13 @@ const styles = `
   max-height: calc(100dvh - 140px);
   overflow-y: auto;
   padding: 8px;
-  border: 1px solid rgb(255 255 255 / .62);
+  border: 1px solid rgb(213 216 221 / .88);
   border-radius: 14px;
-  background: rgb(245 245 240 / .42);
+  background: rgb(255 255 255 / .72);
   color: #111;
   box-shadow:
-    0 20px 54px rgb(17 17 17 / .13),
-    inset 0 1px 0 rgb(255 255 255 / .72);
+    0 20px 54px rgb(15 23 42 / .12),
+    inset 0 1px 0 rgb(255 255 255 / .9);
   backdrop-filter: blur(28px) saturate(150%);
   -webkit-backdrop-filter: blur(28px) saturate(150%);
   transform: translateY(12px) scale(.985);

@@ -9,10 +9,10 @@ const NAV = [
 
 export default function Home() {
   return (
-    <main id="top" className="h-svh w-full overflow-hidden bg-[#e2e1d9]">
+    <main id="top" className="h-svh w-full overflow-hidden bg-white">
       <HalftoneInterfaceHero
         navigation={NAV}
-        background="#e2e1d9"
+        background="#FFFFFF"
         foreground="#111111"
       />
     </main>
