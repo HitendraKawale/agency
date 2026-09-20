@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { CommandButton } from "@/components/evil-buttons/command-button";
 
 export interface HalftoneHeroLink {
   label: string;
@@ -110,20 +111,10 @@ export default function HalftoneInterfaceHero({
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
-      if ((event.metaKey || event.ctrlKey) && key === "k") {
-        event.preventDefault();
-        setQuery("");
-        setActiveResult(0);
-        setDialog((dialog) => ({ panel: "search", isOpen: !(dialog.panel === "search" && dialog.isOpen) }));
-        return;
-      }
       const target = event.target;
       if (event.metaKey || event.ctrlKey || event.altKey ||
         target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable=true]")) return;
-      if (key === "m") {
-        event.preventDefault();
-        setDialog((dialog) => ({ panel: "menu", isOpen: !(dialog.panel === "menu" && dialog.isOpen) }));
-      } else if (key === "k") {
+      if (key === "k") {
         event.preventDefault();
         setQuery("");
         setActiveResult(0);
@@ -148,9 +139,18 @@ export default function HalftoneInterfaceHero({
             <Image src="/blank-interfaces-lockup.svg" alt="Blank Interfaces" width={1045} height={575} preload />
           </a>
         </h1>
-        <button type="button" className={`${BUTTON_CLASS} hih-menu-trigger`} aria-label="Open menu" aria-expanded={panel === "menu" && isOpen} aria-controls="hero-dialog" aria-keyshortcuts="M" onClick={() => setDialog({ panel: "menu", isOpen: true })}>
-          <span>Menu</span><kbd className={KBD_CLASS}>M</kbd>
-        </button>
+        <CommandButton
+          shortcut="m"
+          onCommand={() => setDialog((dialog) => ({ panel: "menu", isOpen: !(dialog.panel === "menu" && dialog.isOpen) }))}
+          className="hih-command-button hih-menu-trigger"
+          aria-label="Open menu"
+          aria-expanded={panel === "menu" && isOpen}
+          aria-controls="hero-dialog"
+          aria-keyshortcuts="M"
+          onClick={() => setDialog({ panel: "menu", isOpen: true })}
+        >
+          Menu
+        </CommandButton>
       </header>
 
       <div className="hih-animation">
@@ -162,9 +162,22 @@ export default function HalftoneInterfaceHero({
       </div>
       <p className="hih-caption">Autoregressive generation predicts token fragments, with attention links showing context behind each choice.</p>
       <div className="hih-find">
-        <button type="button" className={BUTTON_CLASS} aria-label="Find on this site" aria-haspopup="dialog" aria-controls="hero-dialog" aria-keyshortcuts="K Meta+K Control+K" onClick={openSearch}>
-          <span>Find</span><kbd className={`${KBD_CLASS} inline-flex items-center gap-1`}><span>⌘</span><span>K</span></kbd>
-        </button>
+        <CommandButton
+          shortcut="mod+k"
+          onCommand={() => {
+            setQuery("");
+            setActiveResult(0);
+            setDialog((dialog) => ({ panel: "search", isOpen: !(dialog.panel === "search" && dialog.isOpen) }));
+          }}
+          className="hih-command-button"
+          aria-label="Find on this site"
+          aria-haspopup="dialog"
+          aria-controls="hero-dialog"
+          aria-keyshortcuts="K Meta+K Control+K"
+          onClick={openSearch}
+        >
+          Find
+        </CommandButton>
       </div>
 
       <dialog id="hero-dialog" ref={dialogRef} className={`hih-dialog hih-dialog--${panel ?? "closed"}`} aria-label={panel === "menu" ? "Site menu" : "Find on this site"} onClose={closePanel} onCancel={(event) => { event.preventDefault(); closePanel(); }} onClick={(event) => { if (event.target === event.currentTarget) closePanel(); }}>
@@ -223,6 +236,28 @@ const styles = `
 }
 .hih-root button { cursor: pointer; }
 .hih-root button.bg-\\[var\\(--button-bg\\)\\]:hover { --button-bg: #333; }
+.hih-root .hih-command-button {
+  border-color: rgb(255 255 255 / .68) !important;
+  background: linear-gradient(180deg, rgb(255 255 255 / .24), rgb(255 255 255 / .10)) !important;
+  color: #111 !important;
+  padding: 8px 10px;
+  gap: 8px;
+  font-weight: 400;
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / .07),
+    inset 0 1px 0 rgb(255 255 255 / .9),
+    inset 0 -1px 0 rgb(17 17 17 / .05);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+.hih-root .hih-command-button:hover { background: linear-gradient(180deg, rgb(255 255 255 / .34), rgb(255 255 255 / .18)) !important; }
+.hih-root .hih-command-button > span[aria-hidden] { background: #111 !important; }
+.hih-root .hih-command-button kbd {
+  border-color: rgb(17 17 17 / .18) !important;
+  background: rgb(17 17 17 / .07) !important;
+  color: rgb(17 17 17 / .72) !important;
+  font-weight: 500;
+}
 .hih-root :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
 .hih-header { position: absolute; inset: 0 0 auto; height: 108px; z-index: 2; }
 .hih-wordmark { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; width: 190px; }
