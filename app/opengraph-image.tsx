@@ -5,11 +5,8 @@ import { ImageResponse } from "next/og";
  * accent triplet reads as the same identity, drawn as a static ink row so the
  * card is a still image with no runtime.
  *
- * Deliberately set in the built-in face rather than Rethink Sans: Satori (what
- * `next/og` renders with) cannot parse a variable font, and RethinkSans[wght]
- * is variable-only here — feeding it in fails the build outright. To put the
- * brand face back, instance the variable font to a single static weight
- * (`fonttools varLib.instancer`), commit that, and register it under `fonts`.
+ * Deliberately set in the built-in face. `next/og` renders this outside the
+ * document, so it does not inherit the site's Search System Pro Mono webfont.
  *
  * Hierarchy therefore comes from size and colour, never weight.
  */

@@ -29,7 +29,7 @@ button:focus-visible {
 html,
 body {
   letter-spacing: -0.025em;
-  font-family: var(--font-rethink-sans), Helvetica, Arial, sans-serif;
+  font-family: "Search System Pro Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 body {

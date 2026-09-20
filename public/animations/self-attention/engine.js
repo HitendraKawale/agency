@@ -22,7 +22,7 @@ const ot=`
     background-color: var(--sa-surface);
     color: var(--sa-ink);
     overflow: hidden;
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -174,7 +174,7 @@ const ot=`
 }
 
 .mono {
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-variant-numeric: tabular-nums;
     font-weight: 400;
 }
@@ -341,7 +341,7 @@ const ot=`
 }
 
 .speed-timeline-readout {
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-size: 10px; /* true 10px, nav no longer transform-scaled (PARWEB-566) */
     line-height: 1;
     color: var(--sa-ink);
@@ -376,7 +376,7 @@ const ot=`
     padding: 0;
     margin: 0;
     cursor: pointer;
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-size: 10px; /* true 10px, nav no longer transform-scaled (PARWEB-566) */
     line-height: 1;
     color: var(--sa-ink);
@@ -465,7 +465,7 @@ const ot=`
 }
 
 .speed-nav-title {
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-size: 10px; /* true 10px, nav no longer transform-scaled (PARWEB-566) */
     line-height: 1.7;
     color: var(--sa-ink-82);
@@ -481,7 +481,7 @@ const ot=`
     padding: 0;
     padding-left: calc(12px * var(--speed-nav-scale));
     cursor: pointer;
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-size: 10px; /* true 10px, nav no longer transform-scaled (PARWEB-566) */
     line-height: 1.7;
     color: var(--sa-ink);
@@ -795,7 +795,7 @@ const ot=`
 }
 
 .adventure-small.token {
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-variant-numeric: tabular-nums;
     font-weight: 400;
 }
@@ -806,7 +806,7 @@ const ot=`
     left: 50%;
     transform: translateX(-50%);
     color: var(--sa-ink-62);
-    font-family: 'Paradigm SemiMono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'Search System Pro Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-weight: 400;
     font-size: 10px;
     /* Tight digits + minimal padding so adjacent labels under narrow tokens
