@@ -1,11 +1,16 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { Search } from "lucide-react";
 import { CommandButton } from "@/components/evil-buttons/command-button";
+import AgentTrace from "@/components/hero/agent-trace";
 import GrainGradientField from "@/components/ui/grain-gradient-field";
+
+// three.js loads only when the cube is first selected.
+const HeroCube = dynamic(() => import("@/components/hero/hero-cube"), { ssr: false });
 
 export interface HalftoneHeroLink {
   label: string;
@@ -27,7 +32,7 @@ export interface HalftoneInterfaceHeroProps {
 
 const BUTTON_CLASS = "flex items-center gap-2 rounded-md bg-[var(--button-bg)] p-2 text-sm font-light leading-snug text-[var(--fg)] backdrop-blur-md transition-colors duration-300 ease-out";
 const KBD_CLASS = "font-mono text-[11px] font-normal leading-none opacity-60";
-const CONTACT_EMAIL = "hello@aryank.space";
+const CONTACT_EMAIL = "aryan@blankinterface.com";
 const DEFAULT_NAVIGATION = [
   { label: "projects", href: "/projects" },
   { label: "about us", href: "/about" },
@@ -37,6 +42,34 @@ const DEFAULT_NAVIGATION = [
 
 function contact() {
   window.location.href = `mailto:${CONTACT_EMAIL}`;
+}
+
+type Visual = 1 | 2 | 3;
+const VISUALS: Visual[] = [1, 2, 3];
+const VISUAL_KEYS: Partial<Record<string, Visual>> = { "1": 1, "2": 2, "3": 3 };
+
+interface Stage {
+  visual: Visual;
+  /** Fading out; it unmounts, with its timers and GPU work, when the fade ends. */
+  leaving: Visual | null;
+}
+
+function nextStage(stage: Stage, visual: Visual): Stage {
+  if (stage.visual === visual) return stage;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return { visual, leaving: reduced ? null : stage.visual };
+}
+
+/** Relative luminance of a #rrggbb colour, enough to tell a dark ground from a light one. */
+function isDark(hex: string) {
+  const value = Number.parseInt(hex.replace("#", "").slice(0, 6), 16);
+  if (Number.isNaN(value)) return false;
+  const channels = [value >> 16, (value >> 8) & 255, value & 255].map((channel) => {
+    const c = channel / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const [r = 0, g = 0, b = 0] = channels;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.4;
 }
 
 function subscribeMotion(callback: () => void) {
@@ -61,6 +94,7 @@ export default function HalftoneInterfaceHero({
   }>({ panel: null, isOpen: false });
   const [query, setQuery] = useState("");
   const [activeResult, setActiveResult] = useState(0);
+  const [{ visual, leaving }, setStage] = useState<Stage>({ visual: 1, leaving: null });
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const reducedMotion = useSyncExternalStore(
@@ -73,6 +107,20 @@ export default function HalftoneInterfaceHero({
     `${entry.label} ${entry.detail} ${entry.href}`.toLowerCase().includes(query.trim().toLowerCase()),
   );
   const selectedIndex = Math.min(activeResult, Math.max(0, results.length - 1));
+  const mountedVisuals = leaving === null ? [visual] : [leaving, visual];
+  const dark = isDark(background);
+  const lockup = dark ? "/blank-interfaces-lockup-inverted.svg" : "/blank-interfaces-lockup.svg";
+  // The iframe is its own document; it reads its ink, ground and scheme from the URL.
+  const attentionSrc = `/animations/self-attention/index.html?${new URLSearchParams({
+    ink: foreground,
+    paper: background,
+    scheme: dark ? "dark" : "light",
+  })}`;
+
+  function fadeClass(id: Visual) {
+    if (leaving === null) return "";
+    return id === leaving ? " is-leaving" : " is-entering";
+  }
 
   function openSearch() {
     setQuery("");
@@ -114,6 +162,7 @@ export default function HalftoneInterfaceHero({
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
+      const next = VISUAL_KEYS[key];
       const target = event.target;
       if (event.metaKey || event.ctrlKey || event.altKey ||
         target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable=true]")) return;
@@ -127,6 +176,8 @@ export default function HalftoneInterfaceHero({
         contact();
       } else if (key === "escape") {
         setDialog((dialog) => ({ ...dialog, isOpen: false }));
+      } else if (next && !event.repeat && !document.querySelector("dialog[open]")) {
+        setStage((stage) => nextStage(stage, next));
       }
     }
     window.addEventListener("keydown", handleShortcut);
@@ -134,13 +185,17 @@ export default function HalftoneInterfaceHero({
   }, []);
 
   return (
-    <section className={`hih-root ${className}`} style={{ backgroundColor: background, color: foreground }} aria-label="Blank Interfaces">
+    <section
+      className={`hih-root ${className}`}
+      style={{ backgroundColor: background, color: foreground, "--hih-bg": background, "--hih-fg": foreground, colorScheme: dark ? "dark" : "light" } as CSSProperties}
+      aria-label="Blank Interfaces"
+    >
       <style>{styles}</style>
       <div className="hih-field-layer" aria-hidden="true">
         <GrainGradientField
           className="hih-field"
           baseColor={background}
-          shapeColor="#D1D2CB"
+          shapeColor={dark ? "#16252B" : "#D1D2CB"}
           shapeSrc="/assets/grain-gradient/shape-wave.png"
           fadeTop={0}
           fadeBottom={0}
@@ -157,7 +212,7 @@ export default function HalftoneInterfaceHero({
       <header className="hih-header">
         <h1 className="hih-wordmark">
           <a href="#top" aria-label="Blank Interfaces home">
-            <Image src="/blank-interfaces-lockup.svg" alt="Blank Interfaces" width={1045} height={575} preload />
+            <Image src={lockup} alt="Blank Interfaces" width={1045} height={575} preload />
           </a>
         </h1>
         <CommandButton
@@ -175,13 +230,48 @@ export default function HalftoneInterfaceHero({
       </header>
 
       <div className="hih-animation">
-        {reducedMotion ? (
-          <p className="hih-static">Context is not stored in a single location. It emerges from interactions between many tokens.</p>
-        ) : (
-          <iframe src="/animations/self-attention/index.html" title="Token generation and attention visualization" className="hih-animation-frame" />
-        )}
+        {mountedVisuals.map((id) => (
+          <div
+            key={id}
+            className={`hih-visual${fadeClass(id)}`}
+            inert={id === leaving}
+            onAnimationEnd={(event) => {
+              if (event.target === event.currentTarget && id === leaving) {
+                setStage((stage) => (stage.leaving === id ? { ...stage, leaving: null } : stage));
+              }
+            }}
+          >
+            {id === 1 ? (
+              reducedMotion ? (
+                <p className="hih-static">Context is not stored in a single location. It emerges from interactions between many tokens.</p>
+              ) : (
+                <iframe src={attentionSrc} title="Token generation and attention visualization" className="hih-animation-frame" />
+              )
+            ) : id === 2 ? (
+              <HeroCube foreground={foreground} reducedMotion={reducedMotion} />
+            ) : (
+              <AgentTrace reducedMotion={reducedMotion} ink={foreground} paper={background} />
+            )}
+          </div>
+        ))}
       </div>
-      <p className="hih-caption">Autoregressive generation predicts token fragments, with attention links showing context behind each choice.</p>
+      {mountedVisuals.includes(1) && (
+        <p className={`hih-caption${fadeClass(1)}`}>Autoregressive generation predicts token fragments, with attention links showing context behind each choice.</p>
+      )}
+      <div className="hih-selector" role="group" aria-label="Hero visual">
+        {VISUALS.map((id) => (
+          <button
+            type="button"
+            key={id}
+            aria-pressed={id === visual}
+            aria-label={`Show visual ${id}`}
+            aria-keyshortcuts={String(id)}
+            onClick={() => setStage((stage) => nextStage(stage, id))}
+          >
+            {id === visual ? "[ ]" : `[${id}]`}
+          </button>
+        ))}
+      </div>
       <div className="hih-find">
         <CommandButton
           shortcut="mod+k"
@@ -205,7 +295,7 @@ export default function HalftoneInterfaceHero({
         {panel === "menu" ? (
           <div className="hih-menu-panel">
             <a className="hih-menu-logo" href="#top" onClick={closePanel} aria-label="Blank Interfaces home">
-              <Image src="/blank-interfaces-lockup.svg" alt="Blank Interfaces" width={1045} height={575} />
+              <Image src={lockup} alt="Blank Interfaces" width={1045} height={575} />
             </a>
             <button type="button" className={`${BUTTON_CLASS} hih-menu-close`} onClick={closePanel} aria-label="Close menu"><span>Close</span><kbd className={KBD_CLASS}>esc</kbd></button>
             <nav className="hih-menu-links" aria-label="Main navigation">
@@ -242,8 +332,9 @@ export default function HalftoneInterfaceHero({
 
 const styles = `
 .hih-root {
-  --button-bg: rgb(237 237 237 / .58);
-  --fg: #111;
+  --button-bg: color-mix(in srgb, var(--hih-bg) 58%, transparent);
+  --fg: var(--hih-fg);
+  --hih-line: color-mix(in srgb, var(--hih-fg) 12%, transparent);
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -251,6 +342,7 @@ const styles = `
   overflow: hidden;
   font-family: "Search System Pro Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: 0;
+  /* color-scheme comes from the inline style and must match the iframe's, or the iframe paints an opaque canvas. */
 }
 .hih-field-layer {
   position: absolute;
@@ -263,27 +355,27 @@ const styles = `
 }
 .hih-field { width: 100%; height: 100%; }
 .hih-root button { cursor: pointer; }
-.hih-root button.bg-\\[var\\(--button-bg\\)\\]:hover { --button-bg: rgb(237 237 237 / .76); }
+.hih-root button.bg-\\[var\\(--button-bg\\)\\]:hover { --button-bg: color-mix(in srgb, var(--hih-bg) 76%, transparent); }
 .hih-root .hih-command-button {
-  border-color: rgb(255 255 255 / .78) !important;
-  background: linear-gradient(180deg, rgb(237 237 237 / .58), rgb(237 237 237 / .32)) !important;
-  color: #111 !important;
+  border-color: var(--hih-line) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hih-fg) 9%, var(--hih-bg)), color-mix(in srgb, var(--hih-fg) 4%, var(--hih-bg))) !important;
+  color: var(--hih-fg) !important;
   padding: 8px 10px;
   gap: 8px;
   font-weight: 400;
   box-shadow:
-    0 8px 24px rgb(15 23 42 / .08),
-    inset 0 1px 0 rgb(255 255 255 / .88),
-    inset 0 -1px 0 rgb(15 23 42 / .05);
+    0 8px 24px rgb(0 0 0 / .12),
+    inset 0 1px 0 color-mix(in srgb, var(--hih-fg) 14%, transparent),
+    inset 0 -1px 0 rgb(0 0 0 / .08);
   backdrop-filter: blur(20px) saturate(120%);
   -webkit-backdrop-filter: blur(20px) saturate(120%);
 }
-.hih-root .hih-command-button:hover { background: linear-gradient(180deg, rgb(237 237 237 / .72), rgb(237 237 237 / .46)) !important; }
-.hih-root .hih-command-button > span[aria-hidden] { background: #111 !important; }
+.hih-root .hih-command-button:hover { background: linear-gradient(180deg, color-mix(in srgb, var(--hih-fg) 14%, var(--hih-bg)), color-mix(in srgb, var(--hih-fg) 7%, var(--hih-bg))) !important; }
+.hih-root .hih-command-button > span[aria-hidden] { background: var(--hih-fg) !important; }
 .hih-root .hih-command-button kbd {
-  border-color: #D5D8DD !important;
-  background: #F7F7F7 !important;
-  color: #666B73 !important;
+  border-color: var(--hih-line) !important;
+  background: color-mix(in srgb, var(--hih-fg) 6%, var(--hih-bg)) !important;
+  color: color-mix(in srgb, var(--hih-fg) 62%, var(--hih-bg)) !important;
   font-weight: 500;
 }
 .hih-root :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
@@ -292,13 +384,22 @@ const styles = `
 .hih-wordmark img, .hih-menu-logo img { display: block; width: 100%; height: auto; }
 .hih-menu-trigger, .hih-menu-close { position: absolute; top: 20px; right: 24px; }
 .hih-animation { position: absolute; inset: 108px 0 0; z-index: 1; }
+.hih-visual { position: absolute; inset: 0; }
+.hih-visual.is-entering, .hih-caption.is-entering { animation: hih-fade-in 300ms ease-out both; }
+.hih-visual.is-leaving, .hih-caption.is-leaving { animation: hih-fade-out 300ms ease-out both; }
+@keyframes hih-fade-in { from { opacity: 0; } }
+@keyframes hih-fade-out { to { opacity: 0; } }
 .hih-animation-frame { display: block; width: 100%; height: 100%; border: 0; }
 .hih-static { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); width: min(640px, calc(100% - 48px)); font: 14px/1.7 "Search System Pro Mono", ui-monospace, monospace; }
 .hih-caption { position: absolute; left: 24px; bottom: 64px; z-index: 2; width: 290px; max-width: calc(100% - 48px); margin: 0; font: 11px/1.4 "Search System Pro Mono", ui-monospace, monospace; }
 .hih-find { position: absolute; bottom: 24px; left: 50%; z-index: 2; transform: translateX(-50%); }
+.hih-selector { position: absolute; left: 21px; bottom: 30px; z-index: 2; display: flex; gap: 4px; font: 11px/1.4 "Search System Pro Mono", ui-monospace, monospace; }
+.hih-selector button { margin: 0; padding: 5px 3px; border: 0; background: none; color: inherit; font: inherit; white-space: pre; transition: opacity 140ms ease-out; }
+.hih-selector button:hover { opacity: .55; }
+.hih-selector button[aria-pressed=true] { cursor: default; opacity: 1; }
 .hih-dialog {
   position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
-  margin: 0; padding: 0; border: 0; background: transparent; color: #111;
+  margin: 0; padding: 0; border: 0; background: transparent; color: var(--hih-fg);
   opacity: 0;
   transition: opacity 240ms ease-out;
 }
@@ -307,25 +408,25 @@ const styles = `
   background: rgb(0 0 0 / 0); backdrop-filter: blur(0);
   transition: background-color 240ms ease-out, backdrop-filter 240ms ease-out;
 }
-.hih-dialog[open]::backdrop { background: rgb(17 17 17 / .12); backdrop-filter: blur(14px) saturate(115%); }
+.hih-dialog[open]::backdrop { background: rgb(5 9 10 / .32); backdrop-filter: blur(14px) saturate(115%); }
 .hih-dialog--search[open] { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: #ECECE8; transform: translateY(-12px); transition: transform 300ms ease-out; }
+.hih-menu-panel { position: relative; width: 100%; padding: 24px 24px 60px; background: var(--hih-bg); transform: translateY(-12px); transition: transform 300ms ease-out; }
 .hih-menu-logo { position: absolute; left: 24px; top: 20px; width: 100px; }
 .hih-menu-links { margin-left: 78%; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; padding-right: 70px; font-size: 18px; line-height: 1.25; }
-.hih-menu-links a { color: #111; text-decoration: none; white-space: nowrap; }
+.hih-menu-links a { color: var(--hih-fg); text-decoration: none; white-space: nowrap; }
 .hih-menu-links a:hover { text-decoration: underline; text-underline-offset: .2em; }
 .hih-search-panel {
   width: min(560px, calc(100% - 32px));
   max-height: calc(100dvh - 140px);
   overflow-y: auto;
   padding: 8px;
-  border: 1px solid rgb(213 216 221 / .88);
+  border: 1px solid var(--hih-line);
   border-radius: 14px;
-  background: rgb(255 255 255 / .72);
-  color: #111;
+  background: color-mix(in srgb, var(--hih-bg) 78%, transparent);
+  color: var(--hih-fg);
   box-shadow:
-    0 20px 54px rgb(15 23 42 / .12),
-    inset 0 1px 0 rgb(255 255 255 / .9);
+    0 20px 54px rgb(0 0 0 / .24),
+    inset 0 1px 0 color-mix(in srgb, var(--hih-fg) 10%, transparent);
   backdrop-filter: blur(28px) saturate(150%);
   -webkit-backdrop-filter: blur(28px) saturate(150%);
   transform: translateY(12px) scale(.985);
@@ -345,7 +446,7 @@ const styles = `
   gap: 11px;
   padding: 11px 10px 14px;
   border: 0;
-  border-bottom: 1px solid rgb(17 17 17 / .09);
+  border-bottom: 1px solid var(--hih-line);
   border-radius: 0;
   background: transparent;
 }
@@ -362,18 +463,18 @@ const styles = `
   font: 500 15px/1.35 "Search System Pro Mono", ui-monospace, monospace;
 }
 .hih-search-field input:focus-visible { outline: none !important; }
-.hih-search-field input::placeholder { color: rgb(17 17 17 / .45); }
+.hih-search-field input::placeholder { color: color-mix(in srgb, var(--hih-fg) 45%, transparent); }
 .hih-search-field-close {
   display: grid;
   place-items: center;
   flex: none;
   padding: 4px 6px;
-  border: 1px solid rgb(17 17 17 / .12);
+  border: 1px solid var(--hih-line);
   border-radius: 5px;
-  background: rgb(17 17 17 / .04);
-  color: rgb(17 17 17 / .48);
+  background: color-mix(in srgb, var(--hih-fg) 4%, transparent);
+  color: color-mix(in srgb, var(--hih-fg) 48%, transparent);
 }
-.hih-search-field-close:hover { background: rgb(17 17 17 / .06); color: #111; }
+.hih-search-field-close:hover { background: color-mix(in srgb, var(--hih-fg) 6%, transparent); color: var(--hih-fg); }
 .hih-search-field-close kbd { font: 500 10px/1 "Search System Pro Mono", ui-monospace, monospace; }
 #hero-results { display: grid; gap: 4px; margin-top: 8px; }
 .hih-search-result {
@@ -388,8 +489,8 @@ const styles = `
   font: 500 14px/1.3 "Search System Pro Mono", ui-monospace, monospace;
   transition: background-color 140ms ease-out;
 }
-.hih-search-result[aria-selected=true] { background: rgb(17 17 17 / .07); }
-.hih-no-results { margin: 0; padding: 22px 13px; color: rgb(17 17 17 / .52); font: 500 13px/1.4 "Search System Pro Mono", ui-monospace, monospace; }
+.hih-search-result[aria-selected=true] { background: color-mix(in srgb, var(--hih-fg) 7%, transparent); }
+.hih-no-results { margin: 0; padding: 22px 13px; color: color-mix(in srgb, var(--hih-fg) 52%, transparent); font: 500 13px/1.4 "Search System Pro Mono", ui-monospace, monospace; }
 @media (max-width: 767px) {
   .hih-field-layer {
     -webkit-mask-image: linear-gradient(to bottom, #000 0 40%, transparent 70% 100%);
@@ -397,6 +498,7 @@ const styles = `
   }
   .hih-caption { left: 50%; bottom: 72px; transform: translateX(-50%); width: 290px; text-align: center; font-size: 10px; }
   .hih-menu-trigger, .hih-menu-close { right: 16px; }
+  .hih-selector { left: 13px; }
   .hih-wordmark { left: 16px; transform: none; width: 110px; }
   .hih-menu-panel { min-height: 55svh; padding-top: 96px; }
   .hih-menu-links { margin-left: 50%; padding-right: 0; }
@@ -405,5 +507,6 @@ const styles = `
 }
 @media (prefers-reduced-motion: reduce) {
   .hih-root button, .hih-dialog, .hih-dialog::backdrop, .hih-menu-panel, .hih-search-panel { transition: none; }
+  .hih-visual, .hih-caption { animation: none; }
 }
 `;

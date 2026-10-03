@@ -25,6 +25,16 @@
   </style>
 </head>
 <body>
+  <script>
+    // The host passes its own ink, ground and scheme (?ink=&paper=&scheme=);
+    // without them the light defaults above apply.
+    (function (params, root) {
+      var ink = params.get("ink"), paper = params.get("paper"), scheme = params.get("scheme");
+      if (ink) root.style.setProperty("--color-text-default", ink);
+      if (paper) root.style.setProperty("--color-surface-default", paper);
+      if (scheme === "dark" || scheme === "light") root.style.colorScheme = scheme;
+    })(new URLSearchParams(location.search), document.documentElement);
+  </script>
   <self-attention src="./paragraph-traces.json"></self-attention>
   <script type="module" src="./engine.js"></script>
   <script>

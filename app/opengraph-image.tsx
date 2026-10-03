@@ -1,76 +1,84 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 /**
- * The link preview card. Echoes the halftone hero without running it: the
- * accent triplet reads as the same identity, drawn as a static ink row so the
- * card is a still image with no runtime.
+ * The link preview card: the poster composition from the brief with our
+ * lockup where Nocturna's wordmark sat. The doorway is generated artwork
+ * (public/media/PROVENANCE.md); the lockup is the real SVG, not redrawn.
  *
- * Deliberately set in the built-in face. `next/og` renders this outside the
- * document, so it does not inherit the site's Search System Pro Mono webfont.
- *
- * Hierarchy therefore comes from size and colour, never weight.
+ * Set in next/og's built-in face, which renders outside the document and
+ * cannot use the site's webfonts.
  */
 
-export const alt =
-  "blank interfaces — a craft-led studio for 0→1 brand, interface, and product design";
+export const alt = "blank interfaces, visual gateways";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const BACKGROUND = "#000000";
-const FOREGROUND = "#f3f3f1";
-const ACCENTS = ["#ff266c", "#1cffaf", "#5848ff"];
+const PAPER = "#DFEAE8";
+const RULE = "rgba(223, 234, 232, 0.34)";
 
-export default function OpengraphImage() {
+async function dataUri(path: string, type: string) {
+  const file = await readFile(join(process.cwd(), "public", path));
+  return `data:${type};base64,${file.toString("base64")}`;
+}
+
+export default async function OpengraphImage() {
+  const [photo, lockup] = await Promise.all([
+    dataUri("media/gateway.jpg", "image/jpeg"),
+    dataUri("blank-interfaces-lockup-inverted.svg", "image/svg+xml"),
+  ]);
+
+  const label = { display: "flex", fontSize: 15, letterSpacing: 1.2, color: PAPER } as const;
+
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: BACKGROUND,
-          color: FOREGROUND,
-          padding: "72px 80px",
-        }}
-      >
-        <div style={{ display: "flex", gap: 12 }}>
-          {ACCENTS.map((color) => (
-            <div
-              key={color}
-              style={{ width: 64, height: 8, background: color }}
-            />
-          ))}
-        </div>
+      <div style={{ position: "relative", display: "flex", width: "100%", height: "100%", background: "#05090A" }}>
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
+        <img src={photo} width={1200} height={800} style={{ position: "absolute", top: -60, left: 0, filter: "grayscale(1)" }} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            background: "linear-gradient(180deg, rgba(5,9,10,0.55) 0%, rgba(5,9,10,0) 45%, rgba(5,9,10,0.35) 100%)",
+          }}
+        />
+        {[300, 600, 900].map((left) => (
+          <div key={left} style={{ position: "absolute", top: 0, bottom: 0, left, width: 1, background: RULE }} />
+        ))}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-          <div style={{ display: "flex", fontSize: 128, lineHeight: 1 }}>
-            blank interfaces
-          </div>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 34,
-              lineHeight: 1.35,
-              color: "rgba(243, 243, 241, 0.62)",
-              maxWidth: 900,
-            }}
-          >
-            A craft-led studio for 0→1 brand, interface, and product design.
-          </div>
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
+        <img src={lockup} width={420} height={231} style={{ position: "absolute", left: 300, top: 186 }} />
+
+        <div style={{ ...label, position: "absolute", left: 24, top: 36, flexDirection: "column" }}>
+          <span>DESIGN</span>
+          <span>ENGINEERING</span>
+          <span>ANSWER ENGINES</span>
+          <span style={{ marginTop: 14 }}>blankinterfaces.com</span>
         </div>
 
         <div
           style={{
+            position: "absolute",
+            left: 24,
+            top: 402,
             display: "flex",
-            justifyContent: "space-between",
-            fontSize: 24,
-            color: "rgba(243, 243, 241, 0.45)",
+            flexDirection: "column",
+            fontSize: 30,
+            fontWeight: 700,
+            lineHeight: 1,
+            letterSpacing: -0.5,
+            color: PAPER,
           }}
         >
-          <div style={{ display: "flex" }}>blankinterfaces.com</div>
-          <div style={{ display: "flex" }}>mumbai · uk · remote</div>
+          <span>VISUAL</span>
+          <span>GATEWAYS</span>
+        </div>
+
+        <div style={{ ...label, position: "absolute", left: 24, right: 24, bottom: 22, justifyContent: "space-between" }}>
+          <span>MUMBAI, UK</span>
+          <span>REMOTE</span>
         </div>
       </div>
     ),
