@@ -61,7 +61,7 @@ export default function Gateway() {
   }, []);
 
   return (
-    <a ref={ref} className="gateway" href={`mailto:${EMAIL}`} aria-label={`Start a project, email ${EMAIL}`}>
+    <a ref={ref} className="gateway" href={`mailto:${EMAIL}`} aria-label={`Get in touch, email ${EMAIL}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="gateway-image" src="/media/gateway.jpg" alt="" loading="lazy" decoding="async" />
       <svg className="gateway-grain" aria-hidden="true" width="100%" height="100%">
@@ -90,7 +90,7 @@ export default function Gateway() {
         <img src="/blank-interfaces-lockup-inverted.svg" alt="" />
       </span>
       <span className="gateway-foot label">
-        <span className="gateway-go">( Start a project )</span>
+        <span className="gateway-go">( Get in touch )</span>
         <span>{EMAIL}</span>
       </span>
     </a>

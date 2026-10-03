@@ -47,7 +47,7 @@ function routeOf(pathname: string) {
  * Everything around a page: Aino's fixed nav, the Settings and Contact side
  * panel, the mobile menu, Lenis, the hover scramble and sol's ASCII-logo
  * footer. The homepage hero keeps its own chrome, so the nav waits until the
- * sheet has covered it. /heatmap is a tuning page and gets none of this.
+ * sheet has covered it.
  */
 export default function SiteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -121,6 +121,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
     };
   }, [pathname]);
 
+  // /heatmap is a tuning page and gets none of this.
   if (route === "heatmap") return <>{children}</>;
 
   function openPanel(trigger: HTMLElement, next: Panel) {

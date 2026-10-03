@@ -35,7 +35,7 @@ const code = localFont({
  * two-character gutters divide the viewport exactly, then derive font size,
  * tracking and line height from that width.
  */
-const BOOT_SCRIPT = `(function(t){
+const BOOT_SCRIPT = `(function(t){t.classList.add("js");
 var mood="dark",mode="image";
 try{var p=JSON.parse(localStorage.getItem("blank-site")||"{}");if(p.appearance==="light")mood="light";if(p.mode==="text"||p.mode==="pixel")mode=p.mode}catch(e){}
 t.dataset.mood=mood;t.dataset.mode=mode;
@@ -44,7 +44,7 @@ function grid(){var n=innerWidth,m=n<769,o=m?8:7.5,a=Math.round(n/o),d=0;
 function snap(x){x-=18;x-=x%16;x+=18;o=n/x;d=(x-18)/8;a=x}
 if(m){a-=6;a-=a%2;a+=6;o=n/a;d=(a-18)/8}else{snap(Math.round(n/o));if(o>8.8){o=8;snap(Math.round(n/o))}}
 var f=o/.6-.9,h=2*o,s=t.style;
-s.setProperty("--ch",o);s.setProperty("--cols",a);s.setProperty("--strip",d);
+s.setProperty("--ch",o);s.setProperty("--cols",a);s.setProperty("--strip",d);s.setProperty("--col",m?Math.ceil((a-5)/2):2*d+2);
 s.setProperty("--font-size",f+"px");s.setProperty("--letter-spacing",.6*(o/.6-f)+"px");
 s.setProperty("--line-height",h+"px");s.setProperty("--line",(safari?Math.round(h):h)+"px")}
 grid();addEventListener("resize",grid)})(document.documentElement)`;

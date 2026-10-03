@@ -1,0 +1,322 @@
+/*
+ * /projects, Aino's work page. Rules copied from reference/aino/3QJiGnXq.css
+ * with `body.work` scoped to `.aino-work`, #app to `.aino-app`, their
+ * html.textmode to our html[data-mode="text"], their --white/--black to our
+ * --bg/--fg, and the MONO axis of their variable face mapped to our two
+ * faces (MONO 1 → the label mono, MONO .4 → the grotesk). Values unchanged.
+ */
+
+.aino-work {
+  --fullcol: calc((var(--col) + 2) * var(--char));
+  --s2: calc(var(--col) * var(--char));
+  font-size: var(--font-size);
+  letter-spacing: var(--letter-spacing);
+  line-height: var(--line-height);
+}
+
+/* #app */
+.aino-work .aino-app {
+  min-height: 100dvh;
+  padding: calc(var(--line) * 3) calc(var(--char) * 2);
+}
+
+/* .section, .section .col */
+.aino-work .section {
+  padding-bottom: calc(var(--line));
+  gap: var(--char2);
+  display: flex;
+}
+
+.aino-work .section .col {
+  width: var(--s2);
+  flex-direction: column;
+  display: flex;
+  position: relative;
+}
+
+/* .monocaps */
+.aino-work .monocaps {
+  font-family: var(--font-label);
+  font-size: var(--font-size);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* body.work .menu / .section.menu / .buttons */
+.aino-work .menu {
+  margin-top: calc(var(--line) * 4);
+}
+
+.aino-work .section.menu {
+  margin-top: calc(var(--line) * 3);
+  position: relative;
+}
+
+.aino-work .buttons {
+  gap: var(--char2);
+  display: flex;
+}
+
+.aino-work .menu button {
+  opacity: 0.5;
+  text-align: left;
+  display: block;
+}
+
+.aino-work .menu button.active {
+  opacity: 1;
+}
+
+/* body.work .items */
+.aino-work .gridcontainer.loading .items {
+  pointer-events: none;
+}
+
+.aino-work .items {
+  gap: var(--char2);
+  flex-wrap: wrap;
+  width: 100vw;
+  display: flex;
+}
+
+.aino-work .items .case {
+  transition: opacity 0.2s ease-out;
+  display: contents;
+}
+
+.aino-work .items .case.hover .item,
+.aino-work .items .case .item:focus-within {
+  opacity: 1;
+  filter: grayscale(0);
+}
+
+.aino-work .items .item:hover .info,
+.aino-work .items .item:focus-within .info {
+  opacity: 1;
+}
+
+.aino-work .items .item {
+  flex: 0 0 calc((var(--fullcol) / 2) - var(--char2));
+  margin-bottom: var(--line);
+  transition: filter 0.2s ease-out;
+}
+
+@media (min-width: 769px) {
+  html.js .aino-work .items .item {
+    opacity: 0.3;
+    filter: grayscale();
+  }
+}
+
+.aino-work .items .image {
+  position: relative;
+  overflow: hidden;
+}
+
+.aino-work .items .image img,
+.aino-work .items .image video {
+  display: block;
+  object-fit: cover;
+  object-position: top center;
+  width: 100%;
+  height: 100%;
+}
+
+/* The kernel's glyph and pixel layers sit over the image. */
+.aino-work .items .image .ascii,
+.aino-work .items .image .overlay,
+.aino-work .items .image canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.aino-work .items .image .ascii {
+  z-index: 1;
+  overflow: hidden;
+  white-space: pre;
+  color: var(--fg);
+  background: var(--bg);
+  font-family: var(--font-code-stack);
+  font-size: var(--font-size);
+  letter-spacing: var(--letter-spacing);
+  line-height: var(--line);
+  font-variant-ligatures: none;
+}
+
+.aino-work .items .info {
+  opacity: 0;
+  padding-top: var(--line);
+  font-family: var(--font-grotesk-stack);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.aino-work .items .info .number,
+.aino-work .items .info .year {
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing);
+}
+
+.aino-work .items .info .year {
+  display: none;
+}
+
+html.js .aino-work .gridcontainer,
+.aino-work .listcontainer {
+  display: none;
+}
+
+html:not(.js) .aino-work .items .image {
+  aspect-ratio: 0.8;
+}
+
+html:not(.js) .aino-work .buttons {
+  display: none;
+}
+
+html[data-mode="text"] .aino-work .items .item {
+  opacity: 1;
+}
+
+html.js .aino-work .buttons .btn,
+html.js .aino-work .projects {
+  opacity: 0;
+}
+
+/* .linelist */
+.aino-work .linelist {
+  z-index: 2;
+  font-family: var(--font-label);
+  font-weight: 500;
+  text-transform: uppercase;
+  position: relative;
+  transform: translateY(-1px);
+  line-height: var(--line);
+}
+
+.aino-work .linelist li .line {
+  gap: var(--char2);
+  width: 100vw;
+  margin-left: calc(var(--char) * -2);
+  padding: 0 var(--char2);
+  grid-template-columns: repeat(4, 1fr);
+  display: grid;
+}
+
+.aino-work .linelist li .line > span {
+  display: block;
+  transform: translateY(1px);
+}
+
+.aino-work .linelist li .line > span.wide {
+  grid-column: span 2;
+}
+
+.aino-work .linelist li .line > span:last-child {
+  justify-self: end;
+}
+
+.aino-work .linelist li .line.inactive {
+  opacity: 0.4;
+}
+
+.aino-work .linelist li.active {
+  animation: 0.16s linear infinite aino-blinker;
+}
+
+.aino-work .linelist li.active a:hover {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* gn adds .out to the list itself when a row is chosen. */
+.aino-work .linelist.out li:not(.active) {
+  opacity: 0;
+}
+
+@media (hover: hover) {
+  .aino-work .linelist li a:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+}
+
+@keyframes aino-blinker {
+  0% { opacity: 0; }
+  49% { opacity: 0; }
+  50% { opacity: 1; }
+  99% { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .aino-work .aino-app {
+    padding-bottom: 0;
+  }
+
+  .aino-work .section {
+    gap: var(--line);
+    flex-direction: column;
+  }
+
+  .aino-work .section .col {
+    width: 100% !important;
+  }
+
+  .aino-work .section.menu {
+    flex-direction: row;
+    justify-content: space-between;
+    display: flex;
+    margin-top: calc(var(--line) * 2) !important;
+  }
+
+  .aino-work .section.menu > .col:first-child {
+    flex: 1;
+    width: 100%;
+  }
+
+  .aino-work .section.menu > .col:last-child {
+    margin-left: auto;
+    width: auto !important;
+  }
+
+  .aino-work .items {
+    width: calc(100vw - var(--char2));
+  }
+
+  .aino-work .items .case {
+    gap: var(--char2);
+    scrollbar-width: none;
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    padding-right: var(--char2);
+  }
+
+  .aino-work .items .case::-webkit-scrollbar {
+    display: none;
+  }
+
+  .aino-work .items .item {
+    opacity: 1;
+    flex: 0 0 calc(var(--fullcol) - var(--char2));
+    filter: grayscale(0);
+  }
+
+  .aino-work .items .item .info {
+    display: none;
+  }
+
+  .aino-work .items > .info {
+    opacity: 1;
+    margin-top: calc(var(--line) * -2);
+    margin-bottom: calc(var(--line) * 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aino-work .linelist li.active {
+    animation: none;
+  }
+}

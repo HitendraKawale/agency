@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Media from "@/components/site/media";
+import Reel, { CLIPS } from "@/components/site/reel";
 import Reveal from "@/components/site/reveal";
-import FilmstripVideoPlayer from "@/components/ui/filmstrip-video-player";
 import ParflowMarkEditor from "@/components/ui/parflow-mark-editor";
 
 /**
@@ -35,12 +35,6 @@ const CASE = {
     { src: "/frames/parflow-catalogue.png", alt: "Parflow product catalogue", className: "span-4", phone: false },
     { src: "/frames/parflow-product.png", alt: "A Parflow product page", className: "span-4", phone: false },
   ],
-  // 26.3 s, recorded from the live site (public/media/PROVENANCE.md).
-  walkthrough: {
-    src: "/media/parflow-walkthrough.mp4",
-    frames: Array.from({ length: 9 }, (_, i) => `/media/parflow-walkthrough/${i + 1}.jpg`),
-    timestamps: Array.from({ length: 13 }, (_, i) => `00:${String(Math.round((i * 26.3) / 12)).padStart(2, "0")}`),
-  },
   identity: {
     label: "Ideation",
     heading: "What makes this website what it is now.",
@@ -201,18 +195,7 @@ export default function ParflowCaseStudy() {
         </div>
       </section>
 
-      <section className="reel" aria-label="Parflow Engineering walkthrough">
-        <FilmstripVideoPlayer
-          videoSrc={CASE.walkthrough.src}
-          frames={CASE.walkthrough.frames}
-          timestamps={CASE.walkthrough.timestamps}
-          markerColor="#DFEAE8"
-        />
-        <div className="reel-tag label">
-          <span>( Walkthrough )</span>
-          <span>parflowengineering.com</span>
-        </div>
-      </section>
+      <Reel clip={CLIPS.parflow} left="( Walkthrough )" right="parflowengineering.com" />
 
       <section className="sec sec-rule" aria-labelledby="identity-title">
         <SectionHead id="identity-title" label={CASE.identity.label} heading={CASE.identity.heading} />

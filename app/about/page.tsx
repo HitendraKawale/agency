@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 
 const EMAIL = "aryan@blankinterface.com";
 
-/** Portraits in the motion-smear treatment from the brief (public/media/PROVENANCE.md). */
+/** The founders' own photographs. */
 const PEOPLE = [
-  { name: "Aryan Kathawale", href: "https://tldr.aryank.space", portrait: "/media/aryan-smear.jpg" },
-  { name: "Hitendra Kawale", href: "https://hitendra.dev/tldr", portrait: "/media/hitendra-smear.jpg" },
+  { name: "Aryan Kathawale", href: "https://tldr.aryank.space", portrait: "/team/aryan.png" },
+  { name: "Hitendra Kawale", href: "https://hitendra.dev/tldr", portrait: "/team/hitendra.png" },
 ] as const;
 
 const PLACES = ["Mumbai", "United Kingdom", "Remote"] as const;
