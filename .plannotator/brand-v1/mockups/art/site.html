@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Website hero</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Website hero after Rerun's site (reference/rerun/studiogruhl_rerun_18-website.jpg): sandpaper page,
+   noir pill nav carrying the wordmark, the statement as the headline, actions left, the studio line
+   right, and the heat artwork as a full-width panel. Neutral layout, colour only in the artwork. */
+*{margin:0;box-sizing:border-box}
+/* noir ground, white type; the nav sits on the ground itself, only the quiet button is one step up */
+:root{--noir:#0E0D0D;--raised:#1E1C1C;--white:#fff;--muted:rgba(255,255,255,.72)}
+html,body{background:var(--noir);color:var(--white);font-family:"Inter Tight",sans-serif}
+.page{max-width:1600px;margin:0 auto;padding:22px 22px 40px}
+nav{display:flex;align-items:center;justify-content:space-between;color:var(--white);
+  border-radius:14px;padding:0 22px;height:76px}
+nav .mark svg{display:block;height:32px;width:auto;fill:var(--white)}
+nav ul{display:flex;gap:56px;list-style:none;font:500 15px/1 "Inter Tight",sans-serif}
+nav a{color:inherit;text-decoration:none}
+nav .contact{font:500 15px/1 "Inter Tight",sans-serif}
+h1{font-weight:400;font-size:clamp(40px,5.6vw,90px);line-height:1;letter-spacing:-.035em;max-width:17em;text-wrap:balance;margin:64px 22px 0}
+.row{display:grid;grid-template-columns:1fr 1fr;align-items:start;gap:40px;margin:72px 22px 0}
+.actions{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;height:46px;padding:0 18px;border-radius:8px;font:500 15px/1 "Inter Tight",sans-serif;text-decoration:none}
+.btn.primary{background:var(--white);color:var(--noir)}
+.btn.quiet{background:var(--raised);color:var(--white)}
+.row p{color:var(--muted);font-size:20px;line-height:1.25;letter-spacing:-.01em;max-width:34em}
+.panel{position:relative;margin-top:56px;border-radius:14px;overflow:hidden;aspect-ratio:16/8;background:#8caed2}
+.panel iframe{position:absolute;inset:-4% 0 0 0;width:100%;height:108%;border:0}
+@media (max-width:760px){
+  .page{padding:16px}
+  nav ul{display:none}
+  h1{margin:40px 4px 0}
+  .row{grid-template-columns:1fr;margin:40px 4px 0}
+  .panel{aspect-ratio:4/5}
+}
+</style></head><body><div class="page">
+<nav><a class="mark" href="#" aria-label="Blank Interfaces"><svg id="mark" fill-rule="evenodd"></svg></a>
+  <ul><li><a href="#">Projects</a></li><li><a href="#">About</a></li><li><a href="#">Blog</a></li></ul>
+  <a class="contact" href="#" style="color:inherit;text-decoration:none">Contact</a></nav>
+<h1>We design and build websites and products for the people who use them and the agents that read them.</h1>
+<div class="row">
+  <div class="actions"><a class="btn primary" href="#">Start a project</a><a class="btn quiet" href="#">See the work</a></div>
+  <p>A design and engineering studio in Mumbai and the UK, led by Aryan Kathawale and Hitendra Kawale.</p>
+</div>
+<div class="panel"><iframe id="car" scrolling="no" title="Heat render of a Formula 1 car"></iframe></div>
+</div>
+<script src="../../mark/blank3.js"></script><script src="../../mark/ks.js"></script><script src="../../mark/as.js"></script><script>
+const [B, l, , n] = WORD.tallParts, w = WORD.set([B, l, AS.a9, n, KS.k5]), m = document.getElementById("mark");
+m.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); m.innerHTML = w.svg;
+const q = new URLSearchParams(location.search), car = document.getElementById("car");
+car.src = "../../f1/heatcar" + (q.has("t") ? `?t=${q.get("t")}` : "");
+const wait = setInterval(() => { try { if (car.contentWindow.__ready) { clearInterval(wait); requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")); } } catch {} }, 100);
+</script></body></html>

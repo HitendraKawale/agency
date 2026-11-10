@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}
+body{width:1600px;background:#171616;padding:60px;display:grid;gap:60px}
+.row{border-radius:14px;padding:70px 60px;display:flex;justify-content:center;align-items:center}
+.noir{background:#000}.sand{background:#F1EFEB}
+img{width:100%;display:block;background:#fff;border-radius:14px;padding:40px 60px}
+svg{display:block}
+</style></head><body>
+<img src="wordmark-trim.png">
+<div class="row sand"><svg id="b" fill="#171616"></svg></div>
+<div class="row noir"><svg id="a" fill="#fff"></svg></div>
+<div class="row noir" style="gap:80px"><svg id="c" fill="#fff"></svg><svg id="d" fill="#fff"></svg><svg id="e" fill="#fff"></svg></div>
+<script src="blank-word.js"></script><script>
+const put = (id, w) => { const s = document.getElementById(id); s.setAttribute("viewBox", `0 0 ${BLANK.width} ${BLANK.height}`); s.style.width = w + "px";
+  s.innerHTML = `<path fill-rule="evenodd" d="${BLANK.path}"/>`; };
+put("a", 1300); put("b", 1300); put("c", 400); put("d", 160); put("e", 64);
+document.title = "ready";
+</script></body></html>

@@ -1,0 +1,111 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}
+html,body{width:1440px;height:768px;background:#1b1b1c;overflow:hidden}
+.wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:20px;height:768px}
+.panel{position:relative;border-radius:14px;overflow:hidden}
+.dark{background:#000}
+.big{width:640px;justify-self:center}
+.tile{position:absolute;left:50%;top:50%;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:30px;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+</style></head><body><div class="wrap">
+<div class="panel dark"><div class="tile"><canvas id="a"></canvas></div></div>
+<div class="panel big"><canvas id="b"></canvas></div>
+</div><script>
+// BI heat mark. Heat follows the glyph the way Paper's heatmap does (blurred copies of the shape:
+// wide glow, inner heat, fine contour), is pushed around by a sweeping wave, drifting warm blobs
+// and a domain warp, then runs through Rerun's cyclic spectrum about two and a half times. Each
+// wrap of the ramp is a contour, so the "water marks" follow the heat and contort as it moves.
+const BI = (() => {
+  const H = 240, S = 62, T = 40, MID = 30, BW = 218, C = 40, GAP = 24, IW = 62, IC = 22;
+  const ix = BW + GAP, W = ix + IW, wy = H / 2;
+  const b = [`M0 0H${BW - C}L${BW} ${C}`, `V${wy - C * 0.6}L${BW - C * 0.9} ${wy}L${BW} ${wy + C * 0.6}`, `V${H - C}L${BW - C} ${H}H0Z`].join("");
+  const ch = (H - 2 * T - MID) / 2;
+  const disc = (y0, xr) => { const r = ch / 2; return `M${S} ${y0}H${xr - r}A${r} ${r} 0 0 1 ${xr - r} ${y0 + ch}H${S}Z`; };
+  const xr = BW - S + 10;
+  const slit = (cx, w, depth) => `M${cx - w / 2} 0V${depth - w / 2}A${w / 2} ${w / 2} 0 0 0 ${cx + w / 2} ${depth - w / 2}V0Z`;
+  const i = `M${ix} 0H${W - IC}L${W} ${IC}V${H - IC}L${W - IC} ${H}H${ix}Z`;
+  return { width: W, height: H, path: [b, disc(T, xr), disc(T + ch + MID, xr), slit(S + 12, 20, 19), i].join(" ") };
+})();
+
+// glyph -> RGB texture: R = shape (slight blur), G = wide glow, B = inner heat. Same idea as
+// Paper's toProcessedHeatmap, computed with stacked canvas blurs.
+function glyphTexture(w, h, glyph) {
+  const layer = (blur) => { const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d", { willReadFrequently: true });
+    g.fillStyle = "#000"; g.fillRect(0, 0, w, h); g.filter = `blur(${blur}px)`; g.fillStyle = "#fff";
+    g.save(); g.translate(glyph.x, glyph.y); g.scale(glyph.s, glyph.s); g.fill(new Path2D(BI.path), "evenodd"); g.restore();
+    return g.getImageData(0, 0, w, h).data; };
+  const R = layer(h * 0.004), G = layer(h * 0.16), B = layer(h * 0.045);
+  const out = new Uint8Array(w * h * 4);
+  for (let i = 0; i < w * h; i++) { out[i * 4] = R[i * 4]; out[i * 4 + 1] = Math.min(255, G[i * 4] * 2.2); out[i * 4 + 2] = Math.min(255, B[i * 4] * 1.4); out[i * 4 + 3] = 255; }
+  return out;
+}
+
+const VS = `attribute vec2 p; varying vec2 uv; void main(){ uv = p * .5 + .5; uv.y = 1. - uv.y; gl_Position = vec4(p, 0., 1.); }`;
+const FS = `precision highp float; varying vec2 uv; uniform sampler2D tex; uniform float t; uniform vec2 res;
+vec3 ramp(float u){
+  u = fract(u) * 5.;
+  vec3 s0 = vec3(24.,106.,221.)/255., s1 = vec3(155.,191.,211.)/255., s2 = vec3(134.,217.,166.)/255.,
+       s3 = vec3(246.,218.,117.)/255., s4 = vec3(215.,47.,33.)/255.;
+  if (u < 1.) return mix(s0, s1, u); if (u < 2.) return mix(s1, s2, u - 1.);
+  if (u < 3.) return mix(s2, s3, u - 2.); if (u < 4.) return mix(s3, s4, u - 3.); return mix(s4, s0, u - 4.);
+}
+float h21(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(h21(i), h21(i + vec2(1., 0.)), f.x), mix(h21(i + vec2(0., 1.)), h21(i + vec2(1., 1.)), f.x), f.y); }
+float fbm(vec2 p){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ s += a * vn(p); p = p * 2.03 + 7.1; a *= .5; } return s; }
+float blob(vec2 p, vec2 c, float r){ return exp(-dot(p - c, p - c) / (r * r)); }
+void main(){
+  float asp = res.x / res.y; vec2 p = vec2(uv.x * asp, uv.y);
+  // domain warp: the heat drifts and contorts
+  vec2 w = vec2(fbm(p * 1.6 + vec2(t * .07, 0.)), fbm(p * 1.6 + vec2(3.1, -t * .06))) - .5;
+  vec2 q = uv + w * .09;
+  vec3 g = texture2D(tex, q).rgb;
+  float edge = texture2D(tex, uv).b; // unwarped near the glyph so the outline stays clean
+  float heat = 1.05 * g.g + .5 * g.b + .45 * edge;
+  // a heat wave sweeping down through the frame (Paper's animated mask), and two warm blobs orbiting
+  float sweep = fract(uv.y * .8 - t * .06);
+  heat += .35 * smoothstep(.2, .55, sweep) * (1. - smoothstep(.55, 1., sweep));
+  heat += .55 * blob(p, vec2(asp * (.5 + .38 * cos(t * .23)), .55 + .3 * sin(t * .19)), .28);
+  heat += .4 * blob(p, vec2(asp * (.5 + .35 * cos(t * .17 + 2.4)), .5 + .35 * sin(t * .21 + 1.3)), .22);
+  // broad arc from the top, as in Rerun's icon
+  heat += .5 * smoothstep(1.05, 1.22, length(vec2(p.x - asp * .5, p.y - 1.4)));
+  heat += .12 * (fbm(p * 3. + t * .05) - .5);
+  // broad heat (about one and a half ramp cycles across the frame), plus water marks: small ripples
+  // that ride the heat's own contours, so they bend with it, shifting colour within one hue family
+  float base = heat * .62;
+  float marks = .07 * sin(6.2832 * (base * 9. - t * .35)) * (.55 + .45 * smoothstep(.0, .6, edge + g.g));
+  float v = base + marks + t * .2 + (h21(uv * res + t) - .5) * .06;
+  vec3 col = ramp(v);
+  gl_FragColor = vec4(col, 1.);
+}`;
+
+function makeMark(canvas, glyphFrac, cy, res) {
+  const r = canvas.getBoundingClientRect(), dpr = 2;
+  const W = canvas.width = Math.round(r.width * dpr), H = canvas.height = Math.round(r.height * dpr);
+  const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
+  const tw = Math.round(r.width * res), th = Math.round(r.height * res);
+  const s = (th * glyphFrac) / BI.height, glyph = { s, x: (tw - BI.width * s) / 2, y: th * cy - (BI.height * s) / 2 };
+  const prog = gl.createProgram();
+  for (const [ty, src] of [[gl.VERTEX_SHADER, VS], [gl.FRAGMENT_SHADER, FS]]) { const sh = gl.createShader(ty); gl.shaderSource(sh, src); gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); gl.attachShader(prog, sh); }
+  gl.linkProgram(prog); gl.useProgram(prog);
+  const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, tw, th, 0, gl.RGBA, gl.UNSIGNED_BYTE, glyphTexture(tw, th, glyph));
+  for (const k of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_2D, k, gl.LINEAR);
+  for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE);
+  const uT = gl.getUniformLocation(prog, "t"); gl.uniform2f(gl.getUniformLocation(prog, "res"), W, H);
+  // crisp white glyph over the field
+  const over = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  over.setAttribute("viewBox", `0 0 ${tw} ${th}`); over.style.cssText = "position:absolute;inset:0;width:100%;height:100%";
+  over.innerHTML = `<path fill="#fff" fill-rule="evenodd" transform="translate(${glyph.x} ${glyph.y}) scale(${s})" d="${BI.path}"/>`;
+  canvas.parentElement.appendChild(over);
+  return (t) => { gl.viewport(0, 0, W, H); gl.uniform1f(uT, t); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); };
+}
+const A = makeMark(document.getElementById("a"), 0.42, 0.5, 2), B = makeMark(document.getElementById("b"), 0.42, 0.42, 0.75);
+const q = new URLSearchParams(location.search);
+if (q.has("t")) { A(+q.get("t")); B(+q.get("t")); document.title = "ready"; }
+else { const t0 = performance.now(), still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const loop = () => { const t = (performance.now() - t0) / 1000 + 4; A(t); B(t); if (!still) requestAnimationFrame(loop); }; loop(); }
+</script></body></html>

@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}html,body{width:1280px;height:800px;background:#F7F6F2;overflow:hidden}
+canvas{display:block;width:1280px;height:800px}
+</style></head><body><canvas id="c"></canvas>
+<script>
+__FIELD__
+const W=1280,H=800,dpr=2,c=document.getElementById('c');c.width=W*dpr;c.height=H*dpr;
+const g=c.getContext('2d');g.scale(dpr,dpr);
+const f=new BlankField(160,100,BLANK_RAMPS.pyre);
+const s=1040/BLANK_MARK.width, ox=(W-1040)/2, oy=(H-BLANK_MARK.height*s)/2;
+const ink=new Path2D(), win=new Path2D();
+for(const L of BLANK_MARK.letters){const m=new DOMMatrix().translate(ox+L.x*s,oy).scale(s);
+ ink.addPath(new Path2D(L.ink+(L.counter?' '+L.counter:'')),m); if(L.counter) win.addPath(new Path2D(L.counter),m);}
+function draw(t){f.render(t);g.fillStyle='#F7F6F2';g.fillRect(0,0,W,H);g.fillStyle='#0F0E12';g.fill(ink,'evenodd');
+ g.save();g.clip(win);g.imageSmoothingQuality='high';g.drawImage(f.canvas,0,0,W,H);g.restore();}
+const still=matchMedia('(prefers-reduced-motion: reduce)').matches;const t0=performance.now();
+function loop(){draw((performance.now()-t0)/1000*0.6+3);if(!still)requestAnimationFrame(loop)}loop();
+</script></body></html>

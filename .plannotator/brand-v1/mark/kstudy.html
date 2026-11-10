@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}
+body{width:1600px;background:#171616;padding:60px;display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.row{border-radius:14px;padding:50px 40px;display:flex;justify-content:center;background:#F1EFEB}
+svg{display:block}
+</style></head><body>
+<script src="blank3.js"></script><script src="ks.js"></script><script>
+for (const name of ["was", "k4", "k5", "k6"]) {
+  const w = WORD.set([...WORD.tallParts, KS[name]]), row = document.createElement("div"); row.className = "row";
+  row.innerHTML = `<svg viewBox="0 0 ${w.width} ${w.height}" style="height:130px;width:${130 * w.width / w.height}px" fill="#171616" fill-rule="evenodd">${w.svg}</svg>`;
+  document.body.appendChild(row);
+}
+document.title = "ready";
+</script></body></html>

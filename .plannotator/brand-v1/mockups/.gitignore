@@ -1,0 +1,3 @@
+# Downloaded third-party mockup PSDs and their zips (Pixelbuddha etc.). Licensed, 35-125 MB each,
+# re-fetch with scripts/fetch_pixelbuddha.sh / fetch_zip.sh instead of committing.
+psd/

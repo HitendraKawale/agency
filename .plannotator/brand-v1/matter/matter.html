@@ -1,0 +1,115 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}html,body{width:100vw;height:100vh;background:#9BBFD3;overflow:hidden}
+canvas{display:block;width:100vw;height:100vh}
+</style></head><body><canvas id="c"></canvas><script>
+// Spectrum on matter. The mechanism behind Rerun's artworks, rebuilt as one tool:
+//   pass 1  raymarch an SDF object; value u = depth term + rim term; colour = cyclic ramp(fract(u))
+//   pass 2  blur in RGB, stronger vertically (red into blue goes through purple), then grain
+// Query: ?scene=rod|... &t=<seconds> (renders one frame, sets title "ready")
+const q = new URLSearchParams(location.search);
+const SCENE = q.get("scene") || "rod";
+const c = document.getElementById("c");
+const W = c.width = Math.round(innerWidth * (devicePixelRatio > 1 ? 1.5 : 1));
+const H = c.height = Math.round(innerHeight * (devicePixelRatio > 1 ? 1.5 : 1));
+const gl = c.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+
+const VS = `attribute vec2 p; varying vec2 uv; void main(){ uv = p * .5 + .5; gl_Position = vec4(p, 0., 1.); }`;
+
+const RAMP = `
+vec3 ramp(float u){
+  u = fract(u) * 5.;
+  vec3 s0 = vec3(24.,106.,221.)/255., s1 = vec3(155.,191.,211.)/255., s2 = vec3(134.,217.,166.)/255.,
+       s3 = vec3(246.,218.,117.)/255., s4 = vec3(215.,47.,33.)/255.;
+  if (u < 1.) return mix(s0, s1, u);
+  if (u < 2.) return mix(s1, s2, u - 1.);
+  if (u < 3.) return mix(s2, s3, u - 2.);
+  if (u < 4.) return mix(s3, s4, u - 3.);
+  return mix(s4, s0, u - 4.);
+}`;
+
+const SCENES = {
+  // threaded rod lying along x, receding to the right (validation against 26-artwork)
+  rod: `
+    float map(vec3 p){
+      float a = atan(p.y, p.z);
+      float th = .035 * (.5 + .5 * cos(6.2832 * (p.x / .19) - a));
+      float thread = pow(th / .035, 2.) * .035;
+      return length(p.yz) - (.62 + thread);
+    }
+    vec3 camPos(float t){ return vec3(-1.3, .78, 1.55); }
+    vec3 camTarget(float t){ return vec3(.55 + .05 * sin(t * .3), .38, 0.); }
+    float bgU(vec2 uv){ return 1.12 - .27 * exp(-pow((1. - uv.y - .075) / .045, 2.)) * (1. - smoothstep(0., .75, uv.x)); }
+    const float NEAR = 1.2, FAR = 3.0;`,
+};
+
+const FS1 = `precision highp float; varying vec2 uv; uniform float t; uniform vec2 res;
+${RAMP}
+${SCENES[SCENE]}
+vec3 nrm(vec3 p){ vec2 e = vec2(.001, 0.); return normalize(vec3(map(p+e.xyy)-map(p-e.xyy), map(p+e.yxy)-map(p-e.yxy), map(p+e.yyx)-map(p-e.yyx))); }
+void main(){
+  vec2 s = (uv * res - .5 * res) / res.y;
+  vec3 ro = camPos(t), ta = camTarget(t), f = normalize(ta - ro), r = normalize(cross(f, vec3(0.,1.,0.))), up = cross(r, f);
+  vec3 rd = normalize(f * 1.6 + s.x * r + s.y * up);
+  float d = 0., hit = 0.;
+  for (int i = 0; i < 160; i++){ float h = map(ro + rd * d); if (h < .0005) { hit = 1.; break; } d += h * .6; if (d > 8.) break; }
+  float u = bgU(uv);
+  if (hit > .5){
+    vec3 p = ro + rd * d, n = nrm(p);
+    float depth = clamp((d - NEAR) / (FAR - NEAR), 0., 1.);
+    float graze = 1. - abs(dot(n, -rd));
+    u = .43 + .55 * depth - .14 * pow(graze, 6.);
+  }
+  gl_FragColor = vec4(ramp(u), 1.);
+}`;
+
+const FS2 = `precision highp float; varying vec2 uv; uniform sampler2D img; uniform vec2 dir; uniform float grain;
+float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+void main(){
+  vec3 acc = vec3(0.); float w = 0.;
+  for (int i = -12; i <= 12; i++){ float k = exp(-float(i*i) / 50.); acc += texture2D(img, uv + dir * float(i)).rgb * k; w += k; }
+  vec3 col = acc / w;
+  col += grain * (h(uv * 1000. + 3.1) - .5) * .06;
+  gl_FragColor = vec4(col, 1.);
+}`;
+
+function prog(fs){
+  const p = gl.createProgram();
+  for (const [type, src] of [[gl.VERTEX_SHADER, VS], [gl.FRAGMENT_SHADER, fs]]){
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    gl.attachShader(p, s);
+  }
+  gl.linkProgram(p); return p;
+}
+const P1 = prog(FS1), P2 = prog(FS2);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+function target(){
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  for (const k of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_2D, k, gl.LINEAR);
+  for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE);
+  const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+  return { tex, fb };
+}
+const A = target(), B = target();
+function quad(p){ const loc = gl.getAttribLocation(p, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
+function blur(src, dst, dx, dy, grain){
+  gl.bindFramebuffer(gl.FRAMEBUFFER, dst ? dst.fb : null); gl.useProgram(P2);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, src.tex);
+  gl.uniform1i(gl.getUniformLocation(P2, "img"), 0);
+  gl.uniform2f(gl.getUniformLocation(P2, "dir"), dx, dy);
+  gl.uniform1f(gl.getUniformLocation(P2, "grain"), grain); quad(P2);
+}
+function draw(t){
+  gl.viewport(0, 0, W, H);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, A.fb); gl.useProgram(P1);
+  gl.uniform1f(gl.getUniformLocation(P1, "t"), t); gl.uniform2f(gl.getUniformLocation(P1, "res"), W, H); quad(P1);
+  const bx = 0.0016, by = 0.0042; // radius as a fraction of the frame; vertical stronger
+  blur(A, B, bx, 0, 0); blur(B, A, 0, by, 0); blur(A, B, bx, 0, 0); blur(B, null, 0, by, 1);
+}
+if (q.has("t")) { draw(+q.get("t")); document.title = "ready"; }
+else { const t0 = performance.now(), still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const loop = () => { draw((performance.now() - t0) / 1000); if (!still) requestAnimationFrame(loop); }; loop(); }
+</script></body></html>

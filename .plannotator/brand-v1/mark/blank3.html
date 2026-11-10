@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}
+body{width:1600px;background:#171616;padding:60px;display:grid;gap:40px}
+.row{border-radius:14px;padding:70px 60px;display:flex;justify-content:center;align-items:flex-end;gap:70px}
+.noir{background:#000}.sand{background:#F1EFEB}
+svg{display:block}
+</style></head><body>
+<div class="row sand"><svg data-w="old" data-h="90" fill="#171616"></svg><svg data-w="final" data-h="90" fill="#171616"></svg><svg data-w="alt" data-h="90" fill="#171616"></svg></div>
+<div class="row sand"><svg data-w="final" data-h="210" fill="#171616"></svg></div>
+<div class="row noir"><svg data-w="final" data-h="210" fill="#fff"></svg></div>
+<div class="row sand"><svg data-w="BI" data-h="96" fill="#171616"></svg><svg data-w="final" data-h="96" fill="#171616"></svg><svg data-w="final" data-h="40" fill="#171616"></svg><svg data-w="final" data-h="22" fill="#171616"></svg></div>
+<script src="blank3.js"></script><script src="ks.js"></script><script src="as.js"></script><script>
+{ const [B, l, aOld, n] = WORD.tallParts;
+  WORD.final = WORD.set([B, l, AS.a9, n, KS.k5]); WORD.alt = WORD.set([B, l, AS.a10, n, KS.k5]); WORD.old = WORD.set([B, l, AS.a7, n, KS.k5]); }
+for (const s of document.querySelectorAll("svg")) { const w = WORD[s.dataset.w], h = +s.dataset.h;
+  s.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); s.style.height = h + "px"; s.style.width = (h * w.width / w.height) + "px";
+  s.setAttribute("fill-rule", "evenodd"); s.innerHTML = w.svg; }
+document.title = "ready";
+</script></body></html>

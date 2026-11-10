@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Stage screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Stage screen art, 16:9, after Rerun's stage design (reference/rerun/studiogruhl_rerun_24-stage_design.jpg):
+   heat artwork full bleed, white wordmark top-left, speaker and time/place in the bottom corners.
+   Render at 1600x900 with deviceScaleFactor 2 -> 3200x1800, the PSD screen's size. */
+*{margin:0;box-sizing:border-box}
+:root{--white:#fff}
+html,body{width:1600px;height:900px;overflow:hidden;background:#8caed2}
+.art{position:absolute;inset:0}
+/* the car sits right of centre, like the gear in the reference */
+.art iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.mark{position:absolute;left:44px;top:40px;width:560px}
+.mark svg{display:block;width:100%;height:auto;fill:var(--white)}
+.meta{position:absolute;bottom:40px;color:var(--white);font:400 34px/1.08 "Inter Tight",sans-serif;letter-spacing:-.02em}
+.meta.l{left:44px}.meta.r{right:44px}
+</style></head><body>
+<div class="art"><iframe id="car" scrolling="no"></iframe></div>
+<div class="mark"><svg id="mark" fill-rule="evenodd"></svg></div>
+<div class="meta l">Aryan Kathawale<br>Design and engineering</div>
+<div class="meta r">21.11 18:00<br>Mumbai</div>
+<script src="../../mark/blank3.js"></script><script src="../../mark/ks.js"></script><script src="../../mark/as.js"></script><script>
+const [B, l, , n] = WORD.tallParts, w = WORD.set([B, l, AS.a9, n, KS.k5]), m = document.getElementById("mark");
+m.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); m.innerHTML = w.svg;
+const t = new URLSearchParams(location.search).get("t") ?? "2.4", car = document.getElementById("car");
+car.src = `../../f1/heatcar?t=${t}`;
+const wait = setInterval(() => { try { if (car.contentWindow.__ready) { clearInterval(wait); requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")); } } catch {} }, 100);
+</script></body></html>
