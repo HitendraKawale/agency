@@ -451,6 +451,12 @@ def load_displacement_map(f: dict[str, Any], psd_dir: Path) -> np.ndarray | None
     """The Displace filter's map, found by file name next to the PSD (never outside it)."""
     raw = str((f.get("params") or {}).get("DspF", ""))
     names = set(re.findall(r"[\w\- .]+\.(?:psd|psb|png|jpg|tiff?)", raw, flags=re.I))
+    if not names:
+        # Some mockups ship the filter unlinked and tell Photoshop users to pick the map by hand
+        # (e.g. Mockups-Design's About_Displacement.txt); take the one disp* file beside the PSD.
+        lone = [p for p in psd_dir.iterdir() if p.name.lower().startswith("disp") and p.suffix.lower() in (".psd", ".psb", ".png", ".jpg")]
+        if len(lone) == 1:
+            names = {lone[0].name}
     for n in sorted(names, key=len):
         cand = (psd_dir / Path(n.strip()).name).resolve()
         if cand.parent == psd_dir.resolve() and cand.is_file():
@@ -616,7 +622,41 @@ def cmd_list(path: Path) -> None:
     print(json.dumps(out, indent=2))
 
 
-def render(psd_path: Path, art_path: Path | None, out: Path, layer: str | None, fit: str, selftest: bool, hide: list[str]) -> None:
+def set_fill(psd: PSDImage, spec: str) -> None:
+    """--fill "Layer name=#RRGGBB": recolour solid-colour fill layers (e.g. a mockup's background)."""
+    from psd_tools.psd.descriptor import Double
+
+    name, _, hexcol = spec.rpartition("=")
+    if not name or len(hexcol.lstrip("#")) != 6:
+        raise SystemExit(f"--fill: expected 'Layer name=#RRGGBB', got {spec!r}")
+    rgb = [int(hexcol.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4)]
+    hits = [l for l in psd.descendants() if l.name == name and l.kind == "solidcolorfill"]
+    if not hits:
+        raise SystemExit(f"--fill: no solid-colour fill layer named {name!r}")
+    for l in hits:
+        clr = l.tagged_blocks.get_data(b"SoCo")[b"Clr "]
+        for key, v in zip((b"Rd  ", b"Grn ", b"Bl  "), rgb):
+            clr[key] = Double(float(v))
+        # psd-tools only draws the fill from that descriptor when the layer has no stored pixels;
+        # a saved fill layer has them, so its colour channel is overridden as well.
+        original = l.numpy
+
+        def numpy(channel: str | None = None, real_mask: bool = True, _o=original, _l=l) -> np.ndarray | None:
+            if channel in ("color", None):
+                c = np.empty((_l.height, _l.width, 3), np.float32)
+                c[...] = np.array(rgb, np.float32) / 255.0
+                if channel is None:
+                    a = _o("shape", real_mask=real_mask)
+                    a = np.ones((_l.height, _l.width, 1), np.float32) if a is None else a
+                    return np.concatenate([c, a], axis=-1)
+                return c
+            return _o(channel, real_mask=real_mask)
+
+        l.numpy = numpy  # type: ignore[method-assign]
+
+
+def render(psd_path: Path, art_path: Path | None, out: Path, layer: str | None, fit: str, selftest: bool, hide: list[str],
+           fills: list[str] = ()) -> None:
     psd = PSDImage.open(psd_path)
     layers = smart_layers(psd)
     targets = pick_targets(layers, layer)
@@ -633,6 +673,8 @@ def render(psd_path: Path, art_path: Path | None, out: Path, layer: str | None, 
             raise SystemExit(f"--hide: no layer named {name!r}")
         for l in hits:
             l.visible = False
+    for spec in fills:
+        set_fill(psd, spec)
 
     cache: dict[tuple[int, int], np.ndarray] = {}
     for s in targets:
@@ -713,6 +755,7 @@ def main() -> None:
     ap.add_argument("--fit", choices=["cover", "contain", "stretch"], default="cover", help="when the art's aspect differs from the smart object (default cover)")
     ap.add_argument("--selftest", action="store_true", help="use the embedded placeholder as art and diff against the PSD preview")
     ap.add_argument("--hide", action="append", default=[], metavar="LAYER", help="hide a layer by name before compositing (repeatable), e.g. a promo layer")
+    ap.add_argument("--fill", action="append", default=[], metavar="LAYER=#HEX", help="recolour a solid-colour fill layer (repeatable), e.g. 'Background color=#0E0D0D'")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args()
     logging.basicConfig(level=logging.INFO if a.verbose else logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
@@ -721,7 +764,7 @@ def main() -> None:
         return
     if not a.psd or not a.out or not (a.art or a.selftest):
         ap.error("--psd, --out and one of --art/--selftest are required (or use --list)")
-    render(a.psd, a.art, a.out, a.layer, a.fit, a.selftest, a.hide)
+    render(a.psd, a.art, a.out, a.layer, a.fit, a.selftest, a.hide, a.fill)
 
 
 if __name__ == "__main__":
