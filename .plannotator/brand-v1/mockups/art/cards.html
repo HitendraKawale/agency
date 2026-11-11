@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Business cards</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Business cards after Rerun's (reference/rerun/stills/studiogruhl_rerun_15-bc.jpg): sand and noir
+   cards, 85 x 55, the wordmark edge to edge along the top, name and contact at the foot.
+   1440x960 presentation on noir, 2x for export. */
+*{margin:0;box-sizing:border-box}
+:root{--noir:#0E0D0D;--sand:#F1EFEB;--black:#000}
+html,body{width:1440px;height:960px;overflow:hidden;background:var(--black);font-family:"Inter Tight",sans-serif}
+.stack{display:grid;gap:28px;justify-content:center;align-content:center;height:960px}
+.card{width:620px;aspect-ratio:85/55;padding:16px 16px 18px;display:flex;flex-direction:column}
+.card.sand{background:var(--sand);color:var(--noir)}
+.card.noir{background:var(--noir);color:var(--sand)}
+.card svg{display:block;width:100%;height:auto;fill:currentColor}
+.foot{margin-top:auto;display:flex;justify-content:space-between;align-items:end;font-size:13px;line-height:1.25;letter-spacing:-.005em}
+.foot p:last-child{text-align:right}
+</style></head><body>
+<div class="stack">
+  <div class="card sand"><svg class="mark" fill-rule="evenodd" role="img" aria-label="Blank"></svg>
+    <div class="foot"><p>Aryan Kathawale<br>Design and engineering</p><p>blankinterfaces.com<br>Mumbai and the UK</p></div></div>
+  <div class="card noir"><svg class="mark" fill-rule="evenodd" role="img" aria-label="Blank"></svg>
+    <div class="foot"><p>Hitendra Kawale<br>Design and engineering</p><p>blankinterfaces.com<br>Mumbai and the UK</p></div></div>
+</div>
+<script src="../../mark/rand.js"></script><script>
+for (const s of document.querySelectorAll("svg.mark")) {
+  s.setAttribute("viewBox", `0 0 ${RAND.B.width} ${RAND.B.height}`); s.innerHTML = `<path d="${RAND.B.path}"/>`;
+}
+document.fonts.ready.then(() => requestAnimationFrame(() => document.title = "ready"));
+</script></body></html>

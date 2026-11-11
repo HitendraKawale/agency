@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Billboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Billboard art after Rerun's (reference/rerun/stills/studiogruhl_rerun_09-billboard.jpg): the wordmark
+   edge to edge across the top, caught mid heat pass; the line large at bottom left; the studio
+   line small at bottom right. 1600x900, render at deviceScaleFactor 2 -> 3200x1800 (the PSD's
+   smart object, blended with multiply, so white is the board's paper).
+   ?t=<seconds> picks the moment of the heat pass, ?bg=sand for the sandpaper ground. */
+*{margin:0;box-sizing:border-box}
+:root{--paper:#FFFFFF;--noir:#0E0D0D}
+html,body{width:1600px;height:900px;overflow:hidden;background:var(--paper);color:var(--noir);font-family:"Inter Tight",sans-serif}
+.board{position:relative;width:1600px;height:900px;padding:64px 70px 60px;display:flex;flex-direction:column}
+.mark svg{display:block;width:100%;height:auto;fill:var(--noir)}
+.foot{margin-top:auto;display:grid;grid-template-columns:1fr 440px;align-items:end;gap:60px}
+h1{font-weight:400;font-size:112px;line-height:.96;letter-spacing:-.04em;text-wrap:balance;max-width:9.5em}
+.side{display:grid;gap:14px;font-size:24px;line-height:1.18;letter-spacing:-.01em}
+.side .url{font-size:18px;letter-spacing:0}
+</style></head><body>
+<div class="board">
+  <div class="mark" id="mark"><svg fill-rule="evenodd" role="img" aria-label="Blank"></svg></div>
+  <div class="foot">
+    <h1>Software made in God’s image.</h1>
+    <div class="side">
+      <span class="url">blankinterfaces.com</span>
+      <p>We design and build websites and products for the people who use them and the agents that read them.</p>
+    </div>
+  </div>
+</div>
+<script src="../../mark/rand.js"></script><script src="../../mark/heat-logo.js"></script><script>
+const q = new URLSearchParams(location.search);
+if (q.get("bg") === "sand") document.documentElement.style.setProperty("--paper", "#F1EFEB");
+const paper = q.get("bg") === "sand" ? [0.945, 0.937, 0.922] : [1, 1, 1];
+const svg = document.querySelector("#mark svg");
+svg.setAttribute("viewBox", `0 0 ${RAND.B.width} ${RAND.B.height}`); svg.innerHTML = `<path d="${RAND.B.path}"/>`;
+const heat = attachHeatLogo(document.getElementById("mark"), { ink: [0.055, 0.051, 0.051], bg: paper, autoplay: true });
+heat.setT(parseFloat(q.get("t") ?? "1.55"));
+document.fonts.ready.then(() => requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")));
+</script></body></html>
