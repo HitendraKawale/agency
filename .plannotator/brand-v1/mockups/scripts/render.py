@@ -303,6 +303,10 @@ def _resize(img: np.ndarray, w: int, h: int) -> np.ndarray:
     return np.clip(cv2.resize(img, (w, h), interpolation=interp), 0.0, 1.0)
 
 
+# Fitted parameters for warpCylinder layers (--cylinder fit.json, from scripts/cylinder.py), or None.
+CYLINDER: dict[str, Any] | None = None
+
+
 def _bezier_basis(t: np.ndarray) -> np.ndarray:
     mt = 1.0 - t
     return np.stack([mt**3, 3 * mt * mt * t, 3 * mt * t * t, t**3], axis=-1)
@@ -316,6 +320,19 @@ def warp_into_quad(
 ) -> tuple[np.ndarray, tuple[int, int, int, int]]:
     """Premultiplied RGBA of the art placed on canvas, cropped to its bbox."""
     W, H = s.size
+    if s.warp_style == "warpCylinder" and CYLINDER is not None:
+        # Fitted cylinder (scripts/cylinder.py) over this layer's own placement box.
+        from cylinder import wrap
+
+        qx, qy = s.quad[:, 0], s.quad[:, 1]
+        box = (float(qx.min()), float(qy.min()), float(qx.max()), float(qy.max()))
+        x0, y0 = int(math.floor(box[0])) - margin, int(math.floor(box[1])) - margin
+        x1, y1 = int(math.ceil(box[2])) + margin, int(math.ceil(box[3])) + margin
+        prem = art.copy()
+        prem[..., :3] *= prem[..., 3:4]
+        c = CYLINDER
+        out = wrap(prem, box, (x0, y0), (y1 - y0, x1 - x0), c["f"], c["bow"], c.get("du", 0.0), c.get("k", 1.0), c.get("dv", 0.0))
+        return out.astype(np.float32), (x0, y0, x1, y1)
     # Without a warp the placement quad is the content rectangle's image. With
     # a custom warp it is the image of the mesh control points' bounding box,
     # which can be larger than the content.
@@ -756,12 +773,17 @@ def main() -> None:
     ap.add_argument("--selftest", action="store_true", help="use the embedded placeholder as art and diff against the PSD preview")
     ap.add_argument("--hide", action="append", default=[], metavar="LAYER", help="hide a layer by name before compositing (repeatable), e.g. a promo layer")
     ap.add_argument("--fill", action="append", default=[], metavar="LAYER=#HEX", help="recolour a solid-colour fill layer (repeatable), e.g. 'Background color=#0E0D0D'")
+    ap.add_argument("--cylinder", type=Path, metavar="FIT.json", help="fitted parameters for warpCylinder smart objects (scripts/cylinder.py)")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args()
     logging.basicConfig(level=logging.INFO if a.verbose else logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     if a.list:
         cmd_list(a.list)
         return
+    if a.cylinder:
+        global CYLINDER
+        sys.path.insert(0, str(Path(__file__).parent))
+        CYLINDER = json.loads(a.cylinder.read_text())
     if not a.psd or not a.out or not (a.art or a.selftest):
         ap.error("--psd, --out and one of --art/--selftest are required (or use --list)")
     render(a.psd, a.art, a.out, a.layer, a.fit, a.selftest, a.hide, a.fill)

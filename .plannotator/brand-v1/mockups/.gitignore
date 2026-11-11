@@ -1,3 +1,7 @@
 # Downloaded third-party mockup PSDs and their zips (Pixelbuddha etc.). Licensed, 35-125 MB each,
 # re-fetch with scripts/fetch_pixelbuddha.sh / fetch_zip.sh instead of committing.
 psd/
+__pycache__/
+# matting inputs (scripts/matte.py); the *-print.png results are kept
+out/*/*-000000.png
+out/*/*-FFFFFF.png
