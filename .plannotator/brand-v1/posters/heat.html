@@ -66,6 +66,7 @@ const SUBJECTS = {
   plato: { model: "./model/plato.glb", yaw: 0, pitch: 0.05, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
   christ: { model: "./model/christ.glb", yaw: -0.85, pitch: -0.3, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
   redeemer: { model: "./model/redeemer.glb", yaw: 0, pitch: -0.1, dist: 12, lookX: 0, lookY: 0.6, sway: 0, fov: 26 }, // strongest at t=2.3
+  dunes: { procedural: "dunes", yaw: 0.35, pitch: 0.24, dist: 7.5, lookX: 0, lookY: 0, sway: 0.05, fov: 26 },
   david: { model: "./model/david.glb", yaw: -0.8, pitch: 0.05, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
 };
 const S = { ...SUBJECTS[qs.get("s") || "adam"] };
@@ -285,7 +286,42 @@ resize();
 let ready = false;
 const loader = new GLTFLoader();
 loader.setMeshoptDecoder(MeshoptDecoder);
-loader.load(MODEL, (gltf) => {
+// Procedural dunes: a field of wind ridges, each a gentle windward slope and a steep lee face,
+// bent and varied with noise. No model file; the same clay and heat passes apply.
+function dunes() {
+  const geo = new THREE.PlaneGeometry(8, 8, 480, 480);
+  geo.rotateX(-Math.PI / 2);
+  const p = geo.attributes.position, keep = new Uint8Array(p.count);
+  const hash = (x, z) => { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const vnoise = (x, z) => {
+    const ix = Math.floor(x), iz = Math.floor(z), fx = x - ix, fz = z - iz;
+    const u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz);
+    const a = hash(ix, iz), b = hash(ix + 1, iz), c = hash(ix, iz + 1), d = hash(ix + 1, iz + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  };
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), z = p.getZ(i);
+    const bend = 0.9 * (vnoise(x * 0.35, z * 0.35) - 0.5);
+    // a skewed sine: long windward slope, short lee face, smooth everywhere (no wrap-around cliffs)
+    const a = 2 * Math.PI * (z * 0.55 + bend + 0.15 * Math.sin(x * 0.7));
+    const ridge = 0.5 + 0.5 * Math.sin(a + 0.75 * Math.sin(a));
+    const amp = 0.55 + 0.45 * vnoise(x * 0.5 + 9, z * 0.3);
+    // an island: the field falls away to nothing towards a ragged edge, so it has a silhouette
+    const r = Math.hypot(x / 3.4, z / 2.6) + 0.18 * (vnoise(x * 0.8 + 3, z * 0.8) - 0.5);
+    const fall = Math.max(0, 1 - Math.pow(Math.min(r, 1), 3));
+    p.setY(i, (amp * Math.pow(ridge, 1.6) * 1.7 + 0.35) * fall - 0.02);
+    keep[i] = fall > 0 ? 1 : 0;
+  }
+  // keep only triangles that touch the island, so no flat sheet or cut edge is left around it
+  const idx = geo.index.array, kept = [];
+  for (let t = 0; t < idx.length; t += 3)
+    if (keep[idx[t]] || keep[idx[t + 1]] || keep[idx[t + 2]]) kept.push(idx[t], idx[t + 1], idx[t + 2]);
+  geo.setIndex(kept);
+  geo.computeVertexNormals();
+  const g = new THREE.Group(); g.add(new THREE.Mesh(geo, clay.clone()));
+  return { scene: g };
+}
+const onModel = (gltf) => {
   const car = gltf.scene;
   car.traverse((o) => {
     if (!o.isMesh) return;
@@ -303,7 +339,9 @@ loader.load(MODEL, (gltf) => {
   pivot.add(wrap);
   ready = true;
   window.__ready = true;
-}, undefined, (e) => { console.error(e); document.title = "model failed"; });
+};
+if (S.procedural === "dunes") onModel(dunes());
+else loader.load(MODEL, onModel, undefined, (e) => { console.error(e); document.title = "model failed"; });
 
 // ---------- frame ----------
 const start = performance.now();

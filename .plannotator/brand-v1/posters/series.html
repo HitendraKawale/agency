@@ -1,0 +1,117 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Poster series</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Poster layouts after Rerun's poster wall (studiogruhl.com/projects/rerun, the Re:Group poster and
+   the sand pair) and its dark diagram card. 1131 x 1600 each (A-series), render at 2x.
+   ?p=group | sand-line | sand-mark | diagram | statement    ?t= freezes the heat */
+*{margin:0;box-sizing:border-box}
+:root{--noir:#0E0D0D;--sand:#F1EFEB;--paper:#FFFFFF}
+html,body{width:1131px;height:1600px;overflow:hidden;font-family:"Inter Tight",sans-serif;background:#000}
+.poster{position:absolute;inset:0;display:none}
+.heat{position:absolute;border:0;overflow:hidden;display:block}
+.heat iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+svg{display:block;width:100%;height:auto;fill:currentColor}
+.small{font-size:15px;line-height:1.25;letter-spacing:-.005em}
+
+/* group: wordmark across the top, tall field, title and details at the foot (Re:Group) */
+.group{background:var(--paper);color:var(--noir);padding:22px}
+.group .mark{width:100%}
+.group .heat{left:22px;right:22px;top:290px;bottom:168px}
+.group .foot{position:absolute;left:22px;right:22px;bottom:24px;display:flex;justify-content:space-between;align-items:end}
+.group h1{font-weight:400;font-size:58px;line-height:.98;letter-spacing:-.04em}
+.group .foot .small{text-align:right}
+
+/* sand-line: headline top left, a wide field low, a caption, studio and place in the corners */
+.sand{background:var(--sand);color:var(--noir)}
+.sand h1{position:absolute;left:28px;top:24px;font-weight:400;font-size:52px;line-height:1.02;letter-spacing:-.035em;width:12em}
+.sand-line .heat{left:28px;right:28px;top:640px;height:500px}
+.sand-line .cap{position:absolute;left:28px;top:1162px}
+.sand .corner{position:absolute;bottom:26px}
+.sand .corner.l{left:28px}.sand .corner.r{right:28px;text-align:right}
+
+/* sand-mark: the monogram small, a large field and a small inset */
+.sand-mark .bi{position:absolute;left:28px;top:30px;width:92px}
+.sand-mark .heat.big{left:226px;right:28px;top:28px;height:880px}
+.sand-mark .heat.inset{right:28px;top:936px;width:296px;height:330px}
+
+/* diagram: heat everywhere, a noir card inset with the monogram, three stacked frames, three steps */
+.diagram .heat.full{inset:0}
+.diagram .card{position:absolute;inset:64px;background:var(--noir);color:#fff;border-radius:10px;padding:40px}
+.diagram .bi{width:110px}
+.diagram .stack{fill:none;position:absolute;left:50%;top:230px;width:760px;transform:translateX(-50%)}
+.diagram .steps{position:absolute;left:40px;right:40px;bottom:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+
+/* statement: noir sheet, the site line large, the version mark small at the foot */
+.statement{background:var(--noir);color:#fff}
+.statement h1{position:absolute;left:44px;right:44px;top:40px;font-weight:400;font-size:84px;line-height:1.02;letter-spacing:-.04em;text-wrap:balance}
+.statement .corner{position:absolute;bottom:34px}
+.statement .corner.l{left:44px}.statement .corner.r{right:44px;text-align:right}
+</style></head><body>
+
+<section class="poster group" id="group">
+  <div class="mark wm"></div>
+  <div class="heat" data-s="dunes"></div>
+  <div class="foot"><h1>Software made<br>in God’s image.</h1><p class="small">Blank Interfaces<br>Mumbai and the UK</p></div>
+</section>
+
+<section class="poster sand sand-line" id="sand-line">
+  <h1>We design and build software for the people who use it and the agents that read it.</h1>
+  <div class="heat" data-s="dunes" data-q="dist=5.2&lookY=0.15"></div>
+  <p class="small cap">Heat render of a dune field</p>
+  <p class="small corner l">Blank Interfaces</p><p class="small corner r">Mumbai and the UK</p>
+</section>
+
+<section class="poster sand sand-mark" id="sand-mark">
+  <div class="bi bimark"></div>
+  <div class="heat big" data-s="plato"></div>
+  <div class="heat inset" data-car="1"></div>
+  <p class="small corner l">Blank Interfaces</p><p class="small corner r">Mumbai and the UK</p>
+</section>
+
+<section class="poster diagram" id="diagram">
+  <div class="heat full" data-s="dunes"></div>
+  <div class="card">
+    <div class="bi bimark"></div>
+    <svg class="stack" viewBox="0 0 760 860" fill="none" stroke="#fff" stroke-width="2"></svg>
+    <div class="steps small"><p>01. Design<br>the interface</p><p>02. Build the<br>product</p><p>03. Make it readable<br>to agents</p></div>
+  </div>
+</section>
+
+<section class="poster statement" id="statement">
+  <h1>We design and build websites and products for the people who use them and the agents that read them.</h1>
+  <p class="small corner l">Blank Interfaces</p><p class="small corner r">Mumbai and the UK</p>
+</section>
+
+<script src="../mark/rand.js"></script><script src="../mark/bi.js"></script><script>
+const q = new URLSearchParams(location.search), p = q.get("p") ?? "group", t = q.get("t") ?? "1.6";
+const sec = document.getElementById(p); sec.style.display = "block";
+const svg = (g) => `<svg viewBox="0 0 ${g.width} ${g.height}" fill-rule="evenodd" role="img"><path d="${g.path}"/></svg>`;
+sec.querySelectorAll(".wm").forEach((e) => (e.innerHTML = svg(RAND.B)));
+sec.querySelectorAll(".bimark").forEach((e) => (e.innerHTML = svg(BI)));
+
+// three stacked hexagon frames with corner handles and a number in each (the diagram card)
+const st = sec.querySelector(".stack");
+if (st) {
+  let h = "";
+  [0, 1, 2].forEach((i) => {
+    const y = 40 + i * 250, w = 700, x = 30, d = 80, hh = 120;
+    const pts = [[x + w / 2, y], [x + w, y + d], [x + w, y + d + hh], [x + w / 2, y + 2 * d + hh], [x, y + d + hh], [x, y + d]];
+    h += `<polygon points="${pts.map((q) => q.join(",")).join(" ")}"/>`;
+    h += pts.map(([a, b]) => `<rect x="${a - 6}" y="${b - 6}" width="12" height="12" fill="#fff" stroke="none"/>`).join("");
+    h += `<text x="${x + w / 2}" y="${y + d + hh / 2 + 10}" fill="#fff" stroke="none" font-family="Inter Tight" font-size="30" text-anchor="middle">0${i + 1}</text>`;
+  });
+  st.innerHTML = h;
+}
+
+// live heat: the poster subjects (posters/heat.html) and the car (f1/heatcar.html), frozen at t
+const frames = [...sec.querySelectorAll(".heat")].map((el) => {
+  const f = document.createElement("iframe");
+  f.src = el.dataset.car ? `../f1/heatcar?t=${t}` : `heat?s=${el.dataset.s}&t=${t}` + (el.dataset.q ? `&${el.dataset.q}` : "");
+  el.appendChild(f); return f;
+});
+const wait = setInterval(() => {
+  try { if (frames.every((f) => f.contentWindow.__ready)) { clearInterval(wait); document.fonts.ready.then(() => setTimeout(() => (document.title = "ready"), 600)); } } catch {}
+}, 150);
+if (!frames.length) document.fonts.ready.then(() => (document.title = "ready"));
+</script></body></html>
