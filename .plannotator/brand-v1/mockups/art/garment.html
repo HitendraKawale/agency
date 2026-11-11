@@ -6,13 +6,21 @@
    ?w=&h= the smart object's size in px (render at deviceScaleFactor 1)
    ?x=&y=&mw= wordmark left/top and width as fractions of the canvas
    ?heat=<seconds> freezes the heat pass on the print (white ink on the fabric), omit for a plain print
-   ?fabric=#hex, default a lifted noir so the folds survive the burn blend */
+   ?fabric=#hex, default a lifted noir so the folds survive the burn blend
+   ?img=<path>&ix=&iy=&iw= a square artwork panel (a heat render), left/top/width as fractions
+   ?line=<text> a short line set under the panel, right of the wordmark */
 *{margin:0;box-sizing:border-box}
-html,body{overflow:hidden}
+html,body{overflow:hidden;font-family:"Inter Tight",sans-serif}
 .mark{position:absolute}
 .mark svg{display:block;width:100%;height:auto;fill:#fff}
-</style></head><body>
+.art{position:absolute;display:block;aspect-ratio:1/1;object-fit:cover}
+.line{position:absolute;color:#fff;font-weight:400;letter-spacing:-.02em;line-height:1.05}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&display=swap" rel="stylesheet">
+</head><body>
+<img class="art" id="art" alt="" hidden>
 <div class="mark" id="mark"><svg fill-rule="evenodd" role="img" aria-label="Blank"></svg></div>
+<p class="line" id="line" hidden></p>
 <script src="../../mark/rand.js"></script><script src="../../mark/heat-logo.js"></script><script>
 const q = new URLSearchParams(location.search), n = (k, d) => parseFloat(q.get(k) ?? d);
 const W = n("w", 2000), H = n("h", 2000), fabric = q.get("fabric") ?? "#2B2A2A";
@@ -23,5 +31,21 @@ Object.assign(el.style, { left: n("x", .35) * W + "px", top: n("y", .3) * H + "p
 svg.setAttribute("viewBox", `0 0 ${RAND.B.width} ${RAND.B.height}`); svg.innerHTML = `<path d="${RAND.B.path}"/>`;
 const rgb = [1, 3, 5].map((i) => parseInt(fabric.slice(i, i + 2), 16) / 255);
 if (q.has("heat")) attachHeatLogo(el, { ink: [1, 1, 1], bg: rgb, autoplay: true }).setT(n("heat", 2));
-requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready"));
+const waits = [document.fonts.ready];
+if (q.has("img")) {
+  const art = document.getElementById("art");
+  Object.assign(art.style, { left: n("ix", .3) * W + "px", top: n("iy", .2) * H + "px", width: n("iw", .4) * W + "px" });
+  art.hidden = false; art.src = q.get("img");
+  waits.push(art.decode());
+}
+if (q.has("line")) {
+  const line = document.getElementById("line");
+  // "|" in the text marks the line break, so a short line never ends on a lone word
+  for (const [i, part] of q.get("line").split("|").entries()) { if (i) line.append(document.createElement("br")); line.append(part); }
+  line.hidden = false;
+  // right column under the panel, same top as the wordmark
+  Object.assign(line.style, { left: (n("ix", .3) + n("iw", .4) * .52) * W + "px", top: n("y", .3) * H + "px",
+    width: n("iw", .4) * .48 * W + "px", fontSize: n("ls", .022) * W + "px" });
+}
+Promise.all(waits).then(() => requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")));
 </script></body></html>

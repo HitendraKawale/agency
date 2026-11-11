@@ -10,6 +10,18 @@
   Models (CC BY 4.0, credit on public use):
     adam: "The Creation of Adam" by Loic Norgeot
           https://sketchfab.com/3d-models/the-creation-of-adam-4d1727c7b83e4e6284bbadb63dbb537e
+    socrates: "Bust of the Ancient Greek Philosopher Socrates" by nikolettarok
+          https://sketchfab.com/3d-models/bust-of-the-ancient-greek-philosopher-socrates-34d7fd9ffa954e2e81a8f14a9bb51c91
+    plato: "Plato / Platon" by rjordanb2026
+          https://sketchfab.com/3d-models/plato-platon-a1329338f74045a3b9b84eb18a6111c0
+    christ: "Head of Christ by Jean-Baptiste Clésinger" by avi
+          https://sketchfab.com/3d-models/head-of-christ-by-jean-baptiste-clesinger-0d924f5e5b284beeba21f67b19d86d92
+    david: "Head Of Michelangelo's David, Optimised" by Thomas Flynn
+          https://sketchfab.com/3d-models/head-of-michelangelos-david-optimised-d29af50360624e5e9b1855666475380d
+    redeemer: "Christ the Redeemer" by JuanG3D
+          https://sketchfab.com/3d-models/christ-the-redeemer-d143e5357efd42529777438d0f72c79c
+          (the Rio statue's image rights are claimed by the Archdiocese of Rio; fine for internal
+          mockups, clear it before any public or commercial use)
 
   Pipeline, read from the gear film at 4 and 8 fps:
   1. Render the car as clay: R = shading, A = coverage.
@@ -49,6 +61,12 @@ const FIXED_T = qs.has("t") ? parseFloat(qs.get("t")) : null;
 // the camera sits at (yaw, pitch) around it, dist away, looking at (lookX, lookY, 0).
 const SUBJECTS = {
   adam: { model: "./model/adam.glb", yaw: -1.57, pitch: 0.05, dist: 4.6, lookX: 0, lookY: 0, sway: 0.08, fov: 26 }, // Adam left, God right
+  // busts: front view, framed head and shoulders (tuned from ?clay renders)
+  socrates: { model: "./model/socrates.glb", yaw: 0, pitch: 0.05, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  plato: { model: "./model/plato.glb", yaw: 0, pitch: 0.05, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  christ: { model: "./model/christ.glb", yaw: -0.85, pitch: -0.3, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  redeemer: { model: "./model/redeemer.glb", yaw: 0, pitch: -0.1, dist: 12, lookX: 0, lookY: 0.6, sway: 0, fov: 26 }, // strongest at t=2.3
+  david: { model: "./model/david.glb", yaw: -0.8, pitch: 0.05, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
 };
 const S = { ...SUBJECTS[qs.get("s") || "adam"] };
 for (const k of ["yaw", "pitch", "dist", "lookX", "lookY", "sway"]) if (qs.has(k)) S[k] = parseFloat(qs.get(k));

@@ -4,3 +4,5 @@ mark/heatwm/seq/
 posters/doop/shots/
 # The raw Sketchfab download; posters/model/adam.glb is the same file.
 posters/model/adam-dl/
+# 31 MB; re-download from the Sketchfab link credited in posters/heat.html
+posters/model/plato.glb
