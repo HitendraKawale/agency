@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Blank fused</title><style>
+*{margin:0;box-sizing:border-box}
+body{width:1600px;background:#171616;padding:50px;display:grid;gap:30px}
+.row{border-radius:14px;padding:60px;display:flex;justify-content:center;align-items:flex-end;gap:70px}
+.noir{background:#0E0D0D}.sand{background:#F1EFEB}.white{background:#fff}
+svg,img{display:block}
+</style></head><body>
+<div class="row white"><img src="wordmark-trim.png" style="height:150px" alt="Rerun wordmark"></div>
+<div class="row sand"><svg data-w="fused" data-h="150" fill="#171616"></svg></div>
+<div class="row noir"><svg data-w="fused" data-h="150" fill="#fff"></svg></div>
+<div class="row sand"><svg data-w="spaced" data-h="90" fill="#171616"></svg><svg data-w="fused" data-h="90" fill="#171616"></svg><svg data-w="fused" data-h="40" fill="#171616"></svg><svg data-w="fused" data-h="22" fill="#171616"></svg></div>
+<script src="blank3.js"></script><script src="ks.js"></script><script src="as.js"></script><script src="blank-fused.js"></script><script>
+const [B, l, , n] = WORD.tallParts, W = { spaced: WORD.set([B, l, AS.a9, n, KS.k5]), fused: { width: FUSED.width, height: FUSED.height, svg: `<path d="${FUSED.path}"/>` } };
+for (const s of document.querySelectorAll("svg")) { const w = W[s.dataset.w], h = +s.dataset.h;
+  s.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); s.style.height = h + "px"; s.style.width = (h * w.width / w.height) + "px";
+  s.setAttribute("fill-rule", "evenodd"); s.innerHTML = w.svg; }
+document.title = "ready";
+</script></body></html>

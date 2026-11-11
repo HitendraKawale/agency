@@ -1,0 +1,6 @@
+# Frame dumps made for comparisons; regenerate from the pages (?t= or setT()) instead of committing.
+mark/heatwm/vid/
+mark/heatwm/seq/
+posters/doop/shots/
+# The raw Sketchfab download; posters/model/adam.glb is the same file.
+posters/model/adam-dl/

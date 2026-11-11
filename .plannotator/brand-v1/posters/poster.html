@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Poster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Poster series after Rerun's posters (reference/rerun/sheets/STUDIOGRUHL_RERUN_16-Poster.jpg):
+   one phrase of our line per poster, one heat subject, the wordmark as the anchor.
+   1131x1600 (A-series ratio), render at deviceScaleFactor 2.
+   ?v=noir|sand  ?s=<subject>  ?line=<phrase>  ?t=<seconds> freezes the artwork */
+*{margin:0;box-sizing:border-box}
+:root{--noir:#0E0D0D;--sand:#F1EFEB;--white:#fff}
+html,body{width:1131px;height:1600px;overflow:hidden;font-family:"Inter Tight",sans-serif}
+.poster{position:relative;width:1131px;height:1600px;padding:56px;display:flex;flex-direction:column}
+h1{font-weight:400;font-size:104px;line-height:.98;letter-spacing:-.04em;text-wrap:balance}
+.panel{position:relative;border-radius:14px;overflow:hidden;background:#8caed2}
+.panel iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.mark svg{display:block;width:100%;height:auto}
+
+/* noir: phrase top left, artwork in the middle, wordmark across the foot */
+.noir{background:var(--noir);color:var(--white)}
+.noir h1{max-width:9em}
+.noir .panel{margin-top:auto;aspect-ratio:4/3}
+.noir .mark{margin-top:56px;fill:var(--white)}
+
+/* sand: artwork on top, phrase and a small wordmark below */
+.sand{background:var(--sand);color:var(--noir)}
+.sand .panel{aspect-ratio:1/1}
+.sand h1{margin-top:48px;max-width:9em}
+.sand .mark{margin-top:auto;width:300px;fill:var(--noir)}
+</style></head><body>
+<div class="poster" id="poster">
+  <h1 id="line"></h1>
+  <div class="panel"><iframe id="art" scrolling="no" title="Heat render"></iframe></div>
+  <div class="mark"><svg id="mark" fill-rule="evenodd" role="img" aria-label="Blank"></svg></div>
+</div>
+<script src="../mark/rand.js"></script><script>
+const q = new URLSearchParams(location.search), v = q.get("v") ?? "noir";
+const poster = document.getElementById("poster"), line = document.getElementById("line");
+poster.classList.add(v);
+line.textContent = q.get("line") ?? "Software made in God’s image.";
+// sand puts the phrase under the artwork
+if (v === "sand") poster.insertBefore(line, poster.querySelector(".mark"));
+const w = RAND.B, m = document.getElementById("mark");
+m.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); m.innerHTML = `<path d="${w.path}"/>`;
+const art = document.getElementById("art"), pass = new URLSearchParams();
+for (const k of ["s", "t", "yaw", "pitch", "dist", "lookX", "lookY"]) if (q.has(k)) pass.set(k, q.get(k));
+art.src = "heat?" + pass;
+const wait = setInterval(() => { try { if (art.contentWindow.__ready) { clearInterval(wait); setTimeout(() => document.title = "ready", 400); } } catch {} }, 100);
+</script></body></html>

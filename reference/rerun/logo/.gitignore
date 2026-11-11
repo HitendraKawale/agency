@@ -1,0 +1,2 @@
+# 10 fps frames of the logo film; regenerate with ffmpeg from ../video (the sheets are kept).
+seq/

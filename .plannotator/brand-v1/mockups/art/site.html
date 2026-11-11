@@ -45,9 +45,12 @@ h1{font-weight:400;font-size:clamp(40px,5.6vw,90px);line-height:1;letter-spacing
 </div>
 <div class="panel"><iframe id="car" scrolling="no" title="Heat render of a Formula 1 car"></iframe></div>
 </div>
-<script src="../../mark/blank3.js"></script><script src="../../mark/ks.js"></script><script src="../../mark/as.js"></script><script>
-const [B, l, , n] = WORD.tallParts, w = WORD.set([B, l, AS.a9, n, KS.k5]), m = document.getElementById("mark");
-m.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); m.innerHTML = w.svg;
+<script src="../../mark/rand.js"></script><script src="../../mark/heat-logo.js"></script><script>
+// the wordmark: BI's B and l, a/n/k redrawn in their rules (mark/rand.py, RAND.B)
+const w = RAND.B, m = document.getElementById("mark");
+m.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); m.innerHTML = `<path d="${w.path}"/>`;
+// hovering the logo runs the heat pass over it (mark/heat-logo.js): white ink on the noir ground
+attachHeatLogo(m.closest(".mark"), { ink: [1, 1, 1], bg: [0.055, 0.051, 0.051] });
 const q = new URLSearchParams(location.search), car = document.getElementById("car");
 car.src = "../../f1/heatcar" + (q.has("t") ? `?t=${q.get("t")}` : "");
 const wait = setInterval(() => { try { if (car.contentWindow.__ready) { clearInterval(wait); requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")); } } catch {} }, 100);

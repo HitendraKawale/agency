@@ -21,9 +21,10 @@ html,body{width:1600px;height:900px;overflow:hidden;background:#8caed2}
 <div class="mark"><svg id="mark" fill-rule="evenodd"></svg></div>
 <div class="meta l">Aryan Kathawale<br>Design and engineering</div>
 <div class="meta r">21.11 18:00<br>Mumbai</div>
-<script src="../../mark/blank3.js"></script><script src="../../mark/ks.js"></script><script src="../../mark/as.js"></script><script>
-const [B, l, , n] = WORD.tallParts, w = WORD.set([B, l, AS.a9, n, KS.k5]), m = document.getElementById("mark");
-m.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); m.innerHTML = w.svg;
+<script src="../../mark/rand.js"></script><script>
+// the wordmark: BI's B and l, a/n/k redrawn in their rules (mark/rand.py, RAND.B)
+const w = RAND.B, m = document.getElementById("mark");
+m.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`); m.innerHTML = `<path d="${w.path}"/>`;
 const t = new URLSearchParams(location.search).get("t") ?? "2.4", car = document.getElementById("car");
 car.src = `../../f1/heatcar?t=${t}`;
 const wait = setInterval(() => { try { if (car.contentWindow.__ready) { clearInterval(wait); requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")); } } catch {} }, 100);

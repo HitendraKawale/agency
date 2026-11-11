@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Blank, Rand</title><style>
+*{margin:0;box-sizing:border-box}
+body{width:1600px;background:#171616;padding:40px;display:grid;gap:24px}
+.row{border-radius:14px;padding:48px;display:flex;justify-content:center;align-items:flex-end;gap:64px}
+.noir{background:#0E0D0D}.sand{background:#F1EFEB}.white{background:#fff}
+svg,img{display:block}
+</style></head><body>
+<div class="row white"><img src="wordmark-trim.png" style="height:120px" alt="Rerun wordmark"></div>
+<div id="rows"></div>
+<script src="rand.js"></script><script>
+const mk = (k, h, fill) => { const w = RAND[k];
+  return `<svg viewBox="0 0 ${w.width} ${w.height}" style="height:${h}px;width:${h * w.width / w.height}px" fill="${fill}" fill-rule="evenodd"><path d="${w.path}"/></svg>`; };
+const keys = (new URLSearchParams(location.search).get("k") ?? Object.keys(RAND).join("")).split("");
+document.getElementById("rows").outerHTML = keys.map(k =>
+  `<div class="row sand">${mk(k, 120, "#0E0D0D")}${mk(k, 40, "#0E0D0D")}${mk(k, 22, "#0E0D0D")}</div>` +
+  `<div class="row noir">${mk(k, 120, "#fff")}${mk(k, 40, "#fff")}${mk(k, 22, "#fff")}</div>`).join("");
+document.title = "ready";
+</script></body></html>

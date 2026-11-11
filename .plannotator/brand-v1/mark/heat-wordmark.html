@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blank heat wordmark</title>
+<!--
+  Preview of heat-logo.js: the Blank wordmark distorted by heat, after Rerun's logo film
+  (reference/rerun/video/STUDIOGRUHL_RERUN_01-Logo.mp4, sequenced in reference/rerun/logo/).
+  The effect itself, and how it was read from the film, is documented in heat-logo.js.
+
+  URL: ?hover plays it the way the site logo does (on hover), otherwise it loops.
+       ?t=<seconds> freezes the pass, ?bg=sand or ?bg=noir changes the ground.
+-->
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { display: grid; place-items: center; background: var(--bg); overflow: hidden; }
+  .mark { width: 76vw; }
+  .mark svg { display: block; width: 100%; height: auto; fill: var(--ink); }
+</style>
+</head>
+<body>
+<div class="mark" id="mark"><svg fill-rule="evenodd" role="img" aria-label="Blank"></svg></div>
+<script src="rand.js"></script>
+<script src="heat-logo.js"></script>
+<script>
+const qs = new URLSearchParams(location.search);
+const GROUNDS = {
+  white: { bg: "#FFFFFF", ink: "#0E0D0D" },
+  sand: { bg: "#F1EFEB", ink: "#0E0D0D" },
+  noir: { bg: "#0E0D0D", ink: "#FFFFFF" },
+};
+const g = GROUNDS[qs.get("bg")] ?? GROUNDS.white;
+const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+document.body.style.setProperty("--bg", g.bg); document.body.style.setProperty("--ink", g.ink);
+
+const el = document.getElementById("mark"), svg = el.querySelector("svg");
+svg.setAttribute("viewBox", `0 0 ${RAND.B.width} ${RAND.B.height}`);
+svg.innerHTML = `<path d="${RAND.B.path}"/>`;
+const heat = attachHeatLogo(el, { ink: rgb(g.ink), bg: rgb(g.bg), autoplay: !qs.has("hover") });
+window.setT = (v) => heat && heat.setT(v); // frame-by-frame comparison with the film
+if (qs.has("t")) setT(parseFloat(qs.get("t")));
+window.__ready = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Heat subject</title>
+<!--
+  The heat car shader (../f1/heatcar.html) with the framing pulled out per subject, for the
+  poster series. Shader, ramp and timing are unchanged; only SUBJECTS below differs.
+  Models (CC BY 4.0, credit on public use):
+    adam: "The Creation of Adam" by Loic Norgeot
+          https://sketchfab.com/3d-models/the-creation-of-adam-4d1727c7b83e4e6284bbadb63dbb537e
+
+  Pipeline, read from the gear film at 4 and 8 fps:
+  1. Render the car as clay: R = shading, A = coverage.
+  2. Blur levels, each stretched 2x horizontally (the teeth smear sideways before they melt).
+  3. A wave travels toward a centre off the top right (tool: radialCenter 1.5, -0.5).
+     Its phase picks the blur level per pixel, so a blur front crosses the object and
+     the sharp object re-forms behind it, one loop per 3 s.
+  4. Value = phase + depth inside the blurred silhouette + radial term + shading,
+     mapped through the cyclic spectrum. A wide halo of the silhouette sits outside.
+  5. The ramp colour is mixed into the background in colour space, which makes the
+     lavender haze where red fades into pale blue.
+
+  URL: ?s=<subject>, ?t=<seconds> freezes time (for stills), ?yaw= ?pitch= ?dist= ?lookX= ?lookY=
+  override the subject's framing while tuning, ?clay shows the raw clay pass.
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #93b6dc; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+
+const qs = new URLSearchParams(location.search);
+const FIXED_T = qs.has("t") ? parseFloat(qs.get("t")) : null;
+// Framing per subject. The model is centred and scaled so its longest side is 5 units;
+// the camera sits at (yaw, pitch) around it, dist away, looking at (lookX, lookY, 0).
+const SUBJECTS = {
+  adam: { model: "./model/adam.glb", yaw: -1.57, pitch: 0.05, dist: 4.6, lookX: 0, lookY: 0, sway: 0.08, fov: 26 }, // Adam left, God right
+};
+const S = { ...SUBJECTS[qs.get("s") || "adam"] };
+for (const k of ["yaw", "pitch", "dist", "lookX", "lookY", "sway"]) if (qs.has(k)) S[k] = parseFloat(qs.get(k));
+const MODEL = S.model;
+
+// Every tuned number lives here.
+const P = {
+  loop: 3,              // seconds per heat and blur cycle (gear film loops at 3 s)
+  orbit: 6,             // seconds per car turn loop (the gear film loops at 6 s)
+  center: [1.5, 1.5],   // wave centre in uv, y up (tool: 1.5, -0.5 with y down)
+  waveK: 0.77,          // blur-wave cycles per uv unit of distance
+  wavePhase: 0.435,
+  stretch: [2, 2, 1.7, 1.2, 1, 2.2, 3], // horizontal blur stretch per level: smear on the object,
+                        // round halo, then wide sideways streaks that carry the field into the background
+  kDepth: 0.95,         // value cycles across the blurred silhouette depth
+  kRadial: 0.55,        // value cycles per uv unit of distance to the centre
+  kShade: -0.42,        // lit faces lower value (red), unlit higher (blue)
+  phase0: 0.34,
+  halo: 0.85,
+  far: 0.55,            // strength of the field's continuation into the background
+  warp: 0.012,
+  grain: 0.055,
+  bgLoop: 6,            // background cycle, seconds
+  bgK: 0.46,            // background cycles per frame height (bottom leads)
+  bgPhase: 0.68,
+  bgMix: 0.24,          // strength of the passing band
+  bgBand: 0.4,          // fraction of the cycle the band takes
+};
+
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.autoClear = false;
+
+// ---------- scene: clay car ----------
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(S.fov, 16 / 9, 0.1, 100);
+const clay = new THREE.ShaderMaterial({
+  uniforms: { tint: { value: 0 } },
+  vertexShader: /* glsl */`
+    varying vec3 vN; varying vec3 vW;
+    void main() {
+      vec4 w = modelMatrix * vec4(position, 1.);
+      vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal);
+      gl_Position = projectionMatrix * viewMatrix * w;
+    }`,
+  fragmentShader: /* glsl */`
+    uniform float tint;
+    varying vec3 vN; varying vec3 vW;
+    void main() {
+      vec3 n = normalize(vN);
+      if (!gl_FrontFacing) n = -n;
+      vec3 v = normalize(cameraPosition - vW);
+      float key = max(dot(n, normalize(vec3(-.35, 1., .45))), 0.);
+      float fill = max(dot(n, normalize(vec3(.8, .2, -.3))), 0.);
+      float rim = pow(1. - max(dot(n, v), 0.), 3.);
+      float l = .18 + .62 * key + .15 * fill - .12 * rim + tint;
+      gl_FragColor = vec4(clamp(l, 0., 1.), 0., 0., 1.);
+    }`,
+  side: THREE.DoubleSide,
+});
+const pivot = new THREE.Group();
+scene.add(pivot);
+
+// ---------- render targets ----------
+const rtOpts = { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false };
+let W = 0, H = 0;
+let src, levels = [], tmp = [];
+function makeTargets() {
+  [src, ...levels, ...tmp].forEach((t) => t && t.dispose());
+  src = new THREE.WebGLRenderTarget(W, H, { ...rtOpts, depthBuffer: true, samples: 4 });
+  levels = []; tmp = [];
+  // sizes in CSS pixels so blur radii are the same fraction of height at any DPR
+  const dpr = renderer.getPixelRatio();
+  for (let i = 1; i <= 7; i++) {
+    const w = Math.max(2, Math.round(W / dpr / 2 ** i)), h = Math.max(2, Math.round(H / dpr / 2 ** i));
+    levels.push(new THREE.WebGLRenderTarget(w, h, rtOpts));
+    tmp.push(new THREE.WebGLRenderTarget(w, h, rtOpts));
+  }
+}
+
+// ---------- fullscreen passes ----------
+const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const quadGeo = new THREE.PlaneGeometry(2, 2);
+const quadVS = `varying vec2 uv0; void main(){ uv0 = uv; gl_Position = vec4(position.xy, 0., 1.); }`;
+function pass(fs, uniforms) {
+  const m = new THREE.ShaderMaterial({ uniforms, vertexShader: quadVS, fragmentShader: fs, depthTest: false, depthWrite: false });
+  const s = new THREE.Scene(); s.add(new THREE.Mesh(quadGeo, m));
+  return { m, s };
+}
+// 13-tap gaussian, sigma 3 target pixels along dir
+const blur = pass(/* glsl */`
+  uniform sampler2D tex; uniform vec2 dir; varying vec2 uv0;
+  void main() {
+    vec4 s = vec4(0.); float wsum = 0.;
+    for (int i = -6; i <= 6; i++) {
+      float x = float(i); float w = exp(-x * x / 18.);
+      s += texture2D(tex, uv0 + dir * x) * w; wsum += w;
+    }
+    gl_FragColor = s / wsum;
+  }`, { tex: { value: null }, dir: { value: new THREE.Vector2() } });
+
+const final = pass(/* glsl */`
+  precision highp float;
+  uniform sampler2D L0, L1, L2, L3, L4, L5, L6, L7;
+  uniform vec2 s5, s6, s7;  // texel counts of the wide levels
+  uniform vec2 res; uniform float t;
+  uniform vec2 center; uniform float bgPhase, bgLoop, bgK, bgMix, bgBand, loopT, waveK, wavePhase, kDepth, kRadial, kShade, phase0, halo, far, warp, grain;
+  varying vec2 uv0;
+
+  float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+  float vnoise(vec2 p) {
+    vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+    return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y);
+  }
+  float fbm(vec2 p) { return .65 * vnoise(p) + .35 * vnoise(p * 2.03 + 7.1); } // tool: octaves 2
+
+  // Cyclic spectrum: blue, pale blue, mint, yellow, red, back to blue.
+  vec3 ramp(float u) {
+    u = fract(u) * 5.;
+    vec3 c0 = vec3(.094, .416, .867), c1 = vec3(.608, .749, .827), c2 = vec3(.525, .851, .651),
+         c3 = vec3(.965, .855, .459), c4 = vec3(.843, .184, .129);
+    float f = fract(u); f = f * f * (3. - 2. * f);
+    if (u < 1.) return mix(c0, c1, f);
+    if (u < 2.) return mix(c1, c2, f);
+    if (u < 3.) return mix(c2, c3, f);
+    if (u < 4.) return mix(c3, c4, f);
+    return mix(c4, c0, f);
+  }
+
+  // Smooth B-spline sampling for the tiny wide levels, so they never show as blocks.
+  vec4 cubic(sampler2D tx, vec2 q, vec2 n) {
+    vec2 p = q * n - .5, f = fract(p), i = floor(p);
+    vec2 w0 = (1. - f) * (1. - f) * (1. - f) / 6., w1 = (4. - 6. * f * f + 3. * f * f * f) / 6.;
+    vec2 w2 = (1. + 3. * f + 3. * f * f - 3. * f * f * f) / 6., w3 = f * f * f / 6.;
+    vec2 g0 = w0 + w1, g1 = w2 + w3;
+    vec2 h0 = (i - .5 + w1 / g0) / n, h1 = (i + 1.5 + w3 / g1) / n;
+    return g0.y * (g0.x * texture2D(tx, vec2(h0.x, h0.y)) + g1.x * texture2D(tx, vec2(h1.x, h0.y)))
+         + g1.y * (g0.x * texture2D(tx, vec2(h0.x, h1.y)) + g1.x * texture2D(tx, vec2(h1.x, h1.y)));
+  }
+
+  vec4 level(float s, vec2 q) {
+    vec4 a = texture2D(L0, q), b = texture2D(L1, q), c = texture2D(L2, q), d = texture2D(L3, q), e = texture2D(L4, q);
+    if (s < 1.) return mix(a, b, s);
+    if (s < 2.) return mix(b, c, s - 1.);
+    if (s < 3.) return mix(c, d, s - 2.);
+    return mix(d, e, s - 3.);
+  }
+
+  void main() {
+    vec2 uv = uv0; float asp = res.x / res.y;
+    float tc = t / loopT;
+    float d = length((uv - center) * vec2(asp / 1.7778, 1.));
+
+    // blur wave: travels toward the centre, so the far (left) side blurs first
+    float ph = fract(tc + waveK * d + wavePhase);
+    float b = smoothstep(0., .3, ph) * (1. - smoothstep(.42, .56, ph));
+
+    // displacement noise, stronger where blurred
+    vec2 n2 = vec2(fbm(uv * 3. * vec2(asp, 1.) + tc * .9), fbm(uv * 3. * vec2(asp, 1.) + vec2(5.2, 1.3) - tc * .7)) - .5;
+    vec2 q = uv + n2 * warp * (.25 + .75 * b);
+
+    vec4 o = level(b * 4., q);                 // object at its current blur
+    float hA = cubic(L5, q, s5).a;             // wide halo of the silhouette
+    float hM = cubic(L6, q, s6).a;             // wider, sideways
+    float hF = cubic(L7, q, s7).a;             // widest, sideways: reaches the frame edges
+    float aO = o.a;
+    float shade = o.r / max(o.a, 1e-3);
+
+    // background (measured on the gear film at 8 fps): each point rests near pale blue
+    // for ~60% of a 6 s cycle, then one faint band (pale, mint, yellow, red, back to blue)
+    // passes. Bands are horizontal and rise at ~0.36 frame heights/s, bottom first.
+    float bn = fbm(uv * vec2(1.2 * asp, 1.6) + vec2(t * .05, -t * .03)) - .5;
+    float uB = fract(bgPhase + t / bgLoop + bgK * (1. - uv.y) + .05 * bn);
+    float inBand = smoothstep(0., .05, uB) * (1. - smoothstep(bgBand - .05, bgBand, uB));
+    vec3 rest = mix(vec3(.549, .682, .824), vec3(.094, .416, .867), .03 + .08 * (1. - uv.y));
+    vec3 bg = mix(rest, ramp(.2 + .8 * clamp(uB / bgBand, 0., 1.)), bgMix * inBand);
+
+    // one value field over the whole frame; the object, halo and far streaks only
+    // decide how strongly it shows over the background
+    float base = phase0 + tc + kRadial * d;
+    float vF = base + kDepth * (.3 * hA + .12 * hM + .08 * hF);
+    float vO = vF + kDepth * .5 * aO + kShade * (shade - .5) * aO * (1. - .6 * b);
+
+    float wFar = far * smoothstep(.02, .5, .6 * hM + .4 * hF);
+    float wHalo = halo * smoothstep(.0, .6, hA);
+    vec3 col = mix(bg, ramp(vF), max(wFar, wHalo));
+    col = mix(col, ramp(vO), smoothstep(0., 1., aO));
+
+    col += (h21(uv * res + fract(t * 7.3) * 91.) - .5) * grain;
+    gl_FragColor = vec4(col, 1.);
+  }`, {
+  L0: { value: null }, L1: { value: null }, L2: { value: null }, L3: { value: null }, L4: { value: null }, L5: { value: null }, L6: { value: null }, L7: { value: null },
+  s5: { value: new THREE.Vector2() }, s6: { value: new THREE.Vector2() }, s7: { value: new THREE.Vector2() },
+  res: { value: new THREE.Vector2() }, t: { value: 0 },
+  center: { value: new THREE.Vector2(...P.center) }, loopT: { value: P.loop },
+  bgPhase: { value: P.bgPhase }, bgLoop: { value: P.bgLoop }, bgK: { value: P.bgK }, bgMix: { value: P.bgMix }, bgBand: { value: P.bgBand },
+  waveK: { value: P.waveK }, wavePhase: { value: P.wavePhase }, kDepth: { value: P.kDepth },
+  kRadial: { value: P.kRadial }, kShade: { value: P.kShade }, phase0: { value: P.phase0 },
+  halo: { value: P.halo }, far: { value: P.far }, warp: { value: P.warp }, grain: { value: P.grain },
+});
+
+function resize() {
+  const dpr = renderer.getPixelRatio();
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  W = Math.round(w * dpr); H = Math.round(h * dpr);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  makeTargets();
+  final.m.uniforms.res.value.set(W, H);
+}
+addEventListener("resize", resize);
+resize();
+
+// ---------- model ----------
+let ready = false;
+const loader = new GLTFLoader();
+loader.setMeshoptDecoder(MeshoptDecoder);
+loader.load(MODEL, (gltf) => {
+  const car = gltf.scene;
+  car.traverse((o) => {
+    if (!o.isMesh) return;
+    const name = (o.material && o.material.name) || "";
+    const m = clay.clone();
+    m.uniforms.tint.value = name.includes("tyre") ? -0.08 : 0;
+    o.material = m;
+  });
+  // centre on the origin, longest side 5 units
+  const box = new THREE.Box3().setFromObject(car);
+  const size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+  car.position.sub(c);
+  const wrap = new THREE.Group(); wrap.add(car);
+  wrap.scale.setScalar(5 / Math.max(size.x, size.y, size.z));
+  pivot.add(wrap);
+  ready = true;
+  window.__ready = true;
+}, undefined, (e) => { console.error(e); document.title = "model failed"; });
+
+// ---------- frame ----------
+const start = performance.now();
+function frame() {
+  requestAnimationFrame(frame);
+  const t = FIXED_T ?? (performance.now() - start) / 1000;
+
+  // camera: the subject's view; it turns back and forth once per P.orbit seconds, like the car
+  const sway = Math.sin((2 * Math.PI * t) / P.orbit);
+  const yaw = S.yaw + S.sway * sway;
+  const dist = S.dist - 0.15 * Math.cos((2 * Math.PI * t) / P.orbit);
+  camera.position.set(Math.sin(yaw) * Math.cos(S.pitch) * dist, Math.sin(S.pitch) * dist + S.lookY, Math.cos(yaw) * Math.cos(S.pitch) * dist);
+  camera.lookAt(S.lookX, S.lookY, 0);
+
+  renderer.setRenderTarget(src);
+  renderer.setClearColor(0x000000, 0); renderer.clear();
+  if (ready) renderer.render(scene, camera);
+
+  // blur cascade: each level from the previous, sigma 3 target px, x stretched
+  let input = src;
+  for (let i = 0; i < 7; i++) {
+    const L = levels[i], T = tmp[i];
+    blur.m.uniforms.tex.value = input.texture;
+    blur.m.uniforms.dir.value.set(P.stretch[i] / L.width, 0);
+    renderer.setRenderTarget(T); renderer.render(blur.s, quadCam);
+    blur.m.uniforms.tex.value = T.texture;
+    blur.m.uniforms.dir.value.set(0, 1 / L.height);
+    renderer.setRenderTarget(L); renderer.render(blur.s, quadCam);
+    input = L;
+  }
+
+  if (qs.has("clay")) { renderer.setRenderTarget(null); renderer.setClearColor(0x222222, 1); renderer.clear(); renderer.render(scene, camera); return; }
+  const u = final.m.uniforms;
+  u.L0.value = src.texture; u.L1.value = levels[0].texture; u.L2.value = levels[1].texture;
+  u.L3.value = levels[2].texture; u.L4.value = levels[3].texture; u.L5.value = levels[4].texture; u.L6.value = levels[5].texture; u.L7.value = levels[6].texture;
+  u.s5.value.set(levels[4].width, levels[4].height); u.s6.value.set(levels[5].width, levels[5].height); u.s7.value.set(levels[6].width, levels[6].height); u.t.value = t;
+  renderer.setRenderTarget(null);
+  renderer.render(final.s, quadCam);
+}
+frame();
+</script>
+</body>
+</html>
