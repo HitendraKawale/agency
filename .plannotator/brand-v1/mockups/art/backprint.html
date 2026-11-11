@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Back print</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Back print for the apparel, after Rerun's sweatshirt (reference/rerun/stills/studiogruhl_rerun_17-apparel.jpg):
+   one big image, the wordmark, and small facts set in two columns. White print on the fabric colour.
+   ?s=plato|socrates|david|redeemer picks the figure; ?w=&h= canvas size (the mockup's smart object);
+   ?fabric=#hex. Print area is 60% of the canvas width, centred, starting 16% down. */
+*{margin:0;box-sizing:border-box}
+html,body{overflow:hidden;font-family:"Inter Tight",sans-serif;color:#fff}
+.print{position:absolute;display:grid;gap:var(--g)}
+.art{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}
+.mark svg{display:block;width:100%;height:auto;fill:#fff}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);font-size:var(--fs);line-height:1.22;letter-spacing:-.01em}
+.facts p{white-space:nowrap}
+</style></head><body>
+<div class="print" id="print">
+  <img class="art" id="art" alt="">
+  <div class="mark"><svg id="mark" fill-rule="evenodd" role="img" aria-label="Blank"></svg></div>
+  <div class="facts"><p id="left"></p><p id="right"></p></div>
+</div>
+<script src="../../mark/rand.js"></script><script>
+// Facts per figure. The scan credit is the CC BY attribution the model's licence asks for.
+const FIGURES = {
+  plato: { img: "heat-plato.png", lines: ["Plato", "Athens, c. 428–348 BC", "Scan by rjordanb2026, CC BY 4.0"] },
+  socrates: { img: "heat-socrates.png", lines: ["Socrates", "Athens, c. 470–399 BC", "Scan by nikolettarok, CC BY 4.0"] },
+  david: { img: "heat-david.png", lines: ["David, by Michelangelo", "Florence, 1501–1504", "Scan by Thomas Flynn, CC BY 4.0"] },
+  redeemer: { img: "heat-redeemer-t2.3.png", lines: ["Christ the Redeemer, by Paul Landowski", "Rio de Janeiro, 1922–1931", "Model by JuanG3D, CC BY 4.0"] },
+};
+const STUDIO = ["Software made in God’s image.", "Blank Interfaces, Mumbai and the UK", "100% cotton, 240 gsm"];
+const q = new URLSearchParams(location.search), n = (k, d) => parseFloat(q.get(k) ?? d);
+const W = n("w", 1800), H = n("h", 2400), fabric = q.get("fabric") ?? "#2B2A2A", f = FIGURES[q.get("s") ?? "plato"];
+for (const e of [document.documentElement, document.body]) Object.assign(e.style, { width: W + "px", height: H + "px", background: fabric });
+const pw = n("pw", .6) * W, p = document.getElementById("print");
+Object.assign(p.style, { width: pw + "px", left: (W - pw) / 2 + "px", top: n("py", .16) * H + "px" });
+p.style.setProperty("--g", pw * .035 + "px"); p.style.setProperty("--fs", pw * .021 + "px");
+const lines = (id, xs) => { const el = document.getElementById(id); xs.forEach((t, i) => { if (i) el.append(document.createElement("br")); el.append(t); }); };
+lines("left", f.lines); lines("right", STUDIO);
+const svg = document.getElementById("mark");
+svg.setAttribute("viewBox", `0 0 ${RAND.B.width} ${RAND.B.height}`); svg.innerHTML = `<path d="${RAND.B.path}"/>`;
+const art = document.getElementById("art"); art.src = "../../posters/out/busts/" + f.img;
+Promise.all([document.fonts.ready, art.decode()]).then(() => requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")));
+</script></body></html>
