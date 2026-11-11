@@ -1,0 +1,313 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Blank heat wordmark</title><style>
+*{margin:0;box-sizing:border-box}
+html,body{width:1440px;height:768px;background:#1b1b1c;overflow:hidden}
+.wrap{display:grid;grid-template-rows:1fr 1fr;gap:20px;padding:20px;height:768px}
+.panel{border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.dark{background:#0E0D0D}.light{background:#FFFFFF}
+.mark{width:772px}
+.mark svg{display:block;width:100%;height:auto}
+.dark svg{fill:#FFFFFF}.light svg{fill:#0E0D0D}
+</style></head><body>
+<!-- Blank wordmark with the heat pass (mark/heat-logo.js), looping. On the site it plays after 7 s of hover. -->
+<div class="wrap">
+<div class="panel dark"><div class="mark" id="dark"><svg fill-rule="evenodd" role="img" aria-label="Blank"></svg></div></div>
+<div class="panel light"><div class="mark" id="light"><svg fill-rule="evenodd" role="img" aria-label="Blank"></svg></div></div>
+</div>
+<script>window.RAND = { B: { width: 1030, height: 240, path: "M218.00 96.00L218.00 40.00L178.00 0.00L84.00 0.00L84.00 9.00L83.95 9.98L83.81 10.95L83.57 11.90L83.24 12.83L82.82 13.71L82.31 14.56L81.73 15.34L81.07 16.07L80.34 16.73L79.56 17.31L78.71 17.82L77.83 18.24L76.90 18.57L75.95 18.81L74.98 18.95L74.00 19.00L73.02 18.95L72.05 18.81L71.10 18.57L70.17 18.24L69.29 17.82L68.44 17.31L67.66 16.73L66.93 16.07L66.27 15.34L65.69 14.56L65.18 13.71L64.76 12.83L64.43 11.90L64.19 10.95L64.05 9.98L64.00 9.00L64.00 0.00L0.00 0.00L0.00 240.00L178.00 240.00L218.00 200.00L218.00 144.00L182.00 120.00ZM145.94 42.47L148.82 43.84L151.56 45.48L154.12 47.38L156.48 49.52L158.62 51.88L160.52 54.44L162.16 57.18L163.53 60.06L164.60 63.07L165.38 66.16L165.84 69.31L166.00 72.50L165.84 75.69L165.38 78.84L164.60 81.93L163.53 84.94L162.16 87.82L160.52 90.56L158.62 93.12L156.48 95.48L154.12 97.62L151.56 99.52L148.82 101.16L145.94 102.53L142.93 103.60L139.84 104.38L136.69 104.84L133.50 105.00L62.00 105.00L62.00 40.00L133.50 40.00L136.69 40.16L139.84 40.62L142.93 41.40ZM142.93 136.40L145.94 137.47L148.82 138.84L151.56 140.48L154.12 142.38L156.48 144.52L158.62 146.88L160.52 149.44L162.16 152.18L163.53 155.06L164.60 158.07L165.38 161.16L165.84 164.31L166.00 167.50L165.84 170.69L165.38 173.84L164.60 176.93L163.53 179.94L162.16 182.82L160.52 185.56L158.62 188.12L156.48 190.48L154.12 192.62L151.56 194.52L148.82 196.16L145.94 197.53L142.93 198.60L139.84 199.38L136.69 199.84L133.50 200.00L62.00 200.00L62.00 135.00L133.50 135.00L136.69 135.16L139.84 135.62Z M302.00 218.00L302.00 22.00L280.00 0.00L240.00 0.00L240.00 240.00L280.00 240.00Z M548.00 0.00L486.00 0.00L486.00 9.00L485.99 9.49L485.95 9.98L485.89 10.47L485.81 10.95L485.70 11.43L485.57 11.90L485.42 12.37L485.24 12.83L485.04 13.28L484.82 13.71L484.58 14.14L484.31 14.56L484.03 14.96L483.73 15.34L483.41 15.72L483.07 16.07L482.72 16.41L482.34 16.73L481.96 17.03L481.56 17.31L481.14 17.58L480.71 17.82L480.28 18.04L479.83 18.24L479.37 18.42L478.90 18.57L478.43 18.70L477.95 18.81L477.47 18.89L476.98 18.95L476.49 18.99L476.00 19.00L475.51 18.99L475.02 18.95L474.53 18.89L474.05 18.81L473.57 18.70L473.10 18.57L472.63 18.42L472.17 18.24L471.72 18.04L471.29 17.82L470.86 17.58L470.44 17.31L470.04 17.03L469.66 16.73L469.28 16.41L468.93 16.07L468.59 15.72L468.27 15.34L467.97 14.96L467.69 14.56L467.42 14.14L467.18 13.71L466.96 13.28L466.76 12.83L466.58 12.37L466.43 11.90L466.30 11.43L466.19 10.95L466.11 10.47L466.05 9.98L466.01 9.49L466.00 9.00L466.00 0.00L364.00 0.00L324.00 40.00L324.00 200.00L364.00 240.00L548.00 240.00ZM456.00 200.00L453.38 199.96L450.77 199.83L448.16 199.61L445.56 199.32L442.97 198.93L440.39 198.46L437.83 197.91L435.29 197.27L432.78 196.56L430.28 195.75L427.82 194.87L425.39 193.91L422.98 192.87L420.62 191.75L418.29 190.55L416.00 189.28L413.75 187.94L411.55 186.52L409.40 185.03L407.30 183.47L405.25 181.84L403.25 180.15L401.31 178.39L399.43 176.57L397.61 174.69L395.85 172.75L394.16 170.75L392.53 168.70L390.97 166.60L389.48 164.45L388.06 162.25L386.72 160.00L385.45 157.71L384.25 155.38L383.13 153.02L382.09 150.61L381.13 148.18L380.25 145.72L379.44 143.22L378.73 140.71L378.09 138.17L377.54 135.61L377.07 133.03L376.68 130.44L376.39 127.84L376.17 125.23L376.04 122.62L376.00 120.00L376.04 117.38L376.17 114.77L376.39 112.16L376.68 109.56L377.07 106.97L377.54 104.39L378.09 101.83L378.73 99.29L379.44 96.78L380.25 94.28L381.13 91.82L382.09 89.39L383.13 86.98L384.25 84.62L385.45 82.29L386.72 80.00L388.06 77.75L389.48 75.55L390.97 73.40L392.53 71.30L394.16 69.25L395.85 67.25L397.61 65.31L399.43 63.43L401.31 61.61L403.25 59.85L405.25 58.16L407.30 56.53L409.40 54.97L411.55 53.48L413.75 52.06L416.00 50.72L418.29 49.45L420.62 48.25L422.98 47.13L425.39 46.09L427.82 45.13L430.28 44.25L432.78 43.44L435.29 42.73L437.83 42.09L440.39 41.54L442.97 41.07L445.56 40.68L448.16 40.39L450.77 40.17L453.38 40.04L456.00 40.00L486.00 40.00L486.00 45.85L486.00 194.15L486.00 200.00Z M652.00 0.00L652.00 9.00L651.99 9.49L651.95 9.98L651.89 10.47L651.81 10.95L651.70 11.43L651.57 11.90L651.42 12.37L651.24 12.83L651.04 13.28L650.82 13.71L650.58 14.14L650.31 14.56L650.03 14.96L649.73 15.34L649.41 15.72L649.07 16.07L648.72 16.41L648.34 16.73L647.96 17.03L647.56 17.31L647.14 17.58L646.71 17.82L646.28 18.04L645.83 18.24L645.37 18.42L644.90 18.57L644.43 18.70L643.95 18.81L643.47 18.89L642.98 18.95L642.49 18.99L642.00 19.00L641.51 18.99L641.02 18.95L640.53 18.89L640.05 18.81L639.57 18.70L639.10 18.57L638.63 18.42L638.17 18.24L637.72 18.04L637.29 17.82L636.86 17.58L636.44 17.31L636.04 17.03L635.66 16.73L635.28 16.41L634.93 16.07L634.59 15.72L634.27 15.34L633.97 14.96L633.69 14.56L633.42 14.14L633.18 13.71L632.96 13.28L632.76 12.83L632.58 12.37L632.43 11.90L632.30 11.43L632.19 10.95L632.11 10.47L632.05 9.98L632.01 9.49L632.00 9.00L632.00 0.00L570.00 0.00L570.00 240.00L632.00 240.00L632.00 96.00L632.00 95.00L632.03 93.20L632.12 91.40L632.26 89.61L632.47 87.82L632.73 86.04L633.06 84.27L633.44 82.51L633.87 80.76L634.37 79.03L634.92 77.32L635.53 75.63L636.19 73.95L636.90 72.30L637.67 70.67L638.49 69.07L639.37 67.50L640.29 65.96L641.27 64.44L642.29 62.96L643.37 61.52L644.48 60.11L645.65 58.74L646.86 57.40L648.11 56.11L649.40 54.86L650.74 53.65L652.11 52.48L653.52 51.37L654.96 50.29L656.44 49.27L657.96 48.29L659.50 47.37L661.07 46.49L662.67 45.67L664.30 44.90L665.95 44.19L667.63 43.53L669.32 42.92L671.03 42.37L672.76 41.87L674.51 41.44L676.27 41.06L678.04 40.73L679.82 40.47L681.61 40.26L683.40 40.12L685.20 40.03L687.00 40.00L688.80 40.03L690.60 40.12L692.39 40.26L694.18 40.47L695.96 40.73L697.73 41.06L699.49 41.44L701.24 41.87L702.97 42.37L704.68 42.92L706.37 43.53L708.05 44.19L709.70 44.90L711.33 45.67L712.93 46.49L714.50 47.37L716.04 48.29L717.56 49.27L719.04 50.29L720.48 51.37L721.89 52.48L723.26 53.65L724.60 54.86L725.89 56.11L727.14 57.40L728.35 58.74L729.52 60.11L730.63 61.52L731.71 62.96L732.73 64.44L733.71 65.96L734.63 67.50L735.51 69.07L736.33 70.67L737.10 72.30L737.81 73.95L738.47 75.63L739.08 77.32L739.63 79.03L740.13 80.76L740.56 82.51L740.94 84.27L741.27 86.04L741.53 87.82L741.74 89.61L741.88 91.40L741.97 93.20L742.00 95.00L742.00 96.00L742.00 240.00L782.00 240.00L804.00 218.00L804.00 40.00L764.00 0.00Z M907.89 73.11L907.81 73.59L907.70 74.07L907.57 74.54L907.42 75.01L907.24 75.47L907.04 75.92L906.82 76.35L906.58 76.78L906.31 77.20L906.03 77.60L905.73 77.98L905.41 78.36L905.07 78.71L904.72 79.05L904.34 79.37L903.96 79.67L903.56 79.95L903.14 80.22L902.71 80.46L902.28 80.68L901.83 80.88L901.37 81.06L900.90 81.21L900.43 81.34L899.95 81.45L899.47 81.53L898.98 81.59L898.49 81.63L898.00 81.64L897.51 81.63L897.02 81.59L896.53 81.53L896.05 81.45L895.57 81.34L895.10 81.21L894.63 81.06L894.17 80.88L893.72 80.68L893.29 80.46L892.86 80.22L892.44 79.95L892.04 79.67L891.66 79.37L891.28 79.05L890.93 78.71L890.59 78.36L890.27 77.98L889.97 77.60L889.69 77.20L889.42 76.78L889.18 76.35L888.96 75.92L888.76 75.47L888.58 75.01L888.43 74.54L888.30 74.07L888.19 73.59L888.11 73.11L888.05 72.62L888.01 72.13L888.00 71.64L888.00 64.00L888.00 0.00L826.00 0.00L826.00 240.00L888.00 240.00L888.00 176.00L888.00 168.36L888.01 167.87L888.05 167.38L888.11 166.89L888.19 166.41L888.30 165.93L888.43 165.46L888.58 164.99L888.76 164.53L888.96 164.08L889.18 163.65L889.42 163.22L889.69 162.80L889.97 162.40L890.27 162.02L890.59 161.64L890.93 161.29L891.28 160.95L891.66 160.63L892.04 160.33L892.44 160.05L892.86 159.78L893.29 159.54L893.72 159.32L894.17 159.12L894.63 158.94L895.10 158.79L895.57 158.66L896.05 158.55L896.53 158.47L897.02 158.41L897.51 158.37L898.00 158.36L898.49 158.37L898.98 158.41L899.47 158.47L899.95 158.55L900.43 158.66L900.90 158.79L901.37 158.94L901.83 159.12L902.28 159.32L902.71 159.54L903.14 159.78L903.56 160.05L903.96 160.33L904.34 160.63L904.72 160.95L905.07 161.29L905.41 161.64L905.73 162.02L906.03 162.40L906.31 162.80L906.58 163.22L906.82 163.65L907.04 164.08L907.24 164.53L907.42 164.99L907.57 165.46L907.70 165.93L907.81 166.41L907.89 166.89L907.95 167.38L907.99 167.87L908.00 168.36L908.00 196.00L952.00 240.00L1030.00 240.00L910.00 120.00L1030.00 0.00L952.00 0.00L908.00 44.00L908.00 71.64L907.99 72.13L907.95 72.62Z" } };
+for (const s of document.querySelectorAll(".mark svg")) { s.setAttribute("viewBox", "0 0 " + RAND.B.width + " " + RAND.B.height); s.innerHTML = "<path d=\"" + RAND.B.path + "\"/>"; }</script>
+<script>
+// Heat on the Blank wordmark, after Rerun's logo film (reference/rerun/video/STUDIOGRUHL_RERUN_01-Logo.mp4).
+// Needs rand.js (RAND.B, the approved wordmark) loaded first.
+//
+//   attachHeatLogo(el, { ink, bg })     plays after 7 s of hovering el, which holds the inline logo <svg>
+//   attachHeatLogo(el, { autoplay })    loops forever (the preview page)
+//
+// The heat does not paint over the letters, it distorts them: where a blob passes, the wordmark is
+// blurred (more heat, wider blur, up to 30 units of its 240 height) and dragged along the blob's
+// path and out from its centre. The blurred coverage is read through the Rerun spectrum:
+//   coverage 1 logo colour -> (dark red) -> red -> orange -> yellow -> blue -> mint -> 0 ground
+// (the same bands on any ground; the stroke core stays the logo's colour, black or white)
+// Timing is the film's 3.67 s pass: still, blobs enter off the B's top-left, flow through the
+// letters, the last one leaves off the k's top-right as a mint dot, still.
+// Hovering for `delay` ms (7 s) starts it; the pass loops while the pointer stays; on leave it
+// finishes the pass and hands back to the crisp SVG. Leaving before the delay cancels it. With prefers-reduced-motion the logo stays still.
+(function () {
+  const WORD = RAND.B; // 1030 x 240 units
+  const LOOP = 3.667;
+  const RADII = [0, 4, 8, 14, 22, 30]; // blur of each precomputed level, word units; 0 is the crisp mark
+  const MARGIN = 80; // room around the mark for heat that spills past it, word units
+
+  // Blob paths in word units (y down). Letters: B 0-218, l 240-302, a 324-548, n 570-804, k 826-1030.
+  const BLOBS = [
+    // the main blob enters off the B's top-left corner and leaves off the k's top-right corner
+    { t0: 0.36, t1: 3.3, r: 74, a: 0.82, path: [[-40, -26], [28, 40], [42, 140], [120, 214], [228, 150], [292, 62], [372, 44],
+        [372, 176], [470, 226], [590, 176], [648, 46], [756, 30], [792, 150], [858, 206], [930, 110], [1000, 30],
+        [1040, -14], [1072, -44], [1096, -64]] },
+    // a second one drops in from the top over the a/n, sinks and merges into the first
+    { t0: 0.38, t1: 1.8, r: 54, a: 0.72, path: [[560, -40], [598, 50], [640, 172], [566, 236], [470, 210]] },
+    // a low one runs along the baseline and bulges out under the letters
+    { t0: 1.0, t1: 2.4, r: 52, a: 0.7, path: [[140, 228], [300, 214], [496, 230], [690, 216], [822, 190]] },
+  ];
+
+  const VS = `#version 300 es
+in vec2 p; void main() { gl_Position = vec4(p, 0., 1.); }`;
+  const FS = `#version 300 es
+precision highp float;
+uniform sampler2D uL0, uL1, uL2, uL3, uL4, uL5;   // wordmark coverage, crisp then blurred wider
+uniform vec2 uRes, uOrigin; uniform float uScale, uT; uniform int uSS;
+uniform vec4 uB[3]; uniform vec2 uV[3];
+uniform vec3 uBg, uInk;
+out vec4 o;
+
+float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
+float fbm(vec2 p) { return .6 * vn(p) + .3 * vn(p * 2.1 + 3.7) + .1 * vn(p * 4.3 + 9.1); }
+
+// Rerun spectrum: red D72F21, yellow F6DA75, mint 86D9A6, blue 186ADD.
+// The heated stroke keeps the logo's own colour at its core, with the same bands outside it. A dark
+// logo darkens into it through dark red; a light logo meets red with a short, crisp edge, because a
+// long blend from white into dark red reads pink, like a photo negative.
+const vec3 DRED = vec3(.36, .05, .04), RED = vec3(.843, .184, .129), ORANGE = vec3(.93, .45, .22),
+           YELLOW = vec3(.965, .855, .459), MINT = vec3(.525, .851, .651), BLUE = vec3(.094, .416, .867);
+
+// coverage of the blurred wordmark -> colour; 1 is inside a stroke, 0 is open ground
+vec3 ramp(float v) {
+  bool light = dot(uInk, vec3(.299, .587, .114)) > .5;
+  if (light && v > .74) return mix(RED, uInk, smoothstep(.80, .86, v));
+  if (v > .88) return mix(DRED, uInk, smoothstep(.88, 1., v));
+  if (v > .74) return mix(RED, DRED, smoothstep(.74, .88, v));
+  if (v > .60) return mix(ORANGE, RED, smoothstep(.60, .74, v));
+  if (v > .50) return mix(YELLOW, ORANGE, smoothstep(.50, .60, v));
+  if (v > .40) return mix(BLUE, YELLOW, smoothstep(.40, .50, v));
+  if (v > .25) return mix(MINT, BLUE, smoothstep(.25, .40, v));
+  if (v > .08) return mix(uBg, MINT, smoothstep(.08, .25, v));
+  return uBg;
+}
+
+float level(float s, vec2 uv) {
+  float a = texture(uL0, uv).r, b = texture(uL1, uv).r, c = texture(uL2, uv).r,
+        d = texture(uL3, uv).r, e = texture(uL4, uv).r, f = texture(uL5, uv).r;
+  if (s < 1.) return mix(a, b, s);
+  if (s < 2.) return mix(b, c, s - 1.);
+  if (s < 3.) return mix(c, d, s - 2.);
+  if (s < 4.) return mix(d, e, s - 3.);
+  return mix(e, f, min(s - 4., 1.));
+}
+
+// one sample at canvas pixel position px; main() averages uSS x uSS of these per pixel
+vec4 shade(vec2 px) {
+  vec2 w = (px - uOrigin) / uScale;             // word units, y down
+
+  // blobs wobble and tear: their field is read through slow noise
+  vec2 q = w + 44. * (vec2(fbm(w * .009 + vec2(uT * .9, 0.)), fbm(w * .009 + vec2(5.2, 1.3) - uT * .8)) - .5);
+
+  float h = 0.; vec2 D = vec2(0.);
+  for (int i = 0; i < 3; i++) {
+    vec4 b = uB[i]; if (b.w <= 0.) continue;
+    vec2 d = q - b.xy, v = uV[i];
+    float sp = length(v); vec2 n = sp > 1e-3 ? v / sp : vec2(1, 0);
+    float along = dot(d, n), perp = dot(d, vec2(-n.y, n.x));
+    float st = 1. + min(sp * .004, .8);         // longer along the direction of travel
+    float k = b.w * exp(-((along * along) / (b.z * b.z * st * st) + (perp * perp) / (b.z * b.z)));
+    h += k;
+    // drag the letters along with the blob, and push them out from its centre so edges bulge
+    D += k * (n * 28. + d / b.z * 24.);         // outward push grows from zero at the centre, no pinch point
+  }
+  h *= mix(.7, 1.1, fbm(w * .018 + vec2(-uT * .7, uT * .4)));
+  h = 1. - exp(-1.15 * h);
+  D += h * 6. * (vec2(fbm(w * .012 + uT), fbm(w * .012 - uT + 3.3)) - .5);
+
+  vec2 uv = ((w - D) * uScale + uOrigin) / uRes;  // where this pixel reads the wordmark from
+  float v = level(h * 5., uv);
+
+  // a short hand-off from the crisp logo to the heat: a long one fades a white logo through grey
+  // the unheated logo is the sharp letter (only dragged), so a white logo never shows a blurred haze
+  float crisp = texture(uL0, uv).r;
+  vec3 col = mix(mix(uBg, uInk, crisp), ramp(v), smoothstep(.05, .1, h));
+  return vec4(col, smoothstep(0., .1, v));     // open ground stays transparent over the page
+}
+
+// supersampled: thin colour bands and dragged edges stay clean even on a 32 px logo
+void main() {
+  vec2 corner = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) - .5;
+  vec3 rgb = vec3(0.); float a = 0.;
+  for (int j = 0; j < 4; j++) for (int i = 0; i < 4; i++) {
+    if (i >= uSS || j >= uSS) continue;
+    vec4 c = shade(corner + (vec2(i, j) + .5) / float(uSS));
+    rgb += c.rgb * c.a; a += c.a;
+  }
+  o = vec4(a > 0. ? rgb / a : uBg, a / float(uSS * uSS));
+}`;
+
+  // Catmull-Rom along a blob's path, eased so it starts and ends slower
+  function along(path, s) {
+    const n = path.length - 1, x = Math.min(Math.max(s, 0), 1) * n, i = Math.min(Math.floor(x), n - 1), f = x - i;
+    const p0 = path[Math.max(i - 1, 0)], p1 = path[i], p2 = path[i + 1], p3 = path[Math.min(i + 2, n)];
+    const c = (a, b, c2, d) => 0.5 * (2 * b + (c2 - a) * f + (2 * a - 5 * b + 4 * c2 - d) * f * f + (3 * b - a - 3 * c2 + d) * f * f * f);
+    return [c(p0[0], p1[0], p2[0], p3[0]), c(p0[1], p1[1], p2[1], p3[1])];
+  }
+  const ease = (s) => s * s * (3 - 2 * s) * 0.35 + s * 0.65;
+
+  function blobs(t) {
+    const B = new Float32Array(12), V = new Float32Array(6);
+    BLOBS.forEach((b, i) => {
+      if (t < b.t0 || t > b.t1) return;
+      const s = (t - b.t0) / (b.t1 - b.t0), e = ease(s);
+      const p = along(b.path, e), p2 = along(b.path, ease(Math.min(s + 0.01, 1)));
+      const env = Math.min(1, s / 0.06) * Math.min(1, (1 - s) / 0.12); // grow in, shrink to a dot
+      B.set([p[0], p[1], b.r * (0.25 + 0.75 * env), b.a * env], i * 4);
+      const dt = 0.01 * (b.t1 - b.t0);
+      V.set([(p2[0] - p[0]) / dt, (p2[1] - p[1]) / dt], i * 2);
+    });
+    return [B, V];
+  }
+
+  // Gaussian blur of a one-channel image (sigma in px) as three box passes each way, the usual
+  // close approximation. Edges clamp; the canvas margin keeps the glyphs well clear of them.
+  function gauss(src, w, h, sigma) {
+    if (sigma < 0.3) return src;
+    const n = 3, wIdeal = Math.sqrt((12 * sigma * sigma) / n + 1);
+    let wl = Math.floor(wIdeal); if (wl % 2 === 0) wl--;
+    const m = Math.round((12 * sigma * sigma - n * wl * wl - 4 * n * wl - 3 * n) / (-4 * wl - 4));
+    let a = src, b = new Float32Array(w * h);
+    for (let k = 0; k < n; k++) {
+      const r = ((k < m ? wl : wl + 2) - 1) / 2;
+      box(a, b, w, h, r, true); box(b, a === src ? (a = new Float32Array(w * h)) : a, w, h, r, false);
+    }
+    return a;
+  }
+  // one box pass of radius r along rows (horizontal) or columns, running sum, edges clamped
+  function box(src, dst, w, h, r, horizontal) {
+    const len = horizontal ? w : h, lines = horizontal ? h : w, step = horizontal ? 1 : w, stride = horizontal ? w : 1;
+    const inv = 1 / (2 * r + 1);
+    for (let L = 0; L < lines; L++) {
+      const base = L * stride, first = src[base], last = src[base + (len - 1) * step];
+      let sum = (r + 1) * first;
+      for (let i = 1; i <= r; i++) sum += src[base + Math.min(i, len - 1) * step];
+      for (let i = 0; i < len; i++) {
+        dst[base + i * step] = sum * inv;
+        const add = i + r + 1, sub = i - r;
+        sum += (add < len ? src[base + add * step] : last) - (sub >= 0 ? src[base + sub * step] : first);
+      }
+    }
+  }
+
+  // el: the element holding the logo <svg>; ink/bg: the logo and ground colours as 0-1 RGB
+  window.attachHeatLogo = function (el, { ink = [0.055, 0.051, 0.051], bg = [1, 1, 1], autoplay = false, delay = 7000 } = {}) {
+    if (!autoplay && matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
+    const svg = el.querySelector("svg");
+    const cs = getComputedStyle(el);
+    if (cs.position === "static") el.style.position = "relative";
+    if (cs.display === "inline") el.style.display = "inline-block"; // so it can hold the canvas
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.style.cssText = "position:absolute;pointer-events:none;visibility:hidden";
+    el.appendChild(canvas);
+    const gl = canvas.getContext("webgl2", { premultipliedAlpha: false, preserveDrawingBuffer: true });
+    if (!gl) { canvas.remove(); return null; }
+
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog); gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const U = (n) => gl.getUniformLocation(prog, n);
+    gl.uniform3f(U("uInk"), ...ink); gl.uniform3f(U("uBg"), ...bg);
+
+    const tex = (cv, unit) => {
+      const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
+    };
+    const texR8 = (f, w, h, unit) => { // a 0-255 float image as a one-channel texture
+      const b = new Uint8Array(w * h);
+      for (let i = 0; i < b.length; i++) b[i] = f[i] + 0.5;
+      const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, w, h, 0, gl.RED, gl.UNSIGNED_BYTE, b);
+    };
+    const glyph = new Path2D(WORD.path);
+
+    // The canvas covers the logo plus MARGIN on every side at the screen's pixel density. The masks
+    // are drawn sharper than that (at least 2 px per wordmark unit, up to 4x the canvas), and each
+    // pixel averages several samples, so a small nav logo stays sharp.
+    function layout() {
+      const box = (svg || el).getBoundingClientRect(), host = el.getBoundingClientRect();
+      if (!box.width) return;
+      const k = box.width / WORD.width, m = MARGIN * k, dpr = Math.min(devicePixelRatio || 1, 3);
+      // svg elements have no offsetLeft/Top, so place the canvas from the two rects
+      Object.assign(canvas.style, { left: `${box.left - host.left - el.clientLeft - m}px`, top: `${box.top - host.top - el.clientTop - m}px`,
+        width: `${box.width + 2 * m}px`, height: `${box.height + 2 * m}px` });
+      canvas.width = Math.round((box.width + 2 * m) * dpr); canvas.height = Math.round((box.height + 2 * m) * dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      const scale = k * dpr, origin = m * dpr;
+      const ms = Math.min(4, Math.max(1, Math.ceil(2 / scale))); // mask px per canvas px
+      gl.uniform1i(U("uSS"), box.height * dpr < 240 ? 4 : 2);
+      const mask = document.createElement("canvas"); mask.width = canvas.width * ms; mask.height = canvas.height * ms;
+      const c = mask.getContext("2d");
+      c.fillStyle = "#000"; c.fillRect(0, 0, mask.width, mask.height);
+      c.setTransform(scale * ms, 0, 0, scale * ms, origin * ms, origin * ms); c.fillStyle = "#fff"; c.fill(glyph, "evenodd");
+      tex(mask, 0); gl.uniform1i(U("uL0"), 0);
+      // The blurred levels never change, so they are made once. They are blurred here rather than
+      // with the canvas `filter`, which some browsers and embeds ignore: there the levels came out
+      // sharp, so the letters still warped but the colour bands never appeared.
+      const W = mask.width, H = mask.height, px = c.getImageData(0, 0, W, H).data;
+      let cur = new Float32Array(W * H), prev = 0;
+      for (let i = 0; i < W * H; i++) cur[i] = px[i * 4];
+      RADII.slice(1).forEach((r, i) => {
+        const sigma = r * scale * ms;            // each level blurs the previous one by what it lacks
+        cur = gauss(cur, W, H, Math.sqrt(sigma * sigma - prev * prev)); prev = sigma;
+        texR8(cur, W, H, i + 1); gl.uniform1i(U(`uL${i + 1}`), i + 1);
+      });
+      gl.uniform2f(U("uRes"), canvas.width, canvas.height);
+      gl.uniform2f(U("uOrigin"), origin, origin); gl.uniform1f(U("uScale"), scale);
+      if (!running) draw(0);
+    }
+
+    function draw(t) {
+      const [B, V] = blobs(t);
+      gl.uniform4fv(U("uB"), B); gl.uniform2fv(U("uV"), V); gl.uniform1f(U("uT"), t);
+      gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    let running = false, hovering = false, start = 0, fixed = null;
+    function show(on) { canvas.style.visibility = on ? "visible" : "hidden"; if (svg) svg.style.visibility = on ? "hidden" : ""; }
+    function frame() {
+      if (!running) return;
+      let t = fixed ?? (performance.now() - start) / 1000;
+      if (fixed == null && t >= LOOP) {
+        if (hovering || autoplay) { start += LOOP * 1000; t -= LOOP; }
+        else { running = false; show(false); return; } // finished the pass after the pointer left
+      }
+      draw(t);
+      requestAnimationFrame(frame);
+    }
+    function play() { if (running) return; running = true; start = performance.now(); show(true); requestAnimationFrame(frame); }
+
+    new ResizeObserver(layout).observe(svg || el);
+    layout();
+    if (autoplay) play();
+    else {
+      let wait = 0;
+      el.addEventListener("pointerenter", () => { hovering = true; wait = setTimeout(play, delay); });
+      el.addEventListener("pointerleave", () => { hovering = false; clearTimeout(wait); });
+    }
+    // setT(seconds) freezes the pass at a time, setT(null) lets it run (frame-by-frame checks)
+    return { setT(v) { fixed = v; if (v != null) { if (!running) { running = true; show(true); requestAnimationFrame(frame); } draw(v); } } };
+  };
+})();
+
+</script>
+<script>
+attachHeatLogo(document.getElementById("dark"), { ink: [1, 1, 1], bg: [0.055, 0.051, 0.051], autoplay: true });
+attachHeatLogo(document.getElementById("light"), { ink: [0.055, 0.051, 0.051], bg: [1, 1, 1], autoplay: true });
+window.__ready = true;
+</script></body></html>

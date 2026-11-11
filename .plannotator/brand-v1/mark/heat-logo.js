@@ -145,6 +145,36 @@ void main() {
     return [B, V];
   }
 
+  // Gaussian blur of a one-channel image (sigma in px) as three box passes each way, the usual
+  // close approximation. Edges clamp; the canvas margin keeps the glyphs well clear of them.
+  function gauss(src, w, h, sigma) {
+    if (sigma < 0.3) return src;
+    const n = 3, wIdeal = Math.sqrt((12 * sigma * sigma) / n + 1);
+    let wl = Math.floor(wIdeal); if (wl % 2 === 0) wl--;
+    const m = Math.round((12 * sigma * sigma - n * wl * wl - 4 * n * wl - 3 * n) / (-4 * wl - 4));
+    let a = src, b = new Float32Array(w * h);
+    for (let k = 0; k < n; k++) {
+      const r = ((k < m ? wl : wl + 2) - 1) / 2;
+      box(a, b, w, h, r, true); box(b, a === src ? (a = new Float32Array(w * h)) : a, w, h, r, false);
+    }
+    return a;
+  }
+  // one box pass of radius r along rows (horizontal) or columns, running sum, edges clamped
+  function box(src, dst, w, h, r, horizontal) {
+    const len = horizontal ? w : h, lines = horizontal ? h : w, step = horizontal ? 1 : w, stride = horizontal ? w : 1;
+    const inv = 1 / (2 * r + 1);
+    for (let L = 0; L < lines; L++) {
+      const base = L * stride, first = src[base], last = src[base + (len - 1) * step];
+      let sum = (r + 1) * first;
+      for (let i = 1; i <= r; i++) sum += src[base + Math.min(i, len - 1) * step];
+      for (let i = 0; i < len; i++) {
+        dst[base + i * step] = sum * inv;
+        const add = i + r + 1, sub = i - r;
+        sum += (add < len ? src[base + add * step] : last) - (sub >= 0 ? src[base + sub * step] : first);
+      }
+    }
+  }
+
   // el: the element holding the logo <svg>; ink/bg: the logo and ground colours as 0-1 RGB
   window.attachHeatLogo = function (el, { ink = [0.055, 0.051, 0.051], bg = [1, 1, 1], autoplay = false, delay = 7000 } = {}) {
     if (!autoplay && matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
@@ -176,6 +206,15 @@ void main() {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
     };
+    const texR8 = (f, w, h, unit) => { // a 0-255 float image as a one-channel texture
+      const b = new Uint8Array(w * h);
+      for (let i = 0; i < b.length; i++) b[i] = f[i] + 0.5;
+      const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, w, h, 0, gl.RED, gl.UNSIGNED_BYTE, b);
+    };
     const glyph = new Path2D(WORD.path);
 
     // The canvas covers the logo plus MARGIN on every side at the screen's pixel density. The masks
@@ -198,10 +237,16 @@ void main() {
       c.fillStyle = "#000"; c.fillRect(0, 0, mask.width, mask.height);
       c.setTransform(scale * ms, 0, 0, scale * ms, origin * ms, origin * ms); c.fillStyle = "#fff"; c.fill(glyph, "evenodd");
       tex(mask, 0); gl.uniform1i(U("uL0"), 0);
-      RADII.slice(1).forEach((r, i) => { // the blurred levels never change, so they are made once
-        const b = document.createElement("canvas"); b.width = mask.width; b.height = mask.height;
-        const x = b.getContext("2d"); x.filter = `blur(${r * scale * ms}px)`; x.drawImage(mask, 0, 0);
-        tex(b, i + 1); gl.uniform1i(U(`uL${i + 1}`), i + 1);
+      // The blurred levels never change, so they are made once. They are blurred here rather than
+      // with the canvas `filter`, which some browsers and embeds ignore: there the levels came out
+      // sharp, so the letters still warped but the colour bands never appeared.
+      const W = mask.width, H = mask.height, px = c.getImageData(0, 0, W, H).data;
+      let cur = new Float32Array(W * H), prev = 0;
+      for (let i = 0; i < W * H; i++) cur[i] = px[i * 4];
+      RADII.slice(1).forEach((r, i) => {
+        const sigma = r * scale * ms;            // each level blurs the previous one by what it lacks
+        cur = gauss(cur, W, H, Math.sqrt(sigma * sigma - prev * prev)); prev = sigma;
+        texR8(cur, W, H, i + 1); gl.uniform1i(U(`uL${i + 1}`), i + 1);
       });
       gl.uniform2f(U("uRes"), canvas.width, canvas.height);
       gl.uniform2f(U("uOrigin"), origin, origin); gl.uniform1f(U("uScale"), scale);
