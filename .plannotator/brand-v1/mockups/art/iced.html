@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Iced cup print</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Print for LS Graphics' iced coffee cup (smart object 2636 x 2081, flat, the photo's light and
+   reflection sit above it). Restrained: a small wordmark and one small line, centred on the cup's
+   front (content x 1318) where a flat print does not need to wrap. Ink only, transparent around it.
+   ?bg=#000/#fff for matting (scripts/matte.py). */
+*{margin:0;box-sizing:border-box}
+html,body{width:2636px;height:2081px;overflow:hidden;font-family:"Inter Tight",sans-serif}
+.print{position:absolute;left:1318px;top:1220px;transform:translateX(-50%);display:grid;justify-items:center;gap:56px;color:#0E0D0D}
+.mark{width:620px}
+.mark svg{display:block;width:100%;height:auto;fill:#0E0D0D}
+p{font-size:60px;letter-spacing:-.01em;white-space:nowrap}
+</style></head><body>
+<div class="print">
+  <div class="mark"><svg id="mark" fill-rule="evenodd" role="img" aria-label="Blank"></svg></div>
+  <p>Drink the cool aid.</p>
+</div>
+<script src="../../mark/rand.js"></script><script>
+document.body.style.background = new URLSearchParams(location.search).get("bg") ?? "#fff";
+const svg = document.getElementById("mark");
+svg.setAttribute("viewBox", `0 0 ${RAND.B.width} ${RAND.B.height}`); svg.innerHTML = `<path d="${RAND.B.path}"/>`;
+document.fonts.ready.then(() => requestAnimationFrame(() => requestAnimationFrame(() => document.title = "ready")));
+</script></body></html>
