@@ -1,18 +1,18 @@
 // Heat on the Blank wordmark, after Rerun's logo film (reference/rerun/video/STUDIOGRUHL_RERUN_01-Logo.mp4).
 // Needs rand.js (RAND.B, the approved wordmark) loaded first.
 //
-//   attachHeatLogo(el, { ink, bg })     plays on hover over el, which holds the inline logo <svg>
+//   attachHeatLogo(el, { ink, bg })     plays after 7 s of hovering el, which holds the inline logo <svg>
 //   attachHeatLogo(el, { autoplay })    loops forever (the preview page)
 //
 // The heat does not paint over the letters, it distorts them: where a blob passes, the wordmark is
 // blurred (more heat, wider blur, up to 30 units of its 240 height) and dragged along the blob's
 // path and out from its centre. The blurred coverage is read through the Rerun spectrum:
-//   coverage 1 noir -> dark red -> red -> orange -> yellow -> blue -> mint -> 0 ground
-// (the same colours on any ground; only the crisp, unheated logo takes the ink colour)
+//   coverage 1 logo colour -> (dark red) -> red -> orange -> yellow -> blue -> mint -> 0 ground
+// (the same bands on any ground; the stroke core stays the logo's colour, black or white)
 // Timing is the film's 3.67 s pass: still, blobs enter off the B's top-left, flow through the
 // letters, the last one leaves off the k's top-right as a mint dot, still.
-// On hover the pass loops while the pointer stays; on leave it finishes the pass and hands back to
-// the crisp SVG. With prefers-reduced-motion the logo stays still.
+// Hovering for `delay` ms (7 s) starts it; the pass loops while the pointer stays; on leave it
+// finishes the pass and hands back to the crisp SVG. Leaving before the delay cancels it. With prefers-reduced-motion the logo stays still.
 (function () {
   const WORD = RAND.B; // 1030 x 240 units
   const LOOP = 3.667;
@@ -36,7 +36,7 @@ in vec2 p; void main() { gl_Position = vec4(p, 0., 1.); }`;
   const FS = `#version 300 es
 precision highp float;
 uniform sampler2D uL0, uL1, uL2, uL3, uL4, uL5;   // wordmark coverage, crisp then blurred wider
-uniform vec2 uRes, uOrigin; uniform float uScale, uT;
+uniform vec2 uRes, uOrigin; uniform float uScale, uT; uniform int uSS;
 uniform vec4 uB[3]; uniform vec2 uV[3];
 uniform vec3 uBg, uInk;
 out vec4 o;
@@ -46,14 +46,18 @@ float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
   return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
 float fbm(vec2 p) { return .6 * vn(p) + .3 * vn(p * 2.1 + 3.7) + .1 * vn(p * 4.3 + 9.1); }
 
-// Rerun spectrum: red D72F21, yellow F6DA75, mint 86D9A6, blue 186ADD. The heat always starts from
-// noir, whatever the logo colour: on a white logo starting from the ink inverted it into a negative.
-const vec3 NOIR = vec3(.055, .051, .051), DRED = vec3(.36, .05, .04), RED = vec3(.843, .184, .129), ORANGE = vec3(.93, .45, .22),
+// Rerun spectrum: red D72F21, yellow F6DA75, mint 86D9A6, blue 186ADD.
+// The heated stroke keeps the logo's own colour at its core, with the same bands outside it. A dark
+// logo darkens into it through dark red; a light logo meets red with a short, crisp edge, because a
+// long blend from white into dark red reads pink, like a photo negative.
+const vec3 DRED = vec3(.36, .05, .04), RED = vec3(.843, .184, .129), ORANGE = vec3(.93, .45, .22),
            YELLOW = vec3(.965, .855, .459), MINT = vec3(.525, .851, .651), BLUE = vec3(.094, .416, .867);
 
 // coverage of the blurred wordmark -> colour; 1 is inside a stroke, 0 is open ground
 vec3 ramp(float v) {
-  if (v > .88) return mix(DRED, NOIR, smoothstep(.88, 1., v));
+  bool light = dot(uInk, vec3(.299, .587, .114)) > .5;
+  if (light && v > .74) return mix(RED, uInk, smoothstep(.80, .86, v));
+  if (v > .88) return mix(DRED, uInk, smoothstep(.88, 1., v));
   if (v > .74) return mix(RED, DRED, smoothstep(.74, .88, v));
   if (v > .60) return mix(ORANGE, RED, smoothstep(.60, .74, v));
   if (v > .50) return mix(YELLOW, ORANGE, smoothstep(.50, .60, v));
@@ -73,8 +77,8 @@ float level(float s, vec2 uv) {
   return mix(e, f, min(s - 4., 1.));
 }
 
-void main() {
-  vec2 px = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
+// one sample at canvas pixel position px; main() averages uSS x uSS of these per pixel
+vec4 shade(vec2 px) {
   vec2 w = (px - uOrigin) / uScale;             // word units, y down
 
   // blobs wobble and tear: their field is read through slow noise
@@ -98,13 +102,24 @@ void main() {
 
   vec2 uv = ((w - D) * uScale + uOrigin) / uRes;  // where this pixel reads the wordmark from
   float v = level(h * 5., uv);
-  v += (h21(px + fract(uT * 7.3) * 91.) - .5) * .02 * h;
 
   // a short hand-off from the crisp logo to the heat: a long one fades a white logo through grey
   // the unheated logo is the sharp letter (only dragged), so a white logo never shows a blurred haze
   float crisp = texture(uL0, uv).r;
   vec3 col = mix(mix(uBg, uInk, crisp), ramp(v), smoothstep(.05, .1, h));
-  o = vec4(col, smoothstep(0., .1, v));         // open ground stays transparent over the page
+  return vec4(col, smoothstep(0., .1, v));     // open ground stays transparent over the page
+}
+
+// supersampled: thin colour bands and dragged edges stay clean even on a 32 px logo
+void main() {
+  vec2 corner = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) - .5;
+  vec3 rgb = vec3(0.); float a = 0.;
+  for (int j = 0; j < 4; j++) for (int i = 0; i < 4; i++) {
+    if (i >= uSS || j >= uSS) continue;
+    vec4 c = shade(corner + (vec2(i, j) + .5) / float(uSS));
+    rgb += c.rgb * c.a; a += c.a;
+  }
+  o = vec4(a > 0. ? rgb / a : uBg, a / float(uSS * uSS));
 }`;
 
   // Catmull-Rom along a blob's path, eased so it starts and ends slower
@@ -131,7 +146,7 @@ void main() {
   }
 
   // el: the element holding the logo <svg>; ink/bg: the logo and ground colours as 0-1 RGB
-  window.attachHeatLogo = function (el, { ink = [0.055, 0.051, 0.051], bg = [1, 1, 1], autoplay = false } = {}) {
+  window.attachHeatLogo = function (el, { ink = [0.055, 0.051, 0.051], bg = [1, 1, 1], autoplay = false, delay = 7000 } = {}) {
     if (!autoplay && matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
     const svg = el.querySelector("svg");
     const cs = getComputedStyle(el);
@@ -163,25 +178,29 @@ void main() {
     };
     const glyph = new Path2D(WORD.path);
 
-    // the canvas covers the logo plus MARGIN on every side; masks are drawn at its resolution
+    // The canvas covers the logo plus MARGIN on every side at the screen's pixel density. The masks
+    // are drawn sharper than that (at least 2 px per wordmark unit, up to 4x the canvas), and each
+    // pixel averages several samples, so a small nav logo stays sharp.
     function layout() {
       const box = (svg || el).getBoundingClientRect(), host = el.getBoundingClientRect();
       if (!box.width) return;
-      const k = box.width / WORD.width, m = MARGIN * k, dpr = Math.min(devicePixelRatio, 2);
+      const k = box.width / WORD.width, m = MARGIN * k, dpr = Math.min(devicePixelRatio || 1, 3);
       // svg elements have no offsetLeft/Top, so place the canvas from the two rects
       Object.assign(canvas.style, { left: `${box.left - host.left - el.clientLeft - m}px`, top: `${box.top - host.top - el.clientTop - m}px`,
         width: `${box.width + 2 * m}px`, height: `${box.height + 2 * m}px` });
       canvas.width = Math.round((box.width + 2 * m) * dpr); canvas.height = Math.round((box.height + 2 * m) * dpr);
       gl.viewport(0, 0, canvas.width, canvas.height);
       const scale = k * dpr, origin = m * dpr;
-      const mask = document.createElement("canvas"); mask.width = canvas.width; mask.height = canvas.height;
+      const ms = Math.min(4, Math.max(1, Math.ceil(2 / scale))); // mask px per canvas px
+      gl.uniform1i(U("uSS"), box.height * dpr < 240 ? 4 : 2);
+      const mask = document.createElement("canvas"); mask.width = canvas.width * ms; mask.height = canvas.height * ms;
       const c = mask.getContext("2d");
       c.fillStyle = "#000"; c.fillRect(0, 0, mask.width, mask.height);
-      c.setTransform(scale, 0, 0, scale, origin, origin); c.fillStyle = "#fff"; c.fill(glyph, "evenodd");
+      c.setTransform(scale * ms, 0, 0, scale * ms, origin * ms, origin * ms); c.fillStyle = "#fff"; c.fill(glyph, "evenodd");
       tex(mask, 0); gl.uniform1i(U("uL0"), 0);
       RADII.slice(1).forEach((r, i) => { // the blurred levels never change, so they are made once
         const b = document.createElement("canvas"); b.width = mask.width; b.height = mask.height;
-        const x = b.getContext("2d"); x.filter = `blur(${r * scale}px)`; x.drawImage(mask, 0, 0);
+        const x = b.getContext("2d"); x.filter = `blur(${r * scale * ms}px)`; x.drawImage(mask, 0, 0);
         tex(b, i + 1); gl.uniform1i(U(`uL${i + 1}`), i + 1);
       });
       gl.uniform2f(U("uRes"), canvas.width, canvas.height);
@@ -214,8 +233,9 @@ void main() {
     layout();
     if (autoplay) play();
     else {
-      el.addEventListener("pointerenter", () => { hovering = true; play(); });
-      el.addEventListener("pointerleave", () => { hovering = false; });
+      let wait = 0;
+      el.addEventListener("pointerenter", () => { hovering = true; wait = setTimeout(play, delay); });
+      el.addEventListener("pointerleave", () => { hovering = false; clearTimeout(wait); });
     }
     // setT(seconds) freezes the pass at a time, setT(null) lets it run (frame-by-frame checks)
     return { setT(v) { fixed = v; if (v != null) { if (!running) { running = true; show(true); requestAnimationFrame(frame); } draw(v); } } };
