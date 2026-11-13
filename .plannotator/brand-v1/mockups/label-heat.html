@@ -1,0 +1,74 @@
+<!doctype html><html><head><meta charset="utf-8"><title>label</title><style>
+*{margin:0;box-sizing:border-box}
+html,body{width:1172px;height:693px;overflow:hidden;background:#F1EFEB}
+canvas{display:block;width:1172px;height:693px}
+</style></head><body><canvas id="c" width="1172" height="693"></canvas>
+<script src="../mark/bi.js"></script><script>
+// Beanie cuff label art (the smart object in the Pixelbuddha knit beanie, 1172 x 693).
+// ?v=sand : sand label, the BI filled with the heat field, its outline wavering like heat haze
+// ?v=noir : noir label, the same heat BI
+// ?v=heat : the whole label is the heat field (the app icon), white BI with the same haze
+// ?t= time of the still, ?amp= haze strength as a fraction of the label height, ?g= glyph height
+const q = new URLSearchParams(location.search);
+const V = q.get("v") ?? "sand", T = +(q.get("t") ?? 3), AMP = +(q.get("amp") ?? 0.012), GF = +(q.get("g") ?? 0.44);
+const c = document.getElementById("c"), W = c.width, H = c.height;
+const s = (H * GF) / BI.height, gx = (W - BI.width * s) / 2, gy = (H - BI.height * s) / 2;
+
+// hard glyph mask (R) and a wide blurred copy (G) that pulls the heat towards the letters
+function layer(blur) {
+  const k = document.createElement("canvas"); k.width = W; k.height = H; const g = k.getContext("2d");
+  g.fillStyle = "#000"; g.fillRect(0, 0, W, H); g.filter = `blur(${blur}px)`; g.fillStyle = "#fff";
+  g.translate(gx, gy); g.scale(s, s); g.fill(new Path2D(BI.path), "evenodd");
+  return g.getImageData(0, 0, W, H).data;
+}
+const M = layer(0), G = layer(H * 0.12), tex = new Uint8Array(W * H * 4);
+for (let i = 0; i < W * H; i++) { tex[i * 4] = M[i * 4]; tex[i * 4 + 1] = Math.min(255, G[i * 4] * 2); tex[i * 4 + 3] = 255; }
+
+const VS = `attribute vec2 p; varying vec2 uv; void main(){ uv = p * .5 + .5; uv.y = 1. - uv.y; gl_Position = vec4(p, 0., 1.); }`;
+const FS = `precision highp float; varying vec2 uv; uniform sampler2D tex; uniform float t, amp, mode; uniform vec2 res; uniform vec3 ground;
+vec3 ramp(float u){
+  u = fract(u) * 5.;
+  vec3 s0 = vec3(24.,106.,221.)/255., s1 = vec3(155.,191.,211.)/255., s2 = vec3(134.,217.,166.)/255.,
+       s3 = vec3(246.,218.,117.)/255., s4 = vec3(215.,47.,33.)/255.;
+  if (u < 1.) return mix(s0, s1, u); if (u < 2.) return mix(s1, s2, u - 1.);
+  if (u < 3.) return mix(s2, s3, u - 2.); if (u < 4.) return mix(s3, s4, u - 3.); return mix(s4, s0, u - 4.);
+}
+float h21(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(h21(i), h21(i + vec2(1., 0.)), f.x), mix(h21(i + vec2(0., 1.)), h21(i + vec2(1., 1.)), f.x), f.y); }
+float fbm(vec2 p){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ s += a * vn(p); p = p * 2.03 + 7.1; a *= .5; } return s; }
+void main(){
+  float asp = res.x / res.y; vec2 p = vec2(uv.x * asp, uv.y);
+  // heat haze: a slow fbm drift plus a fine horizontal shimmer that rises through the label
+  // (smooth noise only: fbm's fine octaves tear the outline like ripped paper)
+  vec2 w = vec2(vn(p * 2.5 + vec2(0., t * .4)), vn(p * 2.5 + vec2(5.2, t * .35))) - .5;
+  w.x += .3 * sin(p.y * 22. - t * 2.2 + 3. * vn(p * 1.5)) * vn(p * 2. - t * .1);
+  vec2 d = vec2(w.x / asp, w.y) * amp * 2.;
+  vec4 g = texture2D(tex, uv + d);
+  float m = g.r;
+  // heat: the rising colour wave from the mark, bent towards the glyph by its glow
+  float v = .2 * t + .3 * (uv.y + d.y * 4.) - .3 * (1. - g.g) + .05 * (fbm(p * 2.2 + t * .04) - .5);
+  vec3 heat = ramp(v);
+  vec3 col = mode < .5 ? mix(ground, heat, m) : mix(heat, vec3(1.), m);
+  col += (h21(uv * res + t) - .5) * .02;
+  gl_FragColor = vec4(col, 1.);
+}`;
+const gl = c.getContext("webgl", { preserveDrawingBuffer: true });
+const prog = gl.createProgram();
+for (const [ty, src] of [[gl.VERTEX_SHADER, VS], [gl.FRAGMENT_SHADER, FS]]) { const sh = gl.createShader(ty); gl.shaderSource(sh, src); gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); gl.attachShader(prog, sh); }
+gl.linkProgram(prog); gl.useProgram(prog);
+gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+for (const k of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_2D, k, gl.LINEAR);
+for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE);
+gl.uniform2f(gl.getUniformLocation(prog, "res"), W, H);
+gl.uniform1f(gl.getUniformLocation(prog, "amp"), AMP);
+gl.uniform1f(gl.getUniformLocation(prog, "mode"), V === "heat" ? 1 : 0);
+gl.uniform3fv(gl.getUniformLocation(prog, "ground"), V === "noir" ? [14 / 255, 13 / 255, 13 / 255] : [241 / 255, 239 / 255, 235 / 255]);
+gl.uniform1f(gl.getUniformLocation(prog, "t"), T);
+gl.viewport(0, 0, W, H); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+document.title = "ready";
+</script></body></html>

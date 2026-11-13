@@ -14,3 +14,5 @@ posters/out/busts/clay-*.png
 posters/out/busts/heat-christ-*.png
 posters/out/busts/heat-redeemer-[0-9]*.png
 posters/out/dunes/
+# 22 MB; re-download from the Sketchfab link credited in posters/heat.html
+posters/model/roadster.glb

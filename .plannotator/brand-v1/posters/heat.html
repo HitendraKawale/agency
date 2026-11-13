@@ -22,6 +22,18 @@
           https://sketchfab.com/3d-models/christ-the-redeemer-d143e5357efd42529777438d0f72c79c
           (the Rio statue's image rights are claimed by the Archdiocese of Rio; fine for internal
           mockups, clear it before any public or commercial use)
+    saturn: "Saturn V Rocket - Nasa" by dannzjs
+          https://sketchfab.com/3d-models/saturn-v-rocket-nasa-9b61dbd396334aca8faac51f9ef63f2e
+    falcon: "SpaceX Falcon Heavy" by sunnychen753
+          https://sketchfab.com/3d-models/spacex-falcon-heavy-2f11453207944cedba00e2c6c1aa1269
+    starship: "SpaceX Starship" by MartianDays
+          https://sketchfab.com/3d-models/spacex-starship-a8a0b69f776841a1a465cd9fb3762fd2
+    cybertruck: "Tesla Cybertruck" by TheOminousDuck
+          https://sketchfab.com/3d-models/tesla-cybertruck-1ab0c3f248fa47019c4311abce9731a0
+    roadster: "2008 Tesla Roadster" by the_86_guy
+          https://sketchfab.com/3d-models/2008-tesla-roadster-317dabbe5e824948a92091f7bd39c2de
+    (SpaceX and Tesla vehicle designs are their trade dress; fine for internal mockups,
+    clear them before any public or commercial use)
 
   Pipeline, read from the gear film at 4 and 8 fps:
   1. Render the car as clay: R = shading, A = coverage.
@@ -68,9 +80,15 @@ const SUBJECTS = {
   redeemer: { model: "./model/redeemer.glb", yaw: 0, pitch: -0.1, dist: 12, lookX: 0, lookY: 0.6, sway: 0, fov: 26 }, // strongest at t=2.3
   dunes: { procedural: "dunes", yaw: 0.35, pitch: 0.24, dist: 7.5, lookX: 0, lookY: 0, sway: 0.05, fov: 26 },
   david: { model: "./model/david.glb", yaw: -0.8, pitch: 0.05, dist: 11.5, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  // rockets and Tesla (framing tuned from ?clay renders)
+  saturn: { model: "./model/saturn.glb", yaw: 0, pitch: 0.05, dist: 12, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  falcon: { model: "./model/falcon.glb", yaw: 0, pitch: 0.05, dist: 12, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  starship: { model: "./model/starship.glb", yaw: 0, pitch: 0.05, dist: 12, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  cybertruck: { model: "./model/cybertruck.glb", yaw: 0.9, pitch: 0.1, dist: 12, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
+  roadster: { model: "./model/roadster.glb", yaw: 0.9, pitch: 0.1, dist: 12, lookX: 0, lookY: 0, sway: 0.08, fov: 26 },
 };
 const S = { ...SUBJECTS[qs.get("s") || "adam"] };
-for (const k of ["yaw", "pitch", "dist", "lookX", "lookY", "sway"]) if (qs.has(k)) S[k] = parseFloat(qs.get(k));
+for (const k of ["yaw", "pitch", "dist", "lookX", "lookY", "sway", "height", "base"]) if (qs.has(k)) S[k] = parseFloat(qs.get(k));
 const MODEL = S.model;
 
 // Every tuned number lives here.
@@ -330,12 +348,17 @@ const onModel = (gltf) => {
     m.uniforms.tint.value = name.includes("tyre") ? -0.08 : 0;
     o.material = m;
   });
-  // centre on the origin, longest side 5 units
+  // centre on the origin, longest side 5 units; or, with S.height, stand it on y = S.base at that
+  // height (the rocket lineage shares one scale and one ground line)
   const box = new THREE.Box3().setFromObject(car);
   const size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+  window.__size = size.toArray();
   car.position.sub(c);
   const wrap = new THREE.Group(); wrap.add(car);
-  wrap.scale.setScalar(5 / Math.max(size.x, size.y, size.z));
+  if (S.height) {
+    wrap.scale.setScalar(S.height / size.y);
+    wrap.position.y = S.base + S.height / 2;
+  } else wrap.scale.setScalar(5 / Math.max(size.x, size.y, size.z));
   pivot.add(wrap);
   ready = true;
   window.__ready = true;

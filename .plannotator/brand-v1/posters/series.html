@@ -4,7 +4,8 @@
 <style>
 /* Poster layouts after Rerun's poster wall (studiogruhl.com/projects/rerun, the Re:Group poster and
    the sand pair) and its dark diagram card. 1131 x 1600 each (A-series), render at 2x.
-   ?p=group | sand-line | sand-mark | diagram | statement    ?t= freezes the heat */
+   ?p=group | sand-line | sand-mark | diagram | statement
+      | launch | lineage | roadster | cybertruck (the rocket and Tesla set)    ?t= freezes the heat */
 *{margin:0;box-sizing:border-box}
 :root{--noir:#0E0D0D;--sand:#F1EFEB;--paper:#FFFFFF}
 html,body{width:1131px;height:1600px;overflow:hidden;font-family:"Inter Tight",sans-serif;background:#000}
@@ -47,6 +48,38 @@ svg{display:block;width:100%;height:auto;fill:currentColor}
 .statement h1{position:absolute;left:44px;right:44px;top:40px;font-weight:400;font-size:84px;line-height:1.02;letter-spacing:-.04em;text-wrap:balance}
 .statement .corner{position:absolute;bottom:34px}
 .statement .corner.l{left:44px}.statement .corner.r{right:44px;text-align:right}
+
+/* the rocket and Tesla set: "Agency in the era of infinite software." */
+.cap2{display:flex;justify-content:space-between;align-items:end}
+/* launch: the line across the top, one tall rocket, studio and vehicle data at the foot */
+.launch{background:var(--paper);color:var(--noir)}
+.launch h1{position:absolute;left:24px;right:24px;top:20px;font-weight:400;font-size:96px;line-height:.96;letter-spacing:-.045em}
+.launch .heat{left:24px;right:24px;top:236px;bottom:120px}
+.launch .cap2{position:absolute;left:24px;right:24px;bottom:26px}
+.launch .cap2 .r{text-align:right}
+/* lineage: three launch vehicles in a row, each with its first flight */
+.lineage{background:var(--sand);color:var(--noir)}
+.lineage h1{position:absolute;left:28px;top:24px;font-weight:400;font-size:52px;line-height:1.02;letter-spacing:-.035em;width:10em}
+.lineage .row{position:absolute;left:28px;right:28px;top:300px;bottom:150px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.lineage .col{position:relative}
+.lineage .col .heat{position:absolute;left:0;right:0;top:0;bottom:56px}
+.lineage .col p{position:absolute;left:0;bottom:0}
+.lineage .corner{position:absolute;bottom:26px}
+.lineage .corner.l{left:28px}.lineage .corner.r{right:28px;text-align:right}
+/* roadster: noir, the line, a wide car, the wordmark across the foot */
+.roadster{background:var(--noir);color:#fff}
+.roadster h1{position:absolute;left:28px;right:28px;top:24px;font-weight:400;font-size:84px;line-height:.98;letter-spacing:-.04em}
+.roadster .heat{left:28px;right:28px;top:250px;height:1000px}
+.roadster .cap2{position:absolute;left:28px;right:28px;top:1266px}
+.roadster .cap2 .r{text-align:right}
+.roadster .mark{position:absolute;left:28px;right:28px;bottom:28px}
+/* cybertruck: paper, the monogram, the line set right, a full-width truck low */
+.cybertruck{background:var(--paper);color:var(--noir)}
+.cybertruck .bi{position:absolute;left:28px;top:30px;width:92px}
+.cybertruck h1{position:absolute;left:400px;right:28px;top:22px;font-weight:400;font-size:64px;line-height:1;letter-spacing:-.04em}
+.cybertruck .heat{left:0;right:0;top:560px;bottom:120px}
+.cybertruck .cap2{position:absolute;left:28px;right:28px;bottom:26px}
+.cybertruck .cap2 .r{text-align:right}
 </style></head><body>
 
 <section class="poster group" id="group">
@@ -81,6 +114,36 @@ svg{display:block;width:100%;height:auto;fill:currentColor}
 <section class="poster statement" id="statement">
   <h1>We design and build websites and products for the people who use them and the agents that read them.</h1>
   <p class="small corner l">Blank Interfaces</p><p class="small corner r">Mumbai and the UK</p>
+</section>
+
+<section class="poster launch" id="launch">
+  <h1>Agency in the era<br>of infinite software.</h1>
+  <div class="heat" data-s="falcon" data-q="dist=12.4"></div>
+  <div class="cap2 small"><p>Blank Interfaces<br>Mumbai and the UK</p><p class="r">Falcon Heavy<br>First flight 6 February 2018</p></div>
+</section>
+
+<section class="poster lineage" id="lineage">
+  <h1>Agency in the era of infinite software.</h1>
+  <div class="row">
+    <div class="col"><div class="heat" data-s="saturn" data-q="dist=12.3&pitch=0&lookY=0&base=-2.5&height=5"></div><p class="small">Saturn V, 110.6 m<br>9 November 1967</p></div>
+    <div class="col"><div class="heat" data-s="falcon" data-q="dist=12.3&pitch=0&lookY=0&base=-2.5&height=3.165"></div><p class="small">Falcon Heavy, 70 m<br>6 February 2018</p></div>
+    <div class="col"><div class="heat" data-s="starship" data-q="dist=12.3&pitch=0&lookY=0&base=-2.5&height=2.274"></div><p class="small">Starship upper stage, 50.3 m<br>20 April 2023</p></div>
+  </div>
+  <p class="small corner l">Blank Interfaces</p><p class="small corner r">Mumbai and the UK</p>
+</section>
+
+<section class="poster roadster" id="roadster">
+  <h1>Agency in the era<br>of infinite software.</h1>
+  <div class="heat" data-s="roadster" data-q="dist=11"></div>
+  <div class="cap2 small"><p>2008 Tesla Roadster</p><p class="r">Sent into orbit round the Sun<br>on Falcon Heavy, 6 February 2018</p></div>
+  <div class="mark wm"></div>
+</section>
+
+<section class="poster cybertruck" id="cybertruck">
+  <div class="bi bimark"></div>
+  <h1>Agency in the era<br>of infinite software.</h1>
+  <div class="heat" data-s="cybertruck" data-q="dist=9"></div>
+  <div class="cap2 small"><p>Blank Interfaces<br>Mumbai and the UK</p><p class="r">Tesla Cybertruck<br>Shown 21 November 2019</p></div>
 </section>
 
 <script src="../mark/rand.js"></script><script src="../mark/bi.js"></script><script>

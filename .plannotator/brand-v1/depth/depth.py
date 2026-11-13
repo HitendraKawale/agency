@@ -38,7 +38,9 @@ cap = cv2.VideoCapture(a.clip)
 fps = cap.get(cv2.CAP_PROP_FPS)
 cap.set(cv2.CAP_PROP_POS_MSEC, a.start * 1000)
 n = int(a.seconds * fps)
-raw, prev = [], None
+# depth stays at the model's resolution, in a float16 file on disk: a long clip at 1080p would need
+# ~8 MB a frame in memory. scan.py scales it up to the photo's size.
+raw, prev, count = None, None, 0
 for i in range(n):
     ok, bgr = cap.read()
     if not ok: break
@@ -48,21 +50,25 @@ for i in range(n):
     cv2.imwrite(f"{a.out}/f_{i:05d}.jpg", cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_JPEG_QUALITY, 92])
     inp = proc(images=Image.fromarray(rgb), size={"height": a.size, "width": a.size}, return_tensors="pt").to(dev)
     with torch.no_grad():
-        d = model(**inp).predicted_depth
-    d = torch.nn.functional.interpolate(d[None], size=(H, a.width), mode="bicubic", align_corners=False)[0, 0].cpu().numpy()
+        d = model(**inp).predicted_depth[0].float().cpu().numpy()
+    if raw is None:
+        raw = np.lib.format.open_memmap(f"{a.out}/raw.npy", "w+", np.float16, (n, *d.shape))
     # flicker is slow and large-scale; edges move. Blend only the low band with the last frame,
     # so moving silhouettes stay where they are now instead of leaving a ghost behind.
     if a.lowonly:
-        low = cv2.GaussianBlur(d, (0, 0), a.width / 60)
+        low = cv2.GaussianBlur(d, (0, 0), d.shape[1] / 60)
         prev = low if prev is None else a.ema * prev + (1 - a.ema) * low
-        raw.append((prev + d - low).astype(np.float32))
+        raw[i] = prev + d - low
     else:
         prev = d if prev is None else a.ema * prev + (1 - a.ema) * d
-        raw.append(prev.astype(np.float32))
-    print(f"\r{i + 1}/{n}", end="", flush=True)
+        raw[i] = prev
+    count = i + 1
+    print(f"\r{count}/{n}", end="", flush=True)
 print()
-lo, hi = np.percentile(np.stack(raw[:: max(1, len(raw) // 20)]), [1, 99])
-for i, d in enumerate(raw):
-    v = np.clip((d - lo) / (hi - lo), 0, 1)
+lo, hi = np.percentile(raw[:count:max(1, count // 20)].astype(np.float32), [1, 99])
+for i in range(count):
+    v = np.clip((raw[i].astype(np.float32) - lo) / (hi - lo), 0, 1)
     cv2.imwrite(f"{a.out}/d_{i:05d}.png", (v * 65535).astype(np.uint16))
-print(a.out, len(raw), "frames at", fps, "fps")
+del raw
+os.remove(f"{a.out}/raw.npy")
+print(a.out, count, "frames at", fps, "fps")

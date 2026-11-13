@@ -26,16 +26,25 @@ ap.add_argument("--cut", type=float, default=0.45)   # equalised depth below whi
 ap.add_argument("--cutw", type=float, default=0.3)   # width of the blend from far to near
 ap.add_argument("--peak", type=int, default=0)       # 1: the crest rises to a brighter red (tried, read as less crisp)
 ap.add_argument("--guide", type=float, default=0)    # >0: snap depth edges to the photo's edges (guided-filter eps)
+ap.add_argument("--rgb", default="215,47,33")        # band colour; Rerun spectrum red (heat ramp c4), sand is 246,218,117
 a = ap.parse_args()
 
 NOIR = np.array([14, 13, 13], np.float32) / 255
-RED = np.array([215, 47, 33], np.float32) / 255     # Rerun spectrum red (heat ramp c4)
+RED = np.array([int(c) for c in a.rgb.split(",")], np.float32) / 255
 PEAK = np.array([246, 40, 24], np.float32) / 255    # the crest of the band: brighter, same hue, as bright as the reference's
 
 paths = sorted(glob.glob(f"{a.frames}/d_*.png"))
-D = [cv2.imread(p, cv2.IMREAD_UNCHANGED).astype(np.float32) / 65535 for p in paths]
+h, w = cv2.imread(f"{a.frames}/f_00000.jpg").shape[:2]
+
+
+def load(i):
+    """Depth for frame i at the photo's size (depth.py may store it at the model's resolution)."""
+    d = cv2.imread(paths[i], cv2.IMREAD_UNCHANGED).astype(np.float32) / 65535
+    return d if d.shape == (h, w) else np.clip(cv2.resize(d, (w, h), interpolation=cv2.INTER_CUBIC), 0, 1)
+
+
 # equalise over the clip so the band spends equal time on every depth layer
-samp = np.concatenate([d.ravel()[::97] for d in D[::5]])
+samp = np.concatenate([load(i).ravel()[::97] for i in range(0, len(paths), 5)])
 qs = np.quantile(samp, np.linspace(0, 1, 257))
 
 
@@ -52,8 +61,16 @@ def guided(I, p, r=8, e=1e-3):
     return box(a_) * I + box(b_)
 
 
+def blur(x, s):
+    """Gaussian blur at quarter size. The far-field sigma is ~58 px at 1080p, so the result matches
+    a full-size blur closely at about a sixteenth of the cost."""
+    h_, w_ = x.shape
+    q = cv2.resize(x, (w_ // 4, h_ // 4), interpolation=cv2.INTER_AREA)
+    return cv2.resize(cv2.GaussianBlur(q, (0, 0), s / 4), (w_, h_), interpolation=cv2.INTER_LINEAR)
+
+
 def frame(i):
-    d = eq(D[i])
+    d = eq(load(i))
     if a.guide:
         g = cv2.cvtColor(cv2.imread(f"{a.frames}/f_{i:05d}.jpg"), cv2.COLOR_BGR2GRAY).astype(np.float32) / 255
         d = np.clip(guided(g, d, 4, a.guide), 0, 1)
@@ -64,7 +81,7 @@ def frame(i):
         w = np.clip((d - a.cut) / a.cutw, 0, 1); w = w * w * (3 - 2 * w)
         m = 1 - w
         sg = a.soft * d.shape[1]
-        far = cv2.GaussianBlur(d * m, (0, 0), sg) / np.maximum(cv2.GaussianBlur(m, (0, 0), sg), 1e-3)
+        far = blur(d * m, sg) / np.maximum(blur(m, sg), 1e-3)
         d = far + (d - far) * w
     t = i / a.fps
     v = 0.5 + 0.5 * np.cos(2 * np.pi * (t / a.period - a.k * d))
@@ -83,11 +100,10 @@ def frame(i):
 if a.still >= 0:
     cv2.imwrite(a.out, cv2.cvtColor(frame(a.still), cv2.COLOR_RGB2BGR))
 else:
-    h, w = D[0].shape
     ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w}x{h}",
                            "-r", str(a.fps), "-i", "-", "-c:v", "libx264", "-crf", "16", "-pix_fmt", "yuv420p", a.out],
                           stdin=subprocess.PIPE)
-    for i in range(len(D)):
+    for i in range(len(paths)):
         ff.stdin.write(frame(i).tobytes())
     ff.stdin.close(); ff.wait()
 print(a.out)

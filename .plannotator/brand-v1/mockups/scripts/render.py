@@ -673,14 +673,24 @@ def set_fill(psd: PSDImage, spec: str) -> None:
 
 
 def render(psd_path: Path, art_path: Path | None, out: Path, layer: str | None, fit: str, selftest: bool, hide: list[str],
-           fills: list[str] = ()) -> None:
+           fills: list[str] = (), blends: list[str] = (), slots: list[str] = (), ground: str = "#FFFFFF") -> None:
     psd = PSDImage.open(psd_path)
     layers = smart_layers(psd)
-    targets = pick_targets(layers, layer)
     unsupported: list[str] = []
 
+    # --slot "group/path/name=art.png": that one layer gets its own art, even when it shares its
+    # embedded content with others (a row of frames placed from one smart object)
+    slot_art: list[tuple[SmartLayer, Path]] = []
+    for spec in slots:
+        name, _, art = spec.rpartition("=")
+        hits = [s for s in layers if f"{s.path}/{s.name}".strip("/") == name] or [s for s in layers if s.name == name and s.layer.is_visible()]
+        if len(hits) != 1:
+            raise SystemExit(f"--slot: {name!r} matches {len(hits)} smart objects; use its group path from --list")
+        slot_art.append((hits[0], Path(art)))
+
+    targets = [] if slot_art and not art_path else pick_targets(layers, layer)
     base = None
-    if not selftest:
+    if targets and not selftest:
         assert art_path is not None
         base = load_art(art_path)
 
@@ -692,6 +702,17 @@ def render(psd_path: Path, art_path: Path | None, out: Path, layer: str | None, 
             l.visible = False
     for spec in fills:
         set_fill(psd, spec)
+    for spec in blends:
+        # --blend "Layer=NORMAL": e.g. a background colour layer saved in Color mode, which only
+        # tints the photo's backdrop; in Normal mode it replaces it
+        from psd_tools.constants import BlendMode
+
+        name, _, mode = spec.rpartition("=")
+        hits = [l for l in psd.descendants() if l.name == name]
+        if not hits or mode not in BlendMode.__members__:
+            raise SystemExit(f"--blend: expected an existing 'Layer name=MODE' (e.g. NORMAL), got {spec!r}")
+        for l in hits:
+            l.blend_mode = BlendMode[mode]
 
     cache: dict[tuple[int, int], np.ndarray] = {}
     for s in targets:
@@ -703,15 +724,21 @@ def render(psd_path: Path, art_path: Path | None, out: Path, layer: str | None, 
         prem, bbox = warp_into_quad(art, s, psd.size, filter_margin(s))
         prem = apply_smart_filters(prem, s, unsupported, psd_path.parent, bbox[:2], psd.size)
         inject(s, prem, bbox, psd.color_mode)
+    for s, art_file in slot_art:
+        prem, bbox = warp_into_quad(fit_art(load_art(art_file), s.size, fit), s, psd.size, filter_margin(s))
+        prem = apply_smart_filters(prem, s, unsupported, psd_path.parent, bbox[:2], psd.size)
+        inject(s, prem, bbox, psd.color_mode)
+    targets = targets + [s for s, _ in slot_art]
 
     color, _shape, alpha = psd_composite(psd, color=1.0, alpha=0.0)
-    # Flatten onto white, as Photoshop's own preview does.
+    # Flatten onto white, as Photoshop's own preview does (or onto --ground, when the backdrop is hidden).
     rgb = color[..., :3] if color.shape[2] >= 3 else np.repeat(color, 3, axis=2)
     if psd.color_mode == ColorMode.CMYK:
         im = Image.fromarray((np.clip(color, 0, 1) * 255).round().astype(np.uint8), "CMYK").convert("RGB")
         rgb = np.asarray(im, np.float32) / 255.0
     a = alpha if alpha.ndim == 3 else alpha[..., None]
-    flat = rgb * a + (1.0 - a)
+    g = np.array([int(ground.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4)], np.float32) / 255.0
+    flat = rgb * a + g * (1.0 - a)
     img = Image.fromarray((np.clip(flat, 0, 1) * 255).round().astype(np.uint8), "RGB")
     out.parent.mkdir(parents=True, exist_ok=True)
     save_kw = {"quality": 92, "subsampling": 0} if out.suffix.lower() in (".jpg", ".jpeg") else {}
@@ -773,6 +800,9 @@ def main() -> None:
     ap.add_argument("--selftest", action="store_true", help="use the embedded placeholder as art and diff against the PSD preview")
     ap.add_argument("--hide", action="append", default=[], metavar="LAYER", help="hide a layer by name before compositing (repeatable), e.g. a promo layer")
     ap.add_argument("--fill", action="append", default=[], metavar="LAYER=#HEX", help="recolour a solid-colour fill layer (repeatable), e.g. 'Background color=#0E0D0D'")
+    ap.add_argument("--ground", default="#FFFFFF", metavar="#HEX", help="colour under transparent areas, e.g. #0E0D0D with the backdrop layer hidden")
+    ap.add_argument("--slot", action="append", default=[], metavar="LAYER=ART", help="give one smart-object layer (group/path/name) its own art (repeatable)")
+    ap.add_argument("--blend", action="append", default=[], metavar="LAYER=MODE", help="set a layer's blend mode (repeatable), e.g. 'Background Color=NORMAL'")
     ap.add_argument("--cylinder", type=Path, metavar="FIT.json", help="fitted parameters for warpCylinder smart objects (scripts/cylinder.py)")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args()
@@ -784,9 +814,9 @@ def main() -> None:
         global CYLINDER
         sys.path.insert(0, str(Path(__file__).parent))
         CYLINDER = json.loads(a.cylinder.read_text())
-    if not a.psd or not a.out or not (a.art or a.selftest):
-        ap.error("--psd, --out and one of --art/--selftest are required (or use --list)")
-    render(a.psd, a.art, a.out, a.layer, a.fit, a.selftest, a.hide, a.fill)
+    if not a.psd or not a.out or not (a.art or a.selftest or a.slot):
+        ap.error("--psd, --out and one of --art/--slot/--selftest are required (or use --list)")
+    render(a.psd, a.art, a.out, a.layer, a.fit, a.selftest, a.hide, a.fill, a.blend, a.slot, a.ground)
 
 
 if __name__ == "__main__":
