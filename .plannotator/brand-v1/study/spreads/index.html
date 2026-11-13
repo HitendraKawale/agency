@@ -1,0 +1,111 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Spreads</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Spreads after Rerun 20: two A-pages on black. The grid arrives first as filled columns of the
+   pale field, the headline types in, the lines follow, the heat images replace the grid, swap
+   with hard cuts, the headline is deleted and retyped, everything clears to two empty pages.
+   1920 x 1080 at 2x, 9.5 s loop. ?t= one still; window.renderAt(t) seeks (capture). */
+*{margin:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000;font-family:"Inter Tight",sans-serif;color:#0E0D0D}
+.page{position:absolute;top:92px;width:634px;height:894px;background:#F1EFEB;overflow:hidden}
+#L{left:301px}#R{left:984px}
+.col{position:absolute;top:0;bottom:0;background:url(img/cols.png) no-repeat;background-size:634px 894px}
+h1{position:absolute;left:16px;right:16px;top:12px;font-weight:400;font-size:40px;line-height:1;letter-spacing:-.035em;white-space:pre-wrap}
+.list{position:absolute;left:16px;top:126px;font-size:13px;line-height:1.25;letter-spacing:-.005em}
+.list p{visibility:hidden}
+.small{font-size:9px;line-height:1.2;letter-spacing:0}
+.foot{position:absolute;bottom:12px}.foot.l{left:16px}.foot.r{right:16px;text-align:right}
+.bi{position:absolute;left:16px;top:16px;width:30px}
+.bi svg{display:block;width:100%;height:auto;fill:currentColor}
+.img{position:absolute;overflow:hidden}
+.img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transform-origin:50% 50%}
+#wide{left:16px;top:470px;width:384px;height:240px}
+#cap{position:absolute;left:16px;top:718px}
+#large{right:16px;top:16px;width:450px;height:470px}
+#smallimg{right:16px;top:500px;width:150px;height:190px}
+</style></head><body>
+<section class="page" id="L">
+  <div id="colsL"></div>
+  <h1 id="h"></h1>
+  <div class="list" id="list"><p>Websites and products</p><p>for the people who use them</p><p>and the agents that read them.</p></div>
+  <div class="img" id="wide"><img alt=""></div>
+  <p class="small" id="cap"></p>
+  <p class="small foot l" id="fl">Blank Interfaces</p><p class="small foot r" id="fr">Mumbai and the UK</p>
+</section>
+<section class="page" id="R">
+  <div id="colsR"></div>
+  <div class="bi" id="bi"></div>
+  <div class="img" id="large"><img alt=""></div>
+  <div class="img" id="smallimg"><img alt=""></div>
+  <p class="small foot l" id="fl2">Blank Interfaces</p><p class="small foot r" id="fr2">Mumbai and the UK</p>
+</section>
+<script src="../../mark/bi.js"></script><script>
+const $ = (id) => document.getElementById(id);
+$("bi").innerHTML = `<svg viewBox="0 0 ${BI.width} ${BI.height}" fill-rule="evenodd"><path d="${BI.path}"/></svg>`;
+
+// six filled columns per page, 10 px gutters of sand between them and at the edges
+const N = 6, G = 10, CW = (634 - G * (N + 1)) / N;
+const cols = [];
+for (const side of ["L", "R"]) for (let i = 0; i < N; i++) {
+  const d = document.createElement("div"); d.className = "col";
+  const x = G + i * (CW + G);
+  d.style.left = x + "px"; d.style.width = CW + "px"; d.style.backgroundPosition = `${-x}px 0`;
+  $("cols" + side).appendChild(d); cols.push({ d, i });
+}
+
+const HA = "Agency in the era\nof infinite software.", HB = "Software made\nin God’s image.";
+const SETS = {
+  a1: { cap: "Tesla Cybertruck, shown 21 November 2019" }, a2: { cap: "2008 Tesla Roadster" },
+  b1: { cap: "The Creation of Adam, Michelangelo" }, b2: { cap: "The Creation of Adam, Michelangelo" },
+};
+const CPS = 22, DEL = 60;   // typing and deleting speed, characters per second
+// timeline (s): grid 0 to 0.9, type A from 0.05, lines from 0.9, images in at 1.9, cut at 3.4,
+// delete from 4.4, B set and typing at 5.05, cut at 6.3, images out at 7.3, fade 8.2 to 8.7
+const clamp = (x) => Math.max(0, Math.min(1, x));
+const IMG = ["wide", "large", "smallimg"];
+const imgFiles = { wide: "wide", large: "large", smallimg: "small" };
+let shown = null;
+function setImages(set, op, t0, t) {
+  if (set !== shown) {
+    for (const k of IMG) $(k).firstElementChild.src = set ? `img/${set}-${imgFiles[k]}.png` : "";
+    $("cap").textContent = set ? SETS[set].cap : "";
+    shown = set;
+  }
+  for (const k of IMG) {
+    $(k).style.opacity = set ? op : 0;
+    // slow push-in while a set is up, so the stills do not sit dead
+    $(k).firstElementChild.style.transform = `scale(${1.06 - 0.06 * clamp((t - t0) / 1.6)})`;
+  }
+  $("cap").style.opacity = set ? op : 0;
+}
+window.renderAt = (t) => {
+  t = ((t % 9.5) + 9.5) % 9.5;
+  // grid: one column per 0.15 s, left to right on both pages; fades as the images arrive
+  const gridOp = 1 - clamp((t - 2.0) / 0.4);
+  for (const { d, i } of cols) d.style.opacity = t >= i * 0.15 && t < 2.4 ? gridOp : 0;
+  // headline
+  let h = "";
+  if (t < 4.4) h = HA.slice(0, Math.floor(clamp((t - 0.05) * CPS / HA.length) * HA.length));
+  else if (t < 5.05) h = HA.slice(0, Math.max(0, HA.length - Math.floor((t - 4.4) * DEL)));
+  else h = HB.slice(0, Math.floor(clamp((t - 5.05) * CPS / HB.length) * HB.length));
+  $("h").textContent = h;
+  // lines under the headline, one every 0.25 s, gone when the headline is deleted
+  [...$("list").children].forEach((p, k) => (p.style.visibility = t >= 0.9 + k * 0.25 && t < 4.4 ? "visible" : "hidden"));
+  // images: in 1.9 to 2.3, hard cuts after
+  if (t < 1.9) setImages(null, 0, 0, t);
+  else if (t < 3.4) setImages("a1", clamp((t - 1.9) / 0.4), 1.9, t);
+  else if (t < 5.05) setImages("a2", 1, 3.4, t);
+  else if (t < 6.3) setImages("b1", 1, 5.05, t);
+  else if (t < 7.3) setImages("b2", 1, 6.3, t);
+  else setImages(null, 0, 0, t);
+  // type and marks fade out together at the end, leaving two empty pages
+  const end = 1 - clamp((t - 8.2) / 0.5);
+  for (const id of ["h", "fl", "fr", "fl2", "fr2", "bi"]) $(id).style.opacity = end;
+};
+const q = new URLSearchParams(location.search);
+Promise.all([document.fonts.ready, ...["a1", "a2", "b1", "b2"].flatMap((s) => ["wide", "large", "small"].map((k) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = `img/${s}-${k}.png`; })))])
+  .then(() => {
+    if (q.has("t")) { renderAt(+q.get("t")); setTimeout(() => { document.title = "ready"; window.__ready = true; }, 200); }
+    else { window.__ready = true; const t0 = performance.now(); const loop = () => { renderAt((performance.now() - t0) / 1000); requestAnimationFrame(loop); }; loop(); }
+  });
+</script></body></html>

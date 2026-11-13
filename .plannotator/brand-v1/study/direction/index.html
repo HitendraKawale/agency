@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Design direction</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Design direction card after Rerun 11: the rigid side of the brand. One line set large in the top
+   left, the monogram small in the bottom left, nothing else; no colour. 1920 x 2160 at 2x.
+   ?c=sand (the site line) | noir (the poster line) */
+*{margin:0;box-sizing:border-box}
+html,body{width:960px;height:1080px;overflow:hidden;font-family:"Inter Tight",sans-serif}
+body.sand{background:#F1EFEB;color:#0E0D0D}body.noir{background:#0E0D0D;color:#FFFFFF}
+h1{position:absolute;left:22px;right:30px;top:12px;font-weight:400;letter-spacing:-.04em;line-height:.98}
+body.sand h1{font-size:80px;text-wrap:balance}body.noir h1{font-size:118px}
+.bi{position:absolute;left:24px;bottom:26px;width:126px}
+.bi svg{display:block;width:100%;height:auto;fill:currentColor}
+</style></head><body>
+<h1 id="h"></h1><div class="bi" id="bi"></div>
+<script src="../../mark/bi.js"></script><script>
+const c = new URLSearchParams(location.search).get("c") ?? "sand";
+document.body.className = c;
+document.getElementById("h").innerHTML = c === "noir"
+  ? "Agency in the era<br>of infinite software."
+  : "We design and build websites and products for the people who use them and the agents that read them.";
+document.getElementById("bi").innerHTML = `<svg viewBox="0 0 ${BI.width} ${BI.height}" fill-rule="evenodd"><path d="${BI.path}"/></svg>`;
+document.fonts.ready.then(() => (document.title = "ready"));
+</script></body></html>

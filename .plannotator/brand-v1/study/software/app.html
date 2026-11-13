@@ -1,0 +1,142 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Agent view</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* After Rerun's 25-Software (reference/rerun/stills/studiogruhl_rerun_25-software.jpg): the product's own
+   window, sources and a tree on the left, one large view on the right where the data is rendered.
+   Ours shows a website the way an agent reads it: the accessibility tree (study/mono/tree.js) and the
+   homepage (mockups/art/site.html) rendered as heat, hot where an agent leans on the text. Sized to the
+   MacBook screen smart object in mockups/psd/laptop-black-table (2283 x 1457), captured at 2x. */
+*{margin:0;box-sizing:border-box}
+html,body{width:1142px;height:729px;overflow:hidden;background:#0E0D0D;color:#fff;font-family:"Inter Tight",sans-serif}
+.top{height:46px;display:flex;align-items:center;justify-content:space-between;padding:4px 18px 0}
+.top svg{height:15px;width:auto;display:block;fill:#fff}
+.top nav{display:flex;gap:18px;font-size:12px;color:rgba(255,255,255,.86)}
+.cols{position:absolute;left:12px;right:12px;top:46px;bottom:12px;display:grid;grid-template-columns:292px 1fr;gap:8px}
+.left{display:grid;grid-template-rows:auto 1fr;gap:8px;min-height:0}
+.panel{background:#161515;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.head{height:30px;flex:none;display:flex;align-items:center;gap:8px;padding:0 11px;background:#232222;font-size:12.5px;color:rgba(255,255,255,.92)}
+.tree{padding:8px 0 10px 8px;font:400 11px/1 "Geist Mono",monospace;color:rgba(255,255,255,.9)}
+.row{display:flex;align-items:center;height:23px;padding-left:calc(var(--d) * 13px)}
+.ch{width:12px;height:12px;margin-right:7px;display:grid;place-items:center;flex:none}
+.ch svg{width:12px;height:12px}
+.sw{width:7px;height:7px;border-radius:2px;display:block;transform:rotate(45deg)}
+.ri{width:12px;height:12px;border-radius:3px;margin-right:7px;flex:none}
+.view{position:relative;flex:1}
+.view canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.head .ri{margin:0}
+</style></head><body>
+<div class="top"><svg id="bi" fill-rule="evenodd"></svg><nav><span>Share</span><span>Docs</span></nav></div>
+<div class="cols">
+  <div class="left">
+    <section class="panel"><div class="head">Sources</div><div class="tree" id="src"></div></section>
+    <section class="panel"><div class="head">Structure</div><div class="tree" id="str"></div></section>
+  </div>
+  <section class="panel"><div class="head" id="vh">Home page, as an agent reads it</div><div class="view" id="view"><canvas id="gl"></canvas><canvas id="ink"></canvas></div></section>
+</div>
+<script src="../../mark/bi.js"></script><script src="../../mark/rand.js"></script><script src="../mono/tree.js"></script><script>
+const q = new URLSearchParams(location.search), T = +(q.get("t") ?? 2.4);
+const bi = document.getElementById("bi");
+bi.setAttribute("viewBox", `0 0 ${BI.width} ${BI.height}`); bi.innerHTML = `<path d="${BI.path}"/>`;
+
+// left panels: where the reading came from, and the tree fully open
+const SRC = { id: "s", name: "blankinterfaces.com", children: [{ name: "crawl 2026-11-13 09:41", children: [{}] }, { name: "crawl 2026-11-06 18:02", children: [{}] }] };
+document.getElementById("src").innerHTML = treeHTML(treeRows(new Set(["s"]), SRC));
+document.getElementById("str").innerHTML = treeHTML(treeRows(new Set(["root", "doc", "main", "group"])));
+document.getElementById("vh").insertAdjacentHTML("afterbegin", ROOT_ICON);
+
+// --- the view: the homepage laid out as on the site (1440 wide), drawn twice. Once as weights (how much an
+// agent relies on each node) for the heat, once as crisp noir ink on top of the field.
+const H1 = "We design and build websites and products for the people who use them and the agents that read them.";
+const P = "A design and engineering studio in Mumbai and the UK, led by Aryan Kathawale and Hitendra Kawale.";
+function wrap(ctx, text, maxW) {
+  const words = text.split(" "), lines = []; let line = "";
+  for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+  return lines.concat(line);
+}
+function balanced(ctx, text, maxW) {   // text-wrap: balance, as the site's h1 uses
+  const n = wrap(ctx, text, maxW).length; let lo = maxW / 2, hi = maxW;
+  for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; wrap(ctx, text, m).length > n ? (lo = m) : (hi = m); }
+  return wrap(ctx, text, hi);
+}
+// draw(ctx, ink): ink=true draws the visible type; ink=false fills each node with its weight as grey
+function draw(ctx, ink) {
+  const g = (w) => (ctx.fillStyle = ink ? "#0E0D0D" : `rgb(${w * 255},${w * 255},${w * 255})`);
+  // banner: wordmark, navigation, contact
+  ctx.save(); ctx.translate(44, 22 + 22); const s = 32 / RAND.B.height; ctx.scale(s, s); g(.45); ctx.fill(new Path2D(RAND.B.path), "evenodd"); ctx.restore();
+  ctx.font = '500 15px "Inter Tight"'; ctx.textBaseline = "middle"; g(.5);
+  [["Projects", 560], ["About", 676], ["Blog", 778]].forEach(([t, x]) => ctx.fillText(t, x, 60));
+  ctx.textAlign = "right"; ctx.fillText("Contact", 1396, 60); ctx.textAlign = "left";
+  // heading
+  ctx.font = '400 80.6px "Inter Tight"'; ctx.textBaseline = "alphabetic";
+  try { ctx.letterSpacing = "-2.8px"; } catch {}
+  const lines = balanced(ctx, H1, 1370); g(1);
+  lines.forEach((l, i) => ctx.fillText(l, 44, 162 + 64 + i * 80.6));
+  try { ctx.letterSpacing = "0px"; } catch {}
+  const rowY = 162 + lines.length * 80.6 + 72;
+  // the two links, then the paragraph
+  ctx.font = '500 15px "Inter Tight"'; ctx.textBaseline = "middle"; g(.62);
+  ctx.fillText("Start a project", 44, rowY + 23); ctx.fillText("See the work", 190, rowY + 23);
+  ctx.font = '400 20px "Inter Tight"'; ctx.textBaseline = "alphabetic"; g(.55);
+  wrap(ctx, P, 656).forEach((l, i) => ctx.fillText(l, 740, rowY + 18 + i * 25));
+  // the figure: an agent gets its alt text, not the picture
+  const fy = rowY + 46 + 56 + 60;
+  // the box itself is known (it has a size and a role) but holds nothing to read: a faint plateau
+  if (!ink) { g(.045); ctx.beginPath(); ctx.roundRect(22, fy - 60, 1396, 698, 14); ctx.fill(); }
+  ctx.font = '400 15px "Geist Mono"'; g(.2);
+  ctx.fillText('img "Heat render of a Formula 1 car"', 44, fy);
+}
+
+const VS = `attribute vec2 p; varying vec2 uv; void main(){ uv = p * .5 + .5; uv.y = 1. - uv.y; gl_Position = vec4(p, 0., 1.); }`;
+const FS = `precision highp float; varying vec2 uv; uniform sampler2D tex; uniform float t; uniform vec2 res;
+vec3 ramp(float u){
+  u = fract(u) * 5.;
+  vec3 s0 = vec3(24.,106.,221.)/255., s1 = vec3(155.,191.,211.)/255., s2 = vec3(134.,217.,166.)/255.,
+       s3 = vec3(246.,218.,117.)/255., s4 = vec3(215.,47.,33.)/255.;
+  if (u < 1.) return mix(s0, s1, u); if (u < 2.) return mix(s1, s2, u - 1.);
+  if (u < 3.) return mix(s2, s3, u - 2.); if (u < 4.) return mix(s3, s4, u - 3.); return mix(s4, s0, u - 4.);
+}
+float h21(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(h21(i), h21(i + vec2(1., 0.)), f.x), mix(h21(i + vec2(0., 1.)), h21(i + vec2(1., 1.)), f.x), f.y); }
+float fbm(vec2 p){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ s += a * vn(p); p = p * 2.03 + 7.1; a *= .5; } return s; }
+void main(){
+  float asp = res.x / res.y; vec2 p = vec2(uv.x * asp, uv.y);
+  vec2 w = vec2(fbm(p * 1.4 + vec2(t * .05, 0.)), fbm(p * 1.4 + vec2(3.1, -t * .04))) - .5;
+  vec3 g = texture2D(tex, uv + w * .025).rgb;
+  // the resting ground is pale blue (Rerun's fields are high-key and cool); heat gathers where an agent reads
+  float v = .19 + .05 * uv.y + .42 * g.g + .12 * g.b;   // peaks at red (.78), short of the wrap to blue
+  v += .022 * sin(6.2832 * (g.g / .11 + t * .3));            // faint water marks following the heat
+  v += .06 * (fbm(p * 2. + t * .04) - .5) + (h21(uv * res + t) - .5) * .03;
+  gl_FragColor = vec4(ramp(v), 1.);
+}`;
+
+document.fonts.load('400 80px "Inter Tight"').then(() => Promise.all([document.fonts.load('500 15px "Inter Tight"'), document.fonts.load('400 15px "Geist Mono"')])).then(() => {
+  const view = document.getElementById("view"), r = view.getBoundingClientRect(), dpr = 2;
+  const W = Math.round(r.width), H = Math.round(r.height), S = W / 1440;
+  // ink layer
+  const ink = document.getElementById("ink"); ink.width = W * dpr; ink.height = H * dpr;
+  const ic = ink.getContext("2d"); ic.scale(dpr * S, dpr * S); draw(ic, true);
+  // weights: a wide glow and a tighter inner heat, blurred copies of the weighted layout
+  const layer = (blur) => { const c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
+    x.fillStyle = "#000"; x.fillRect(0, 0, W, H); x.filter = `blur(${blur}px)`; x.scale(S, S); draw(x, false); return x.getImageData(0, 0, W, H).data; };
+  const G = layer(W * 0.03), B = layer(W * 0.008), tex = new Uint8Array(W * H * 4);
+  for (let i = 0; i < W * H; i++) { tex[i * 4 + 1] = Math.min(255, G[i * 4] * 3.2); tex[i * 4 + 2] = Math.min(255, B[i * 4] * 2.2); tex[i * 4 + 3] = 255; }
+  const glc = document.getElementById("gl"); glc.width = W * dpr; glc.height = H * dpr;
+  const gl = glc.getContext("webgl", { preserveDrawingBuffer: true }), prog = gl.createProgram();
+  for (const [ty, src] of [[gl.VERTEX_SHADER, VS], [gl.FRAGMENT_SHADER, FS]]) { const sh = gl.createShader(ty); gl.shaderSource(sh, src); gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); gl.attachShader(prog, sh); }
+  gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+  for (const k of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_2D, k, gl.LINEAR);
+  for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE);
+  gl.uniform2f(gl.getUniformLocation(prog, "res"), W * dpr, H * dpr);
+  const uT = gl.getUniformLocation(prog, "t");
+  window.renderAt = (t) => { gl.viewport(0, 0, W * dpr, H * dpr); gl.uniform1f(uT, t); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); };
+  if (q.has("t")) renderAt(T);
+  else { const t0 = performance.now(); const loop = () => { renderAt(T + (performance.now() - t0) / 1000); requestAnimationFrame(loop); }; loop(); }
+  window.__ready = true; document.title = "ready";
+});
+</script></body></html>

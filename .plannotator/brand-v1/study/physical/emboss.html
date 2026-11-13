@@ -1,0 +1,244 @@
+<!doctype html><html><head><meta charset="utf-8"><title>emboss</title>
+<style>
+*{margin:0;box-sizing:border-box}
+html,body{overflow:hidden}
+canvas{display:block}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head><body><canvas id="c"></canvas>
+<script src="../../mark/bi.js"></script><script src="../../mark/rand.js"></script>
+<script type="module">
+// The marks on objects, after Rerun's 10 (symbol on a bolt), 14 (tag), 21 and 22 (marks on hardware):
+// black on black, stamped or embossed, studio light, no colour.
+//   ?s=keycap   BI stamped into a black keycap (10)
+//   ?s=tag      BI embossed at the foot of a blackened steel tag on a braided cord (14)
+//   ?s=device   BI raised inside a round recess on a matte black casing, with screws (21)
+//   ?s=wordmark the Blank wordmark as a raised outline on a matte black casing (22)
+// Each object is an extruded shape whose front face carries a height map drawn from the mark's
+// own path (normal map, cavity shading and grain all come from that one height map).
+import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
+
+const q = new URLSearchParams(location.search), SCENE = q.get("s") ?? "keycap";
+const W = window.innerWidth, H = window.innerHeight;
+
+// ---------- height map tools (Float32, units are texture pixels) ----------
+function raster(w, h, draw) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.fillStyle = "#000"; g.fillRect(0, 0, w, h); g.fillStyle = "#fff"; g.strokeStyle = "#fff";
+  draw(g);
+  const d = g.getImageData(0, 0, w, h).data, out = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) out[i] = d[i * 4] / 255;
+  return out;
+}
+function boxPass(src, dst, w, h, r, horiz) {
+  const n = horiz ? w : h, m = horiz ? h : w, d = 2 * r + 1;
+  for (let j = 0; j < m; j++) {
+    const at = (i) => horiz ? j * w + Math.min(n - 1, Math.max(0, i)) : Math.min(n - 1, Math.max(0, i)) * w + j;
+    let s = 0; for (let i = -r; i <= r; i++) s += src[at(i)];
+    for (let i = 0; i < n; i++) { dst[horiz ? j * w + i : i * w + j] = s / d; s += src[at(i + r + 1)] - src[at(i - r)]; }
+  }
+}
+// Gaussian blur of sigma s, as three box passes each way
+function gauss(a, w, h, s) {
+  if (s < 0.5) return a.slice();
+  const r = Math.max(1, Math.round((Math.sqrt(4 * s * s / 3 + 1) - 1) / 2));
+  let x = a.slice(), y = new Float32Array(w * h);
+  for (let k = 0; k < 3; k++) { boxPass(x, y, w, h, r, true); boxPass(y, x, w, h, r, false); }
+  return x;
+}
+const smooth = (e0, e1, v) => { const t = Math.min(1, Math.max(0, (v - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+// a raised (or, with negative height, sunk) feature with a rounded edge of width `edge` px
+function bevel(mask, w, h, edge, height) {
+  const b = gauss(mask, w, h, edge * 0.5), out = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) out[i] = smooth(0.02, 0.98, b[i]) * height;
+  return out;
+}
+function noise(w, h, s, amp, seed) {
+  let x = seed * 9301 + 49297; const rnd = () => ((x = (x * 9301 + 49297) % 233280) / 233280);
+  const a = new Float32Array(w * h); for (let i = 0; i < w * h; i++) a[i] = rnd() - 0.5;
+  const b = gauss(a, w, h, s); let m = 0; for (let i = 0; i < w * h; i++) m = Math.max(m, Math.abs(b[i]));
+  for (let i = 0; i < w * h; i++) b[i] *= amp / m; return b;
+}
+const add = (a, ...bs) => { for (const b of bs) for (let i = 0; i < a.length; i++) a[i] += b[i]; return a; };
+
+// maps from a height field: tangent-space normals, colour with cavity shading, roughness
+function maps(hf, w, h, { color, rough, roughVar = null, cavity = 0.5, cavitySigma = 6, colorVar = null }) {
+  const nC = document.createElement("canvas"); nC.width = w; nC.height = h;
+  const cC = document.createElement("canvas"); cC.width = w; cC.height = h;
+  const rC = document.createElement("canvas"); rC.width = w; rC.height = h;
+  const nI = new ImageData(w, h), cI = new ImageData(w, h), rI = new ImageData(w, h);
+  const blurred = gauss(hf, w, h, cavitySigma);
+  const base = new THREE.Color(color);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, xl = x > 0 ? i - 1 : i, xr = x < w - 1 ? i + 1 : i, yu = y > 0 ? i - w : i, yd = y < h - 1 ? i + w : i;
+    const nx = -(hf[xr] - hf[xl]) / 2, ny = (hf[yd] - hf[yu]) / 2, l = Math.hypot(nx, ny, 1);
+    nI.data[i * 4] = (nx / l * 0.5 + 0.5) * 255; nI.data[i * 4 + 1] = (ny / l * 0.5 + 0.5) * 255; nI.data[i * 4 + 2] = (1 / l * 0.5 + 0.5) * 255; nI.data[i * 4 + 3] = 255;
+    const ao = 1 - cavity * Math.min(1, Math.max(0, (blurred[i] - hf[i]) / 6));
+    const cv = 1 + (colorVar ? colorVar[i] : 0);
+    cI.data[i * 4] = base.r * ao * cv * 255; cI.data[i * 4 + 1] = base.g * ao * cv * 255; cI.data[i * 4 + 2] = base.b * ao * cv * 255; cI.data[i * 4 + 3] = 255;
+    const r = Math.min(1, Math.max(0.05, rough + (roughVar ? roughVar[i] : 0)));
+    rI.data[i * 4] = rI.data[i * 4 + 1] = rI.data[i * 4 + 2] = r * 255; rI.data[i * 4 + 3] = 255;
+  }
+  nC.getContext("2d").putImageData(nI, 0, 0); cC.getContext("2d").putImageData(cI, 0, 0); rC.getContext("2d").putImageData(rI, 0, 0);
+  const t = (c, srgb) => { const x = new THREE.CanvasTexture(c); x.anisotropy = 8; if (srgb) x.colorSpace = THREE.SRGBColorSpace; return x; };
+  return { normal: t(nC), map: t(cC, true), rough: t(rC) };
+}
+
+// ---------- geometry ----------
+function roundedRect(s, x, y, w, h, r) {
+  s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r);
+  s.quadraticCurveTo(x + w, y + h, x + w - r, y + h); s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+}
+// extrude a shape and map uv planar over the shape's bounding box, so the height map lines up with the front face
+function slab(shape, opts) {
+  const g = new THREE.ExtrudeGeometry(shape, { curveSegments: 48, ...opts });
+  g.computeBoundingBox();
+  const pts = shape.getPoints(64); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  for (const p of pts) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
+  const pos = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) - x0) / (x1 - x0), (pos.getY(i) - y0) / (y1 - y0));
+  uv.needsUpdate = true;
+  // weld the bevel rings so the curved edge shades smoothly instead of in steps
+  g.deleteAttribute("normal"); const m = mergeVertices(g, 1e-5); m.computeVertexNormals(); m.center();
+  return m;
+}
+
+// ---------- scene ----------
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(2); renderer.setSize(W, H);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(24, W / H, 0.1, 100);
+const key = new THREE.DirectionalLight(0xffffff, 2.2); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffffff, 0.8); scene.add(rim);
+
+const biPath = new Path2D(BI.path), wmPath = new Path2D(RAND.B.path);
+const drawMark = (g, path, gw, gh, cx, cy, height, mode = "fill", lw = 0) => {
+  const s = height / gh; g.save(); g.translate(cx - gw * s / 2, cy - height / 2); g.scale(s, s);
+  if (mode === "fill") g.fill(path, "evenodd"); else { g.lineWidth = lw / s; g.lineJoin = "miter"; g.stroke(path); }
+  g.restore();
+};
+
+const SCENES = {
+  // 10: the BI stamped into the top of a black PBT keycap, seen from above
+  keycap() {
+    document.body.style.background = "linear-gradient(#0b0b0b 0%, #0d0d0d 45%, #5c5c5c 100%)";
+    const shape = roundedRect(new THREE.Shape(), -0.5, -0.5, 1, 1, 0.1);
+    const geo = slab(shape, { depth: 0.25, bevelEnabled: true, bevelThickness: 0.32, bevelSize: 0.17, bevelSegments: 16 });
+    const N = 2048, hf = new Float32Array(N * N);
+    // a shallow cylindrical dish across the top, as on a sculpted keycap
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const u = x / N - 0.5; hf[y * N + x] = -26 * (1 - 4 * u * u); }
+    const m = raster(N, N, (g) => drawMark(g, biPath, BI.width, BI.height, N / 2, N / 2, N * 0.36));
+    const stamp = bevel(m, N, N, 14, -1);
+    add(hf, stamp.map((v) => v * 24), noise(N, N, 1.2, 0.35, 3));
+    // the stamped floor is a touch darker and rougher than the top, as a pressed mark is
+    const tint = add(noise(N, N, 60, 0.08, 7), stamp.map((v) => v * 0.28)), rv = add(noise(N, N, 40, 0.06, 5), stamp.map((v) => -v * 0.12));
+    const T = maps(hf, N, N, { color: "#121212", rough: 0.62, roughVar: rv, cavity: 0.55, cavitySigma: 10, colorVar: tint });
+    const face = new THREE.MeshPhysicalMaterial({ map: T.map, normalMap: T.normal, normalScale: new THREE.Vector2(1, 1), roughnessMap: T.rough, roughness: 1, metalness: 0, sheen: 0.2, sheenRoughness: 0.8 });
+    const side = new THREE.MeshPhysicalMaterial({ color: "#121212", roughness: 0.6, metalness: 0 });
+    const mesh = new THREE.Mesh(geo, [face, side]); mesh.rotation.set(-0.32, 0.18, 0.0); scene.add(mesh);
+    camera.position.set(0, 0.05, 6.4); camera.lookAt(0, 0.0, 0);
+    key.position.set(-2, 3, 2.5); rim.position.set(3, -1, 1);
+  },
+  // 14: a blackened steel tag on a braided black cord, the BI embossed small at its foot
+  tag() {
+    document.body.style.background = "linear-gradient(#cfcfcf 0%, #e3e3e2 55%, #ececeb 100%)";
+    const tw = 0.56, th = 1.9, r = 0.14;
+    const shape = roundedRect(new THREE.Shape(), -tw / 2, -th / 2, tw, th, r);
+    const hole = roundedRect(new THREE.Path(), -0.1, th / 2 - 0.2, 0.2, 0.075, 0.037); shape.holes.push(hole);
+    const geo = slab(shape, { depth: 0.012, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.01, bevelSegments: 6 });
+    const NW = 1024, NH = Math.round(NW * th / tw), hf = new Float32Array(NW * NH);
+    const m = raster(NW, NH, (g) => drawMark(g, biPath, BI.width, BI.height, NW / 2, NH * 0.87, NW * 0.26));
+    add(hf, bevel(m, NW, NH, 7, 10), noise(NW, NH, 1.0, 0.45, 11), noise(NW, NH, 6, 0.6, 12));
+    const T = maps(hf, NW, NH, { color: "#3a3a3a", rough: 0.5, roughVar: noise(NW, NH, 50, 0.12, 13), cavity: 0.5, cavitySigma: 6, colorVar: noise(NW, NH, 90, 0.18, 14) });
+    const face = new THREE.MeshPhysicalMaterial({ map: T.map, normalMap: T.normal, roughnessMap: T.rough, roughness: 1, metalness: 0.55 });
+    const side = new THREE.MeshPhysicalMaterial({ color: "#3a3a3a", roughness: 0.4, metalness: 0.6 });
+    const tag = new THREE.Group(); tag.add(new THREE.Mesh(geo, [face, side]));
+    // the cord: two braided strands come down in front, pass through the slot and go back up behind
+    const bc = document.createElement("canvas"); bc.width = 64; bc.height = 64; const bg = bc.getContext("2d");
+    bg.fillStyle = "#0c0c0c"; bg.fillRect(0, 0, 64, 64); bg.strokeStyle = "#4a4a4a"; bg.lineWidth = 6;
+    for (let k = -64; k < 128; k += 16) { bg.beginPath(); bg.moveTo(k, 0); bg.lineTo(k + 32, 64); bg.stroke(); }
+    bg.strokeStyle = "#262626"; for (let k = -64; k < 128; k += 16) { bg.beginPath(); bg.moveTo(k + 32, 0); bg.lineTo(k, 64); bg.stroke(); }
+    const braid = new THREE.CanvasTexture(bc); braid.wrapS = braid.wrapT = THREE.RepeatWrapping; braid.repeat.set(60, 3); braid.colorSpace = THREE.SRGBColorSpace;
+    const cordMat = new THREE.MeshPhysicalMaterial({ map: braid, roughness: 0.75, metalness: 0, sheen: 0.6, sheenColor: new THREE.Color("#555") });
+    const hy = th / 2 - 0.163;
+    for (const dx of [-0.024, 0.024]) {
+      const c = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(dx * 0.6, 2.6, 0.06), new THREE.Vector3(dx, hy + 0.5, 0.06), new THREE.Vector3(dx, hy + 0.12, 0.045),
+        new THREE.Vector3(dx, hy, 0.0), new THREE.Vector3(dx, hy + 0.12, -0.045), new THREE.Vector3(dx, hy + 0.5, -0.05), new THREE.Vector3(dx * 0.6, 2.6, -0.05)]);
+      tag.add(new THREE.Mesh(new THREE.TubeGeometry(c, 400, 0.022, 24, false), cordMat));
+    }
+    tag.rotation.set(-0.22, -0.12, 0); tag.position.y = -0.25; scene.add(tag);
+    camera.position.set(0, 0.1, 6.4); camera.lookAt(0, 0.05, 0);
+    key.position.set(-2, 3, 3); rim.position.set(2.5, 0.5, -1.5); key.intensity = 2.6;
+  },
+  // 21: the BI raised in a round recess on a matte black powder-coated casing, four screws round it
+  device() {
+    document.body.style.background = "linear-gradient(100deg, #d9d9d8 0%, #f1f1f0 45%, #e2e2e1 100%)";
+    const cw = 2.2, ch = 2.6;
+    const shape = roundedRect(new THREE.Shape(), -cw / 2, -ch / 2, cw, ch, 0.9);
+    const geo = slab(shape, { depth: 0.6, bevelEnabled: true, bevelThickness: 0.2, bevelSize: 0.16, bevelSegments: 20 });
+    const NW = 2048, NH = Math.round(NW * ch / cw), hf = new Float32Array(NW * NH);
+    const px = NW / cw, cx = NW / 2, cy = NH * 0.47, R = 0.52 * px;
+    const disc = raster(NW, NH, (g) => { g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill(); });
+    const ring = raster(NW, NH, (g) => { g.lineWidth = 0.03 * px; g.beginPath(); g.arc(cx, cy, R + 0.03 * px, 0, Math.PI * 2); g.stroke(); });
+    const m = raster(NW, NH, (g) => drawMark(g, biPath, BI.width, BI.height, cx, cy, 0.42 * px));
+    const screws = [], sr = 0.065 * px;
+    for (const [sx, sy] of [[-0.78, 0.92], [0.78, 0.92], [-0.95, -0.25], [0.95, -0.25]]) screws.push([cx + sx * px, cy - sy * px]);
+    const heads = raster(NW, NH, (g) => { for (const [x, y] of screws) { g.beginPath(); g.arc(x, y, sr, 0, Math.PI * 2); g.fill(); } });
+    const sockets = raster(NW, NH, (g) => { for (const [x, y] of screws) { g.beginPath(); for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; g.lineTo(x + Math.cos(a) * sr * 0.45, y + Math.sin(a) * sr * 0.45); } g.closePath(); g.fill(); } });
+    const wells = raster(NW, NH, (g) => { for (const [x, y] of screws) { g.beginPath(); g.arc(x, y, sr * 1.25, 0, Math.PI * 2); g.fill(); } });
+    add(hf, bevel(disc, NW, NH, 14, -10), bevel(ring, NW, NH, 6, -6), bevel(m, NW, NH, 8, 12),
+      bevel(wells, NW, NH, 4, -10), bevel(heads, NW, NH, 6, 9), bevel(sockets, NW, NH, 3, -9), noise(NW, NH, 1.4, 0.45, 21), noise(NW, NH, 4, 0.35, 22));
+    const T = maps(hf, NW, NH, { color: "#1b1b1b", rough: 0.6, roughVar: noise(NW, NH, 30, 0.05, 23), cavity: 0.6, cavitySigma: 10, colorVar: noise(NW, NH, 80, 0.06, 24) });
+    const face = new THREE.MeshPhysicalMaterial({ map: T.map, normalMap: T.normal, roughnessMap: T.rough, roughness: 1, metalness: 0.15 });
+    const side = new THREE.MeshPhysicalMaterial({ color: "#1b1b1b", roughness: 0.55, metalness: 0.15 });
+    const mesh = new THREE.Mesh(geo, [face, side]); mesh.rotation.set(-0.12, -0.38, -0.08); scene.add(mesh);
+    camera.position.set(0.15, 0.0, 3.6); camera.lookAt(0.15, 0.05, 0);
+    key.position.set(-3, 2.5, 2); rim.position.set(3, 1, 1.5); key.intensity = 2.0;
+  },
+  // 22: the Blank wordmark as a raised outline under a vented bay, on a matte black casing
+  wordmark() {
+    document.body.style.background = "linear-gradient(#0b0b0b 0%, #0e0e0e 50%, #6b6b6b 100%)";
+    const cw = 2.4, ch = 2.9;
+    const shape = roundedRect(new THREE.Shape(), -cw / 2, -ch / 2, cw, ch, 0.22);
+    // the bay is a real opening, so its walls catch the light; a vented panel sits behind it
+    shape.holes.push(roundedRect(new THREE.Path(), -0.84, 0.02, 1.68, 1.25, 0.14));
+    const geo = slab(shape, { depth: 0.8, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 12 });
+    const NW = 2400, NH = Math.round(NW * ch / cw), hf = new Float32Array(NW * NH), px = NW / cw;
+    const line = raster(NW, NH, (g) => drawMark(g, wmPath, RAND.B.width, RAND.B.height, NW / 2, 1.9 * px, 0.27 * px, "stroke", 0.012 * px));
+    const pins = raster(NW, NH, (g) => { for (const x of [0.16, cw - 0.16]) { g.beginPath(); g.arc(x * px, 2.7 * px, 0.06 * px, 0, Math.PI * 2); g.fill(); } });
+    add(hf, bevel(line, NW, NH, 4, 7), bevel(pins, NW, NH, 5, -8), noise(NW, NH, 1.4, 0.45, 31), noise(NW, NH, 5, 0.35, 32));
+    const T = maps(hf, NW, NH, { color: "#191919", rough: 0.58, roughVar: noise(NW, NH, 40, 0.06, 33), cavity: 0.7, cavitySigma: 14, colorVar: noise(NW, NH, 90, 0.07, 34) });
+    const face = new THREE.MeshPhysicalMaterial({ map: T.map, normalMap: T.normal, roughnessMap: T.rough, roughness: 1, metalness: 0.15 });
+    const side = new THREE.MeshPhysicalMaterial({ color: "#191919", roughness: 0.55, metalness: 0.15 });
+    const mesh = new THREE.Mesh(geo, [face, side]);
+    const pw = 1.8, ph = 1.37, pshape = roundedRect(new THREE.Shape(), -pw / 2, -ph / 2, pw, ph, 0.16);
+    const pgeo = slab(pshape, { depth: 0.04, bevelEnabled: false });
+    const PW = 1600, PH = Math.round(PW * ph / pw), pp = PW / pw, ph2 = new Float32Array(PW * PH);
+    const vents = raster(PW, PH, (g) => { for (let k = 0; k < 9; k++) { g.beginPath(); g.roundRect(0.22 * pp, (0.2 + k * 0.11) * pp, 1.36 * pp, 0.045 * pp, 0.0225 * pp); g.fill(); } });
+    add(ph2, bevel(vents, PW, PH, 6, -14), noise(PW, PH, 1.4, 0.4, 35));
+    const PT = maps(ph2, PW, PH, { color: "#141414", rough: 0.62, cavity: 0.9, cavitySigma: 8 });
+    const panel = new THREE.Mesh(pgeo, new THREE.MeshPhysicalMaterial({ map: PT.map, normalMap: PT.normal, roughnessMap: PT.rough, roughness: 1, metalness: 0.1 }));
+    panel.position.set(0, 0.02 + 1.25 / 2, 0.45 - 0.2); mesh.add(panel);
+    mesh.rotation.set(0.1, -0.2, 0); scene.add(mesh);
+    camera.position.set(0, -0.3, 8.6); camera.lookAt(0, -0.05, 0);
+    key.position.set(-2.5, 3, 2.2); rim.position.set(2.8, -0.5, 1.5); key.intensity = 2.4;
+  },
+};
+SCENES[SCENE]();
+renderer.render(scene, camera);
+requestAnimationFrame(() => { renderer.render(scene, camera); document.title = "ready"; });
+</script></body></html>

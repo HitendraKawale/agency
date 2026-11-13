@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Logo sizes</title><style>
+/* The five optical cuts of the Blank wordmark stacked from display down to micro, after Rerun's
+   07-logo_sizes. 1920 x 1080. ?bg=sand for the light version. ?proof=1: each cut at its working
+   size next to the display cut scaled down to the same size. */
+*{margin:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#0E0D0D;color:#fff}
+body.sand{background:#F1EFEB;color:#0E0D0D}
+.stack{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:44px}
+svg{display:block;fill:currentColor}
+.proof{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;align-content:center;justify-items:center;row-gap:56px}
+</style></head><body>
+<div class="stack" id="stack"></div>
+<script src="sizes.js"></script><script>
+const q = new URLSearchParams(location.search);
+if (q.get("bg") === "sand") document.body.classList.add("sand");
+const svg = (c, h) => `<svg viewBox="0 0 ${c.width} ${c.height}" style="height:${h}px;width:${(h * c.width) / c.height}px" fill-rule="evenodd"><path d="${c.path}"/></svg>`;
+const st = document.getElementById("stack");
+if (q.has("proof")) {
+  // left: the display cut shrunk; right: the cut made for that size
+  st.className = "proof";
+  const caps = [120, 60, 32, 18, 11];
+  st.innerHTML = SIZES.map((c, i) => svg(SIZES[0], caps[i]) + svg(c, caps[i])).join("");
+} else {
+  const caps = [270, 190, 135, 88, 50];
+  st.innerHTML = SIZES.map((c, i) => svg(c, caps[i])).join("");
+}
+document.fonts.ready.then(() => (document.title = "ready"));
+</script></body></html>

@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8"><title>OOH screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Digital OOH screen after Rerun 12 (metro screens): the wordmark across the top, a heat field
+   that drops through four states with hard top-down wipes, the ground flipping white to noir on
+   the same wipe. Landscape, 2640 x 1308 at 2x: the LED billboard smart object's size.
+   ?t= renders one still; window.renderAt(t) seeks (capture). Loop: 8 s. */
+*{margin:0;box-sizing:border-box}
+html,body{width:1320px;height:654px;overflow:hidden;background:#000;font-family:"Inter Tight",sans-serif}
+.g{position:absolute;inset:0}
+.g.white{background:#FFFFFF;color:#0E0D0D}.g.noir{background:#0E0D0D;color:#FFFFFF}
+.wm{position:absolute;left:32px;top:28px;width:1256px}
+.wm svg{display:block;width:100%;height:auto;fill:currentColor}
+.url{position:absolute;left:32px;top:348px;font-size:17px;letter-spacing:-.005em}
+.line{position:absolute;left:32px;bottom:30px;width:380px;font-size:40px;line-height:1.02;letter-spacing:-.035em}
+#f{position:absolute;left:440px;top:348px;width:848px;height:274px;display:block}
+</style></head><body>
+<div class="g" id="a"></div><div class="g" id="b"></div>
+<canvas id="f"></canvas>
+<script src="../../mark/rand.js"></script><script src="field.js"></script><script>
+const STATES = [
+  { f: "comb", g: "white" }, { f: "scallop", g: "white" },
+  { f: "sweep", g: "noir" }, { f: "rise", g: "noir" },
+];
+const STEP = 2, WIPE = 0.35, LOOP = STATES.length * STEP, FY = 348, FH = 274, SH = 654;
+const wm = `<svg viewBox="0 0 ${RAND.B.width} ${RAND.B.height}" fill-rule="evenodd"><path d="${RAND.B.path}"/></svg>`;
+const layer = (g) => `<div class="wm">${wm}</div><p class="url">blankinterfaces.com</p><p class="line">Agency in the era<br>of infinite software.</p>`;
+const A = document.getElementById("a"), B = document.getElementById("b");
+A.innerHTML = B.innerHTML = layer();
+const draw = makeField(document.getElementById("f"));
+window.renderAt = (t) => {
+  t = ((t % LOOP) + LOOP) % LOOP;
+  const k = Math.floor(t / STEP), cur = STATES[k], prev = STATES[(k + STATES.length - 1) % STATES.length];
+  const w = Math.min(1, (t - k * STEP) / WIPE);          // wipe progress, top to bottom of the screen
+  const y = Math.round(w * SH);
+  A.className = "g " + prev.g; B.className = "g " + cur.g;
+  B.style.clipPath = `inset(0 0 ${SH - y}px 0)`;
+  draw(t, cur.f, prev.f, Math.max(0, Math.min(1, (y - FY) / FH)));
+};
+const q = new URLSearchParams(location.search);
+document.fonts.ready.then(() => {
+  if (q.has("t")) { renderAt(+q.get("t")); document.title = "ready"; window.__ready = true; }
+  else { window.__ready = true; const t0 = performance.now(); const loop = () => { renderAt((performance.now() - t0) / 1000); requestAnimationFrame(loop); }; loop(); }
+});
+</script></body></html>

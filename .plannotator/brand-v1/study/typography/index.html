@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Typography</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Typography card after Rerun's 06-Typography (reference/rerun/video, 7.35 s): the headline is typed
+   with a caret, held, deleted and retyped over the specimen. Ours: Inter Tight Regular on sand.
+   1920 x 1080, 7.5 s. window.renderAt(t) seeks; ?t=<s> freezes; ?still=1 is the specimen card
+   (full line, no caret); ?bg=noir for white on noir. */
+*{margin:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#F1EFEB;color:#0E0D0D;font-family:"Inter Tight",sans-serif;font-weight:400}
+body.noir{background:#0E0D0D;color:#fff}
+h1{position:absolute;left:34px;top:6px;right:34px;font-weight:400;font-size:222px;line-height:1.0;letter-spacing:-.045em;white-space:pre-wrap}
+.caret{display:inline-block;width:3px;height:.86em;margin-left:.04em;vertical-align:-.1em;background:currentColor}
+.name{position:absolute;left:36px;bottom:38px;font-size:34px;line-height:1.12;letter-spacing:-.01em}
+.abc{position:absolute;right:36px;bottom:28px;font-size:58px;line-height:1.1;letter-spacing:-.015em;width:max-content}
+</style></head><body>
+<h1 id="h"></h1>
+<p class="name">Inter Tight<br>Regular</p>
+<p class="abc">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm<br>Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz</p>
+<script>
+const q = new URLSearchParams(location.search);
+if (q.get("bg") === "noir") document.body.classList.add("noir");
+const LINE = "Agency in the era\nof infinite software.", OPEN = "Abc", DUR = 7.5;
+// key times read from Rerun's film: a short word, deleted; the line typed in about 2.7 s;
+// held with the caret blinking; deleted fast; retyping starts again
+const T = { open: 0.45, del0: 0.45, type0: 0.95, hold0: 3.75, back0: 5.3, retype0: 6.55 };
+const rnd = (i) => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); };
+// per-character typing times with a little human unevenness, longer after a space or line break
+const typeTimes = (() => { const out = [], n = LINE.length, base = (T.hold0 - T.type0) / n; let t = T.type0;
+  for (let i = 0; i < n; i++) { out.push(t); t += base * (0.7 + 0.6 * rnd(i + 1)) * (LINE[i] === " " || LINE[i] === "\n" ? 1.25 : 1); }
+  const k = (T.hold0 - T.type0) / (t - T.type0); return out.map((x) => T.type0 + (x - T.type0) * k); })();
+function textAt(t) {
+  if (t < T.del0) return [OPEN, true];
+  if (t < T.type0) { const k = Math.floor((t - T.del0) / 0.13); return [OPEN.slice(0, Math.max(0, 3 - k - 1)), false]; }
+  if (t < T.hold0) { let n = 0; while (n < typeTimes.length && typeTimes[n] <= t) n++; return [LINE.slice(0, n), false]; }
+  if (t < T.back0) return [LINE, true];
+  if (t < T.retype0) { const n = Math.round(LINE.length * (1 - (t - T.back0) / (T.retype0 - T.back0 - 0.15))); return [LINE.slice(0, Math.max(0, n)), false]; }
+  const n = Math.floor((t - T.retype0) / 0.075); return [LINE.slice(0, Math.min(n, LINE.length)), false];
+}
+const h = document.getElementById("h");
+function renderAt(t) {
+  if (q.has("still")) { h.textContent = LINE; return; }
+  const [s, blink] = textAt(t);
+  // solid while typing or deleting; blinks at 1 Hz while waiting
+  const on = !blink || (t % 1) < 0.55;
+  h.textContent = s;
+  const c = document.createElement("span"); c.className = "caret"; c.style.visibility = on ? "visible" : "hidden"; h.appendChild(c);
+}
+window.renderAt = renderAt; window.DUR = DUR;
+document.fonts.ready.then(() => {
+  if (q.has("t") || q.has("still")) renderAt(+(q.get("t") ?? 0));
+  else { const t0 = performance.now(); const loop = () => { renderAt(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); }; loop(); }
+  window.__ready = true; document.title = "ready";
+});
+</script></body></html>

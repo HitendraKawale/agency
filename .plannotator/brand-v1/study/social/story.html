@@ -1,0 +1,114 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Stories</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Social stories after Rerun 27 (reference/rerun/sheets/STUDIOGRUHL_RERUN_27-Social_02.jpg): three
+   1080 x 1920 stories played as one sequence, each with the platform's progress bars and handle.
+     0.0 - 4.5 s  count: a number counting past a milestone, white
+     4.5 - 10.5 s type: a heat render on noir, the poster line typed with a caret
+    10.5 - 14.2 s heat: the Blank wordmark on white, one heat pass through it (mark/heat-logo.js)
+   ?t= seconds freezes the sequence; ?s=count|type|heat shows one story at its held frame.
+   window.renderAt(t) seeks (returns a promise that resolves once the heat iframe has drawn). */
+*{margin:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#000;font-family:"Inter Tight",sans-serif}
+.story{position:absolute;inset:0;display:none}
+.top{position:absolute;left:0;right:0;top:0;height:300px;z-index:5;pointer-events:none}
+.top.scrim{background:linear-gradient(rgba(0,0,0,.42),rgba(0,0,0,0))}
+.bars{position:absolute;left:24px;right:24px;top:24px;display:flex;gap:8px}
+.bars span{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.38);overflow:hidden}
+.bars i{display:block;height:100%;width:0;background:#fff}
+.handle{position:absolute;left:30px;top:58px;display:flex;align-items:center;gap:20px;color:#fff;font:600 33px/1 -apple-system,system-ui,sans-serif;letter-spacing:-.01em}
+.avatar{width:80px;height:80px;border-radius:50%;background:#0E0D0D;display:grid;place-items:center}
+.avatar svg{width:44px;height:auto;fill:#fff}
+
+#count{background:#fff;color:#0E0D0D}
+#count .n{position:absolute;left:36px;top:560px;font-size:330px;line-height:1;letter-spacing:-.06em;font-weight:400}
+#count .lab{position:absolute;left:46px;bottom:56px;font-size:38px;line-height:1.12;letter-spacing:-.015em;width:16em}
+
+#type{background:#0E0D0D;color:#fff}
+#type .img{position:absolute;left:0;right:0;top:150px;height:760px;overflow:hidden}
+#type .img iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#type .url{position:absolute;left:46px;top:936px;font-size:30px;color:rgba(255,255,255,.62);letter-spacing:-.01em}
+#type h1{position:absolute;left:44px;right:60px;bottom:64px;white-space:pre-line;font-weight:400;font-size:118px;line-height:1;letter-spacing:-.045em}
+#type .caret{display:inline-block;width:5px;height:.86em;background:#fff;vertical-align:-.04em;margin-left:6px}
+
+#heat{background:#fff}
+#heat .mark{position:absolute;left:70px;right:70px;top:50%;transform:translateY(-50%)}
+#heat .mark svg{display:block;width:100%;height:auto;fill:#0E0D0D}
+</style></head><body>
+<div class="top"><div class="bars"><span><i></i></span><span><i></i></span><span><i></i></span></div>
+  <div class="handle"><div class="avatar"></div>blankinterfaces</div></div>
+
+<section class="story" id="count">
+  <p class="n">0</p>
+  <p class="lab">Requests from AI agents to blankinterfaces.com this month</p>
+</section>
+
+<section class="story" id="type">
+  <div class="img"></div>
+  <p class="url">blankinterfaces.com</p>
+  <h1><span class="txt"></span><span class="caret"></span></h1>
+</section>
+
+<section class="story" id="heat"><div class="mark"><svg fill-rule="evenodd" role="img" aria-label="Blank"></svg></div></section>
+
+<script src="../../mark/rand.js"></script><script src="../../mark/bi.js"></script><script src="../../mark/heat-logo.js"></script><script>
+const q = new URLSearchParams(location.search);
+const SCENES = [["count", 0, 4.5], ["type", 4.5, 10.5], ["heat", 10.5, 14.2]];
+const TOTAL = 14.2;
+document.querySelector(".avatar").innerHTML = `<svg viewBox="0 0 ${BI.width} ${BI.height}" fill-rule="evenodd"><path d="${BI.path}"/></svg>`;
+const msvg = document.querySelector("#heat svg");
+msvg.setAttribute("viewBox", `0 0 ${RAND.B.width} ${RAND.B.height}`); msvg.innerHTML = `<path d="${RAND.B.path}"/>`;
+
+// the heat render behind the typed line: the dune field (posters/heat.html), seeked by replacing the
+// iframe's clock, since heat.html reads performance.now() each frame
+const f = document.createElement("iframe");
+f.src = "../../posters/heat?s=dunes&dist=4.4&pitch=0.5&lookY=-0.3";
+document.querySelector("#type .img").appendChild(f);
+let clockSet = false, heatLogo = null;
+
+const ease = (x) => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+const LINE = "Agency in the era\nof infinite software.";
+const nf = new Intl.NumberFormat("en-US");
+
+function paint(t) {
+  const [name, a, b] = SCENES.find(([, a, b]) => t < b) ?? SCENES[SCENES.length - 1];
+  const u = t - a;
+  document.querySelectorAll(".story").forEach((s) => (s.style.display = s.id === name ? "block" : "none"));
+  document.querySelectorAll(".bars i").forEach((i, k) => {
+    const [, sa, sb] = SCENES[k]; i.style.width = `${Math.min(Math.max((t - sa) / (sb - sa), 0), 1) * 100}%`;
+  });
+  document.querySelector(".top").classList.toggle("scrim", name !== "type");
+  if (name === "count") {
+    // counts past the milestone and settles, like the stargazer story
+    document.querySelector("#count .n").textContent = nf.format(Math.round(9940 + 274 * ease((u - 0.4) / 3.2)));
+  }
+  if (name === "type") {
+    const n = Math.max(0, Math.min(LINE.length, Math.floor((u - 0.7) * 15)));
+    document.querySelector("#type .txt").textContent = LINE.slice(0, n);
+    const typing = n > 0 && n < LINE.length;
+    document.querySelector("#type .caret").style.opacity = typing || Math.floor(u / 0.5) % 2 === 0 ? 1 : 0;
+    try {
+      const w = f.contentWindow;
+      if (!clockSet) { const real = w.performance.now.bind(w.performance), k = real(); w.__T = 0; w.performance.now = () => k + w.__T * 1000; clockSet = true; }
+      w.__T = u;
+    } catch {}
+  }
+  if (name === "heat") {
+    if (!heatLogo) heatLogo = attachHeatLogo(document.querySelector("#heat .mark"), { ink: [0.055, 0.051, 0.051], bg: [1, 1, 1], autoplay: true });
+    heatLogo && heatLogo.setT(Math.min(u, 3.66));
+  }
+}
+const raf2 = (w) => new Promise((r) => w.requestAnimationFrame(() => w.requestAnimationFrame(r)));
+window.renderAt = async (t) => { paint(t); await raf2(window); try { await raf2(f.contentWindow); } catch {} return true; };
+
+const HOLD = { count: 4.2, type: 10.2, heat: 11.8 };
+const ready = setInterval(() => {
+  try { if (!f.contentWindow.__ready) return; } catch { return; }
+  clearInterval(ready);
+  document.fonts.ready.then(async () => {
+    const t0 = q.has("s") ? HOLD[q.get("s")] : q.has("t") ? +q.get("t") : null;
+    if (t0 != null) { await renderAt(t0); setTimeout(() => (document.title = "ready"), 500); window.__ready = true; }
+    else { window.__ready = true; document.title = "ready"; const s = performance.now(); const loop = () => { paint(((performance.now() - s) / 1000) % TOTAL); requestAnimationFrame(loop); }; loop(); }
+  });
+}, 150);
+</script></body></html>

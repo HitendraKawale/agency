@@ -1,0 +1,153 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Logo animation</title><style>
+/* Blank logo animation, after Rerun's 02-Logo_Animation (reference/rerun/video, 5 s): the camera
+   starts inside one letter, pulls out and pans across the word, the word shrinks, cuts to the
+   monogram, the monogram collapses to a dot, the dot grows into the symbol.
+   Ours: inside the B, across "Blank", the word shrinks, cuts to BI (Blank's B and l are BI's),
+   BI collapses to a white dot, the dot grows into the app icon tile and heats up.
+   1920 x 1080, 8 s. window.renderAt(t) seeks; without ?t the page loops; ?t=<s> freezes. */
+*{margin:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#0E0D0D}
+svg.word{position:absolute;inset:0;width:1920px;height:1080px}
+.tile{position:absolute;left:810px;top:390px;width:300px;height:300px}
+.tile canvas,.tile svg,.tile .white{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tile .white{background:#fff}
+</style></head><body>
+<svg class="word" viewBox="0 0 1920 1080"><path id="w" fill="#fff" fill-rule="evenodd"/></svg>
+<div class="tile" id="tile"><canvas id="c"></canvas><div class="white" id="white"></div><svg id="g" viewBox="0 0 300 300"><path id="gp" fill="#fff" fill-rule="evenodd"/></svg></div>
+<script src="../../mark/rand.js"></script><script src="../../mark/bi.js"></script><script>
+const FW = 1920, FH = 1080, DUR = 8;
+const WORD = RAND.B, BIW = BI;
+const ease = (x) => (x < 0 ? 0 : x > 1 ? 1 : x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const eout = (x) => (x < 0 ? 0 : x > 1 ? 1 : 1 - Math.pow(1 - x, 3));
+const seg = (t, a, b) => (t - a) / (b - a);
+const lerp = (a, b, k) => a + (b - a) * k;
+const lerpLog = (a, b, k) => Math.exp(lerp(Math.log(a), Math.log(b), k));
+
+// camera over the word, in word units (1030 x 240; B 0-218, l 240-302, a 324-548, n 570-804, k 826-1030)
+// [time, centre x, centre y, px per unit]; each leg eases in and out like Rerun's cuts of motion
+const CAM = [
+  [0.0, 100, 150, 15],   // inside the B: its lower counter and bar fill the frame
+  [1.2, 109, 120, 4.3],  // pulled out: the B fills the frame height
+  [1.5, 128, 120, 4.2],
+  [2.5, 905, 120, 4.0],  // pan across the word to the k
+  [3.4, 515, 120, 1.55], // the whole word, edge to edge
+  [4.5, 515, 120, 0.15], // shrinks
+];
+function camera(t) {
+  for (let i = 0; i < CAM.length - 1; i++) {
+    const [t0, x0, y0, s0] = CAM[i], [t1, x1, y1, s1] = CAM[i + 1];
+    if (t <= t1) { const k = i === 0 ? eout(seg(t, t0, t1)) : ease(seg(t, t0, t1)); return [lerp(x0, x1, k), lerp(y0, y1, k), lerpLog(s0, s1, k)]; }
+  }
+  const l = CAM[CAM.length - 1]; return [l[1], l[2], l[3]];
+}
+
+// ---- the heat tile (approved mark, mark/heatmark3.html: same glyph texture and shader) ----
+function glyphTexture(w, h, glyph) {
+  const layer = (blur) => { const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d", { willReadFrequently: true });
+    g.fillStyle = "#000"; g.fillRect(0, 0, w, h); g.filter = `blur(${blur}px)`; g.fillStyle = "#fff";
+    g.save(); g.translate(glyph.x, glyph.y); g.scale(glyph.s, glyph.s); g.fill(new Path2D(BI.path), "evenodd"); g.restore();
+    return g.getImageData(0, 0, w, h).data; };
+  const M = layer(0), G = layer(h * 0.16), B = layer(h * 0.045);
+  const D = new Float32Array(w * h), INF = 1e9;
+  for (let i = 0; i < w * h; i++) D[i] = M[i * 4] > 127 ? 0 : INF;
+  const r2 = Math.SQRT2;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; let v = D[i];
+    if (x > 0) v = Math.min(v, D[i - 1] + 1); if (y > 0) { v = Math.min(v, D[i - w] + 1); if (x > 0) v = Math.min(v, D[i - w - 1] + r2); if (x < w - 1) v = Math.min(v, D[i - w + 1] + r2); } D[i] = v; }
+  for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) { const i = y * w + x; let v = D[i];
+    if (x < w - 1) v = Math.min(v, D[i + 1] + 1); if (y < h - 1) { v = Math.min(v, D[i + w] + 1); if (x < w - 1) v = Math.min(v, D[i + w + 1] + r2); if (x > 0) v = Math.min(v, D[i + w - 1] + r2); } D[i] = v; }
+  const out = new Uint8Array(w * h * 4);
+  for (let i = 0; i < w * h; i++) { out[i * 4] = Math.min(255, (D[i] / h / 0.5) * 255); out[i * 4 + 1] = Math.min(255, G[i * 4] * 2.2); out[i * 4 + 2] = Math.min(255, B[i * 4] * 1.4); out[i * 4 + 3] = 255; }
+  const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d", { willReadFrequently: true });
+  const id = g.createImageData(w, h); id.data.set(out); g.putImageData(id, 0, 0);
+  const c2 = document.createElement("canvas"); c2.width = w; c2.height = h; const g2 = c2.getContext("2d", { willReadFrequently: true });
+  g2.filter = `blur(${h * 0.006}px)`; g2.drawImage(c, 0, 0);
+  return new Uint8Array(g2.getImageData(0, 0, w, h).data.buffer);
+}
+const VS = `attribute vec2 p; varying vec2 uv; void main(){ uv = p * .5 + .5; uv.y = 1. - uv.y; gl_Position = vec4(p, 0., 1.); }`;
+const FS = `precision highp float; varying vec2 uv; uniform sampler2D tex; uniform float t; uniform vec2 res; uniform float center;
+vec3 ramp(float u){
+  u = fract(u) * 5.;
+  vec3 s0 = vec3(24.,106.,221.)/255., s1 = vec3(155.,191.,211.)/255., s2 = vec3(134.,217.,166.)/255.,
+       s3 = vec3(246.,218.,117.)/255., s4 = vec3(215.,47.,33.)/255.;
+  if (u < 1.) return mix(s0, s1, u); if (u < 2.) return mix(s1, s2, u - 1.);
+  if (u < 3.) return mix(s2, s3, u - 2.); if (u < 4.) return mix(s3, s4, u - 3.); return mix(s4, s0, u - 4.);
+}
+float h21(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(h21(i), h21(i + vec2(1., 0.)), f.x), mix(h21(i + vec2(0., 1.)), h21(i + vec2(1., 1.)), f.x), f.y); }
+float fbm(vec2 p){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ s += a * vn(p); p = p * 2.03 + 7.1; a *= .5; } return s; }
+void main(){
+  float asp = res.x / res.y; vec2 p = vec2(uv.x * asp, uv.y);
+  vec2 w = vec2(fbm(p * 1.2 + vec2(t * .05, 0.)), fbm(p * 1.2 + vec2(3.1, -t * .04))) - .5;
+  float dg0 = texture2D(tex, uv).r * .5;
+  vec2 q = uv + w * .06 * smoothstep(.0, .06, dg0);
+  vec3 g = texture2D(tex, q).rgb;
+  float dg = g.r * .5;
+  float v = .2 * t + .3 * q.y;
+  v -= .3 * (1. - g.g);
+  v += .1 * g.b + .07 * exp(-dg0 / .012);
+  vec2 c = vec2(q.x - .5, (q.y - center) / asp) * vec2(1., 1.25);
+  float rse = pow(pow(abs(c.x), 3.) + pow(abs(c.y), 3.), 1. / 3.);
+  float r = mix(dg + .02, rse, smoothstep(.0, .2, dg));
+  v += .3 * r + .03 * sin(6.2832 * (r / .14 + t * .3));
+  float arc = exp(-pow((length(vec2(p.x - asp * .5, p.y - 1.55)) - 1.5) / .018, 2.)) * smoothstep(.0, .25, uv.x) * smoothstep(1., .75, uv.x);
+  v += .22 * arc;
+  v += .05 * (fbm(p * 2.2 + t * .04) - .5) + (h21(uv * res + t) - .5) * .05;
+  gl_FragColor = vec4(ramp(v), 1.);
+}`;
+const TS = 300, GF = 0.42, dpr = 2;
+const tileGlyph = (() => { const s = (TS * GF) / BI.height; return { s, x: (TS - BI.width * s) / 2, y: TS * 0.5 - (BI.height * s) / 2 }; })();
+const heat = (() => {
+  const canvas = document.getElementById("c"), W = canvas.width = TS * dpr, H = canvas.height = TS * dpr;
+  const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
+  const prog = gl.createProgram();
+  for (const [ty, src] of [[gl.VERTEX_SHADER, VS], [gl.FRAGMENT_SHADER, FS]]) { const sh = gl.createShader(ty); gl.shaderSource(sh, src); gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); gl.attachShader(prog, sh); }
+  gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const tw = TS * 2, th = TS * 2, gs = { s: tileGlyph.s * 2, x: tileGlyph.x * 2, y: tileGlyph.y * 2 };
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, tw, th, 0, gl.RGBA, gl.UNSIGNED_BYTE, glyphTexture(tw, th, gs));
+  for (const k of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_2D, k, gl.LINEAR);
+  for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE);
+  const uT = gl.getUniformLocation(prog, "t"); gl.uniform2f(gl.getUniformLocation(prog, "res"), W, H); gl.uniform1f(gl.getUniformLocation(prog, "center"), 0.5);
+  return (t) => { gl.viewport(0, 0, W, H); gl.uniform1f(uT, t); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); };
+})();
+document.getElementById("gp").setAttribute("d", BI.path);
+document.getElementById("gp").setAttribute("transform", `translate(${tileGlyph.x} ${tileGlyph.y}) scale(${tileGlyph.s})`);
+
+const wEl = document.getElementById("w"), tile = document.getElementById("tile"), white = document.getElementById("white"), gEl = document.getElementById("g");
+const HO = +(new URLSearchParams(location.search).get("ho") ?? 1); // heat clock offset, s
+const T_CUT = 4.85, T_DOT0 = 5.15, T_DOT1 = 5.6, T_GROW0 = 6.0, T_GROW1 = 6.7, DOT = 12, RAD = 68;
+
+function renderAt(t) {
+  let path = null, tf = "";
+  if (t < T_CUT) {
+    // the word under the camera
+    const [cx, cy, s] = camera(t);
+    path = WORD.path; tf = `translate(${FW / 2 - cx * s} ${FH / 2 - cy * s}) scale(${s})`;
+  } else if (t < T_DOT1) {
+    // cut to BI at the word's last size, centred; then it collapses into the dot
+    const s0 = 0.15, s1 = DOT / BIW.width, k = ease(seg(t, T_DOT0, T_DOT1)), s = lerpLog(s0, s1, k);
+    path = BIW.path; tf = `translate(${FW / 2 - (BIW.width * s) / 2} ${FH / 2 - (BIW.height * s) / 2}) scale(${s})`;
+  }
+  wEl.setAttribute("d", path ?? ""); wEl.setAttribute("transform", tf);
+  // the dot, then the tile: a clip that grows from a 12 px circle to the 300 px rounded square
+  if (t >= T_DOT1) {
+    const k = eout(seg(t, T_GROW0, T_GROW1)), size = lerp(DOT, TS, k), r = lerp(DOT / 2, RAD, k), ins = (TS - size) / 2;
+    tile.style.display = "block";
+    tile.style.clipPath = `inset(${ins}px round ${r}px)`;
+    // the white dot heats up as it opens: white fades out over the second half of the growth
+    white.style.opacity = String(1 - ease(seg(t, T_GROW0 + 0.25, T_GROW1 + 0.15)));
+    const gk = ease(seg(t, T_GROW0 + 0.35, T_GROW1 + 0.25));
+    gEl.style.opacity = String(gk); gEl.style.transform = `scale(${lerp(0.82, 1, gk)})`;
+    heat(HO + t);
+  } else tile.style.display = "none";
+}
+window.renderAt = renderAt; window.DUR = DUR;
+const q = new URLSearchParams(location.search);
+if (q.has("t")) renderAt(+q.get("t"));
+else { const t0 = performance.now(); const loop = () => { renderAt(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); }; loop(); }
+window.__ready = true; document.title = "ready";
+</script></body></html>

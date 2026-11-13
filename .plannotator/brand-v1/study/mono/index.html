@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Mono tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* After Rerun's 28-Mono (reference/rerun/video/STUDIOGRUHL_RERUN_28-Mono2.mp4, 8 s at 60 fps, 1920 x 2160):
+   one tree opening a level at a time and closing in reverse. Measured there at 1920 wide: ~72 px mono,
+   ~165 px row pitch, first row at 105 px, 120 px left inset. Here at 960 x 1080 CSS, captured at 2x.
+   Our tree is the homepage as an agent reads it (study/mono/tree.js). */
+*{margin:0;box-sizing:border-box}
+html,body{width:960px;height:1080px;overflow:hidden;background:#0E0D0D;color:#fff}
+#t{position:absolute;left:60px;top:40px;font:400 34px/1 "Geist Mono",monospace;letter-spacing:-.01em}
+.row{display:flex;align-items:center;height:80px;padding-left:calc(var(--d) * 44px)}
+.ch{width:30px;height:30px;margin-right:16px;display:grid;place-items:center;flex:none}
+.ch svg{width:30px;height:30px;transition:none}
+.sw{width:20px;height:20px;border-radius:5px;display:block;transform:rotate(45deg)}
+.ri{width:34px;height:34px;border-radius:7px;margin-right:18px;flex:none}
+</style></head><body><div id="t"></div>
+<script src="tree.js"></script><script>
+// [time, node id, open]: Rerun's rhythm, read at 4 fps: shut 0.5 s, then a level every ~1 s, a 1.5 s hold,
+// and the same steps back.
+const STEPS = [[0.5, "root", 1], [1.25, "doc", 1], [2.25, "main", 1], [3.25, "group", 1],
+               [4.75, "group", 0], [5.75, "main", 0], [6.75, "doc", 0], [7.5, "root", 0]];
+const LOOP = 8, TURN = 0.14;   // the chevron turns in ~8 frames at 60 fps
+const el = document.getElementById("t");
+window.renderAt = (t) => {
+  t = ((t % LOOP) + LOOP) % LOOP;
+  const open = new Set(), when = {};
+  for (const [at, id, o] of STEPS) if (t >= at) { o ? open.add(id) : open.delete(id); when[id] = at; }
+  const rot = (r) => {
+    const k = Math.min(1, (t - (when[r.node.id] ?? -9)) / TURN), e = 1 - Math.pow(1 - k, 3);
+    return r.open ? 90 * e : 90 * (1 - e);
+  };
+  el.innerHTML = treeHTML(treeRows(open), rot);
+};
+const q = new URLSearchParams(location.search);
+document.fonts.ready.then(() => {
+  if (q.has("t")) renderAt(+q.get("t"));
+  else { const t0 = performance.now(); const loop = () => { renderAt((performance.now() - t0) / 1000); requestAnimationFrame(loop); }; loop(); }
+  window.__ready = true; document.title = "ready";
+});
+</script></body></html>
