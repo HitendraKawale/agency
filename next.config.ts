@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   // `*.localhost` matches one label, so the HMR socket (and dev hydration)
   // would be refused without this.
   allowedDevOrigins: ["*.blank-agency.localhost"],
+  // the dev badge sits over the hero artwork and shows up in comparison screenshots
+  devIndicators: false,
   turbopack: {
     root: projectRoot,
   },

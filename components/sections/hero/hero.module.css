@@ -1,0 +1,101 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-ink);
+  border-radius: 14px;
+  padding: 0 22px;
+  height: 76px;
+}
+.mark svg {
+  display: block;
+  height: 32px;
+  width: auto;
+  fill: var(--color-ink);
+}
+.links {
+  display: flex;
+  gap: 56px;
+  list-style: none;
+  /* the prototype kept the browser's default list indent here, which sets where the links sit */
+  padding-left: 40px;
+  font: 500 15px/1 var(--font-sans);
+}
+.links a,
+.contact {
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s var(--ease-expo);
+}
+/* the link under the pointer stays white, its neighbours step back */
+.links:hover a:not(:hover) {
+  color: rgb(255 255 255 / 0.45);
+}
+.contact {
+  font: 500 15px/1 var(--font-sans);
+}
+
+/* exactly two lines from 1280 to 1600: "A digital studio & branding powerhouse" is 2286px wide at
+   100px Geist 900, -.01em */
+.title {
+  color: rgb(255 255 255 / 0.65);
+  font-weight: 900;
+  font-size: max(36px, calc((min(100vw, 1600px) - 88px) * 0.0432));
+  line-height: 0.94;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  margin: 64px 22px 0;
+}
+.word {
+  display: inline-block;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 40px;
+  margin: 72px 22px 0;
+}
+.line {
+  color: var(--color-muted);
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  max-width: 34em;
+  text-wrap: balance;
+}
+
+.panel {
+  position: relative;
+  margin-top: 56px;
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 16 / 8;
+  background: #8caed2;
+}
+.panel iframe {
+  position: absolute;
+  inset: -4% 0 0 0;
+  width: 100%;
+  height: 108%;
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  .links {
+    display: none;
+  }
+  .title {
+    margin: 40px 4px 0;
+  }
+  .row {
+    grid-template-columns: 1fr;
+    margin: 40px 4px 0;
+  }
+  .panel {
+    aspect-ratio: 4 / 5;
+  }
+}

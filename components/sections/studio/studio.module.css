@@ -1,0 +1,101 @@
+.studio {
+  grid-template-rows: auto auto auto 1fr;
+  align-items: start;
+}
+.title {
+  grid-column: 2 / span 5;
+  grid-row: 1;
+}
+.statement {
+  grid-column: 1 / span 6;
+  grid-row: 2;
+  margin-top: 28px;
+}
+.cols {
+  grid-column: 2 / span 5;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+  margin-top: 72px;
+}
+.cols p {
+  font: 600 20px/1.05 var(--font-sans);
+  letter-spacing: -0.012em;
+  color: var(--color-ink-2);
+}
+.actions {
+  grid-column: 2 / span 5;
+  grid-row: 4;
+  margin-top: 48px;
+}
+
+.reel {
+  grid-column: 7 / -1;
+  grid-row: 1 / span 4;
+  height: min(960px, 100vh);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  overflow: hidden;
+  border-radius: 14px;
+}
+.reel ul {
+  align-self: start;
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: reel-up var(--dur, 60s) linear infinite;
+}
+.reel ul + ul {
+  animation-direction: reverse;
+}
+.reel li {
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-tile);
+}
+.media {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* one copy of the list, plus half the gap between the copies */
+@keyframes reel-up {
+  to {
+    transform: translateY(calc(-50% - 4px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel ul {
+    animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .studio {
+    grid-template-rows: none;
+  }
+  .studio > * {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+  .cols {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+    margin-top: 40px;
+  }
+  .cols p {
+    font-size: 18px;
+  }
+  .actions {
+    margin-top: 32px;
+  }
+  /* the prototype's 560px phone height never applied (a more specific rule won), so the approved
+     phone render has the full min(960px, 100vh) reel; kept that way */
+  .reel {
+    margin-top: 48px;
+  }
+}

@@ -1,0 +1,44 @@
+/* Contact line 76/68 #C4C4C4, the address the same size in #E6E6E6 */
+.ask {
+  margin-top: 28px;
+}
+.ask a {
+  display: block;
+  text-decoration: none;
+  color: var(--color-ink-2);
+}
+.mail {
+  display: block;
+  color: var(--color-ink-1);
+  transition: color 0.2s;
+}
+.ask a:hover .mail {
+  color: var(--color-ink);
+}
+.clocks {
+  display: flex;
+  gap: 40px;
+  margin-top: 40px;
+  font: 600 20px/1 var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--color-ink-3);
+}
+.clocks b {
+  font-weight: 600;
+  color: var(--color-ink-2);
+  font-variant-numeric: tabular-nums;
+  margin-left: 8px;
+}
+
+@media (max-width: 760px) {
+  .mail {
+    font-size: 0.6em;
+    margin-top: 8px;
+  }
+  .clocks {
+    margin-top: 28px;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 18px;
+  }
+}

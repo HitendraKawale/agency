@@ -1,22 +1,124 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "lenis/dist/lenis.css";
 
 @custom-variant dark (&:is(.dark *));
 
-/* No palette yet. The revamp defines tokens in :root and maps them here. */
+/* Fonts come from next/font in app/layout.tsx as --font-geist and --font-fraunces. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist), sans-serif;
+  --font-serif: var(--font-fraunces), serif;
+  --color-background: var(--color-noir);
+  --color-foreground: var(--color-ink);
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #000000;
+/* Noir ground, white type. Greys are the steps basement uses on black (measured 2026-11-14). */
+@theme static {
+  --color-noir: #0e0d0d;
+  --color-tile: #141313; /* logo tiles, image wells */
+  --color-tile-hover: #191818;
+  --color-raised: #1e1c1c; /* quiet buttons, the FAQ +/- */
+  --color-raised-hover: #2a2828;
+  --color-rule: #3a3838; /* chart rules only */
+  --color-ink: #fff;
+  --color-ink-1: #e6e6e6; /* small headings */
+  --color-ink-2: #c4c4c4; /* statements and body */
+  --color-ink-3: #757575; /* section titles */
+  --color-ink-4: #4a4848; /* the "not" half of the principles */
+  --color-muted: rgb(255 255 255 / 0.72);
+  --color-faint: rgb(255 255 255 / 0.5);
+
+  /* the one curve the whole page moves on; GSAP registers it as "out" (lib/motion/gsap.ts) */
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
+  html,
   body {
-    @apply bg-background text-foreground antialiased;
+    background: var(--color-noir);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: normal;
   }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+}
+
+/* Shared page structure. Section modules override these freely: everything here sits in a layer,
+   so any unlayered module rule wins without fighting specificity. */
+@layer components {
+  .page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 22px 22px 40px;
+    overflow-x: clip; /* the footer mark's heat canvas spills past the page edge by design */
+  }
+
+  /* basement's grid: 12 columns, 12px gaps. Children span the row unless placed. */
+  .grid-12 {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: 12px;
+    margin: 0 22px;
+  }
+  :where(.grid-12 > *) {
+    grid-column: 1 / -1;
+  }
+  .grid-12 > .in {
+    grid-column: 2 / -1;
+  }
+
+  .section {
+    margin-top: 200px;
+  }
+
+  /* quiet section title, 24/600 #757575 */
+  .s-title {
+    font: 600 24px/1 var(--font-sans);
+    letter-spacing: -0.03em;
+    color: var(--color-ink-3);
+  }
+
+  /* the large statement, 76/68 600 #C4C4C4 */
+  .big-type {
+    font-weight: 600;
+    font-size: clamp(40px, 5.28vw, 76px);
+    line-height: 0.895;
+    letter-spacing: -0.04em;
+    color: var(--color-ink-2);
+    text-wrap: pretty;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  @media (max-width: 760px) {
+    .page {
+      padding: 16px;
+    }
+    .grid-12 {
+      margin: 0 4px;
+    }
+    .grid-12 > .in {
+      grid-column: 1 / -1;
+    }
+    .section {
+      margin-top: 130px;
+    }
+    .grid-12 .s-title {
+      font-size: 20px;
+    }
+  }
+}
+
+/* Motion (lib/motion): with the intro on, anything GSAP will bring in starts hidden, so nothing flashes
+   before the first frame. Opacity only, so the heat logo can still toggle visibility. */
+.intro :is([data-intro], [data-reveal]) {
+  opacity: 0;
 }

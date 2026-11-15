@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 136">
+  <!-- Organic Foods symbol (organic-market-eight.vercel.app/brand/symbol.svg), one colour: the cream
+       sun and furrows are cut out of the egg with a mask, so the ground shows through them -->
+  <defs>
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="112" height="136">
+      <path d="M56 5C36 5 8 48 8 83c0 29 20 48 48 48s48-19 48-48C104 48 76 5 56 5Z" fill="#fff"/>
+      <circle cx="62" cy="47" r="10" fill="#000"/>
+      <path d="M-7 88C24 65 49 64 75 81c15 10 29 11 42 6M-7 107C24 84 49 83 75 100c15 10 29 11 42 6M-7 126c31-23 56-24 82-7 15 10 29 11 42 6" stroke="#000" stroke-width="7" fill="none"/>
+    </mask>
+  </defs>
+  <path d="M56 5C36 5 8 48 8 83c0 29 20 48 48 48s48-19 48-48C104 48 76 5 56 5Z" fill="#fff" mask="url(#cut)"/>
+</svg>

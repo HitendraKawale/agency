@@ -1,0 +1,176 @@
+.why {
+  --gain: linear-gradient(90deg, #186add, #f6da75 55%, #d72f21);
+  --tick: var(--color-ink-2);
+}
+.statement {
+  margin-top: 28px;
+  max-width: 17em;
+}
+
+.legend {
+  grid-column: 2 / span 7;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  row-gap: 36px;
+  margin-top: 80px;
+}
+.legend li {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  align-items: baseline;
+  font: 600 24px/1.15 var(--font-sans);
+  letter-spacing: -0.015em;
+  color: var(--color-ink-2);
+}
+.legend i {
+  display: block;
+  width: 16px;
+  height: 16px;
+  transform: translateY(1px);
+}
+.legend .kLoss {
+  width: 15px;
+  background: repeating-linear-gradient(90deg, var(--tick) 0 3px, transparent 3px 6px);
+}
+.kGain {
+  background: var(--gain);
+}
+
+.chart {
+  grid-column: 2 / -1;
+  margin-top: 150px;
+}
+.fig h3 {
+  font: 600 20px/1 var(--font-sans);
+  letter-spacing: -0.012em;
+  color: var(--color-ink-1);
+}
+.n {
+  display: block;
+  margin-top: 16px;
+  font-weight: 600;
+  font-size: clamp(48px, 5.28vw, 76px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--color-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+/* rules are part of the chart, as in the source */
+.gain {
+  width: max-content;
+  margin-left: auto;
+  padding: 4px 40px 4px 0;
+  box-shadow: inset -1px 0 var(--color-rule);
+}
+.bar {
+  position: relative;
+  height: 40px;
+  margin: 150px 0 0 32%;
+}
+.bar canvas {
+  position: absolute;
+  left: 0;
+  top: -130px;
+  width: 100%;
+  height: 300px;
+  pointer-events: none;
+}
+.ticks {
+  width: 37%;
+  height: 40px;
+  margin-top: 24px;
+  background: repeating-linear-gradient(90deg, var(--tick) 0 2px, transparent 2px 13.5px);
+  mask-image: linear-gradient(90deg, #000, rgb(0 0 0 / 0.1));
+}
+.loss {
+  width: max-content;
+  margin-top: 88px;
+  padding: 4px 0 4px 32px;
+  box-shadow: inset 1px 0 var(--color-rule);
+}
+
+.refs {
+  grid-column: 2 / -1;
+  margin-top: 140px;
+}
+.refs h3 {
+  font: 600 20px/1 var(--font-sans);
+  letter-spacing: -0.012em;
+  color: var(--color-ink-1);
+}
+.refs ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 12px;
+  row-gap: 48px;
+  margin-top: 40px;
+}
+.refs li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+/* equal-area logos, centred in a 60px band so captions line up */
+.refs img {
+  display: block;
+  height: calc(64px / sqrt(var(--a)));
+  width: auto;
+  max-width: 80%;
+  margin: calc((60px - 64px / sqrt(var(--a))) / 2) 0;
+  filter: brightness(0) invert(0.46);
+}
+.refs p {
+  margin-top: 24px;
+  font: 600 20px/1.05 var(--font-sans);
+  letter-spacing: -0.012em;
+  color: var(--color-ink-2);
+  max-width: 14em;
+}
+
+/* The prototype's phone margins for the legend (48px, 24px gap) and the chart (88px) never applied,
+   because its desktop rules were more specific; the approved phone render keeps the desktop values. */
+@media (max-width: 760px) {
+  .legend,
+  .chart,
+  .refs {
+    grid-column: 1 / -1;
+  }
+  .legend li {
+    grid-template-columns: 36px 1fr;
+    font-size: 18px;
+  }
+  .gain {
+    padding-right: 20px;
+  }
+  .loss {
+    padding-left: 20px;
+    margin-top: 48px;
+  }
+  .bar {
+    height: 28px;
+    margin: 100px 0 0 22%;
+  }
+  .bar canvas {
+    top: -86px;
+    height: 200px;
+  }
+  .ticks {
+    width: 50%;
+    height: 28px;
+    margin-top: 16px;
+  }
+  .refs {
+    margin-top: 88px;
+  }
+  .refs ul {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 40px;
+    margin-top: 28px;
+  }
+  .refs p {
+    font-size: 18px;
+  }
+}

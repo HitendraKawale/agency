@@ -5,6 +5,12 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    // Logos are CSS-sized SVG/PNG (equal-area formula) and the reel art is pre-sized 720w WebP, so
+    // next/image's resizing adds nothing there.
+    files: ["components/sections/**"],
+    rules: { "@next/next/no-img-element": "off" },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -12,6 +18,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // brand studies and pinned references, not app code
+    ".plannotator/**",
+    "reference/**",
   ]),
 ]);
 

@@ -1,0 +1,52 @@
+.footer {
+  margin-top: 200px;
+}
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 40px;
+  margin: 0 22px;
+  font: 500 15px/1.6 var(--font-sans);
+  color: var(--color-faint);
+}
+.foot ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 32px;
+}
+.foot a {
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: color 0.3s var(--ease-expo);
+}
+.foot ul:hover a:not(:hover) {
+  color: rgb(255 255 255 / 0.45);
+}
+.big {
+  display: block;
+  margin-top: 40px;
+}
+.big svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  fill: var(--color-ink-2);
+}
+
+@media (max-width: 760px) {
+  .footer {
+    margin-top: 130px;
+  }
+  .foot {
+    margin: 0 4px;
+    flex-direction: column;
+    align-items: start;
+    gap: 16px;
+  }
+  .foot ul {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,126 @@
+.trusted {
+  margin-top: 180px;
+  --logo: var(--color-ink-2);
+}
+.wall {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-top: 28px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.wall li {
+  aspect-ratio: 1.84;
+  display: grid;
+  place-items: center;
+  background: var(--color-tile);
+  transition: background-color 0.4s var(--ease-expo);
+}
+.wall li:hover {
+  background: var(--color-tile-hover);
+}
+.wall a {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--logo);
+  text-decoration: none;
+}
+/* optical size: equal area, so height falls with the square root of the logo's width/height */
+.wall img {
+  display: block;
+  height: calc(56px / sqrt(var(--a)));
+  width: auto;
+  max-width: 70%;
+  filter: brightness(0) invert(0.77);
+  transition: filter 0.4s var(--ease-expo);
+}
+.wall li:hover img {
+  filter: brightness(0) invert(0.96);
+}
+
+/* official marks with the name beside them */
+.official {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--logo);
+  transition: color 0.4s var(--ease-expo);
+}
+.wall li:hover :is(.official, .organic) {
+  color: #f5f5f5;
+}
+.official img {
+  height: 58px;
+  max-width: none;
+}
+.cid img {
+  height: 54px;
+}
+.official > span {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+.goi > span {
+  font-size: 18px;
+}
+.cid > span {
+  font-size: 26px;
+  letter-spacing: 0.01em;
+}
+
+.wall a.organic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: color 0.4s var(--ease-expo);
+}
+.organic img {
+  height: 28px;
+  max-width: none;
+}
+.organic > span {
+  font: 600 18px/0.82 var(--font-serif);
+  letter-spacing: -0.8px;
+  font-variation-settings: "opsz" 72;
+}
+
+@media (max-width: 760px) {
+  .trusted {
+    margin-top: 120px;
+  }
+  .wall {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .wall img {
+    height: calc(46px / sqrt(var(--a)));
+  }
+  .cid > span {
+    font-size: 22px;
+  }
+  .goi > span {
+    font-size: 15px;
+  }
+  .official {
+    gap: 9px;
+  }
+  .official img {
+    height: 46px;
+  }
+  .cid img {
+    height: 43px;
+  }
+  .organic img {
+    height: 23px;
+  }
+  .organic > span {
+    font-size: 15px;
+    letter-spacing: -0.6px;
+  }
+}
