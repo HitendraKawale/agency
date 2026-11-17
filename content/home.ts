@@ -67,6 +67,8 @@ export type HomeContent = {
     principles: { lead: string; not: string }[];
     /** `link` follows the answer, for a question a page answers in full */
     items: { q: string; a: string; link?: { label: string; href: string } }[];
+    /** the last row: a question the visitor writes, answered by the model behind realtime/ask.ts */
+    ask: { placeholder: string; label: string; errors: { limit: string; down: string } };
   };
   contact: {
     title: string;
@@ -225,6 +227,14 @@ export const home = {
         a: "Award-winning marketing sites and real-time 3D experiences on the web. Design and engineering sit in the same team, which takes a brand from visual identity through production web engineering, including real-time 3D, animation and typeface design. The backend is held to national-infrastructure standards: Blank engineers government portals across India, used by tens of thousands of inspectors and by senior officers at agencies including the CID.",
       },
     ],
+    ask: {
+      placeholder: "Ask anything",
+      label: "Ask a question about Blank",
+      errors: {
+        limit: "That's six questions in a minute. Give it a moment, then ask again.",
+        down: `We can't answer right now. Write to us at ${site.email}.`,
+      },
+    },
   },
 
   contact: {
@@ -237,7 +247,14 @@ export const home = {
   },
 
   footer: {
-    links: [...site.nav, site.contact, { label: "llms.txt", href: "#" }],
+    // not the nav again. MACHINE will be the agent-readable view (llms.txt and a .md for each page)
+    links: [
+      { label: "About", href: "#" },
+      { label: "Manifesto", href: "#" },
+      { label: "Terms", href: "#" },
+      { label: "Privacy", href: "#" },
+      { label: "MACHINE", href: "#" },
+    ],
     copyright: "© 2026 Blank Interfaces",
   },
 } as const satisfies DeepReadonly<HomeContent>;

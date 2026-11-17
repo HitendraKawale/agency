@@ -96,6 +96,79 @@
   color: var(--color-ink-1);
 }
 
+/* the ask row (faq-ask.tsx): the question's own shell, with an input where the question text is */
+.ask {
+  cursor: text;
+  color: var(--color-ink-1);
+}
+.ask input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  outline: none;
+  color: inherit;
+}
+.ask input::placeholder {
+  color: rgb(255 255 255 / 0.45);
+  transition: color 0.4s var(--ease-expo);
+}
+.ask:hover input::placeholder,
+.ask input:focus::placeholder {
+  color: var(--color-ink-1);
+}
+.send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-raised);
+  color: var(--color-ink-1);
+  cursor: pointer;
+  transition: background-color 0.3s, opacity 0.3s;
+}
+.send:hover,
+.ask:focus-within .send {
+  background: var(--color-raised-hover);
+}
+.send:disabled {
+  cursor: text;
+}
+.send:focus-visible {
+  outline: 1.5px solid var(--color-ink-1);
+  outline-offset: 3px;
+}
+.piece {
+  animation: piece-in 0.5s var(--ease-expo) both;
+}
+@keyframes piece-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+}
+.caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: var(--color-ink-2);
+  animation: caret 1s steps(1) infinite;
+}
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .piece,
+  .caret {
+    animation: none;
+  }
+}
+
 @media (max-width: 760px) {
   .title,
   .principles,
@@ -114,7 +187,8 @@
     font-size: 19px;
     gap: 20px;
   }
-  .question i {
+  .question i,
+  .send {
     width: 36px;
     height: 36px;
   }

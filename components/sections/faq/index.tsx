@@ -2,11 +2,13 @@
 // plain facts a person or an answer engine can quote alone. The principles sit opposite in large type,
 // the "not" half stepped back. The accordion is styled after Symbol's (faq-item.tsx).
 import { home } from "@/content/home";
+import { askEnabled } from "@/lib/realtime/ask";
+import { FaqAsk } from "./faq-ask";
 import { FaqItem } from "./faq-item";
 import s from "./faq.module.css";
 
 export function Faq() {
-  const { title, principles, items } = home.faq;
+  const { title, principles, items, ask } = home.faq;
   return (
     <section className={`section grid-12 ${s.faq}`} aria-labelledby="faq-title">
       <h2 className={`s-title ${s.title}`} id="faq-title" data-reveal="fade">{title}</h2>
@@ -21,6 +23,7 @@ export function Faq() {
         {items.map((item, i) => (
           <FaqItem key={item.q} {...item} defaultOpen={i === 0} delay={0.05 + Math.min(i, 6) * 0.05} />
         ))}
+        {askEnabled && <FaqAsk {...ask} delay={0.05 + Math.min(items.length, 6) * 0.05} />}
       </div>
     </section>
   );
