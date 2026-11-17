@@ -10,7 +10,8 @@ export function Footer() {
       <div className={s.foot} data-reveal="fade">
         <ul>
           {links.map((l) => (
-            <li key={l.label}><a href={l.href}>{l.label}</a></li>
+            // the flicker sits on a span: .foot a's colour transition would override .tube's timing
+            <li key={l.label}><a href={l.href}><span className="tube">{l.label}</span></a></li>
           ))}
         </ul>
         <span>{copyright}</span>
@@ -20,7 +21,7 @@ export function Footer() {
         href="#"
         aria-label={`${site.name}, home`}
         data-reveal="lift"
-        heat={{ ink: [0.77, 0.77, 0.77], bg: [0.055, 0.051, 0.051], delay: 400 }}
+        heat={{ ink: [0.77, 0.77, 0.77], bg: [0.055, 0.055, 0.055], delay: 400 }}
       />
     </footer>
   );

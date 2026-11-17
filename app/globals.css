@@ -13,19 +13,20 @@
   --color-foreground: var(--color-ink);
 }
 
-/* Noir ground, white type. Greys are the steps basement uses on black (measured 2026-11-14). */
+/* Noir ground, white type. Greys are the steps basement uses on black (measured 2026-11-14), made
+   neutral (R=G=B): the warm one-step red tilt read as brown. */
 @theme static {
-  --color-noir: #0e0d0d;
-  --color-tile: #141313; /* logo tiles, image wells */
-  --color-tile-hover: #191818;
-  --color-raised: #1e1c1c; /* quiet buttons, the FAQ +/- */
-  --color-raised-hover: #2a2828;
-  --color-rule: #3a3838; /* chart rules only */
+  --color-noir: #0e0e0e;
+  --color-tile: #141414; /* logo tiles, image wells */
+  --color-tile-hover: #191919;
+  --color-raised: #1e1e1e; /* quiet buttons, the FAQ +/- */
+  --color-raised-hover: #2a2a2a;
+  --color-rule: #3a3a3a; /* chart rules only */
   --color-ink: #fff;
   --color-ink-1: #e6e6e6; /* small headings */
   --color-ink-2: #c4c4c4; /* statements and body */
   --color-ink-3: #757575; /* section titles */
-  --color-ink-4: #4a4848; /* the "not" half of the principles */
+  --color-ink-4: #4a4a4a; /* the "not" half of the principles */
   --color-muted: rgb(255 255 255 / 0.72);
   --color-faint: rgb(255 255 255 / 0.5);
 
@@ -96,6 +97,69 @@
   .actions {
     display: flex;
     gap: 10px;
+  }
+
+  /* Tubelight hover, basement.studio's .actionable-opacity and .actionable (values read from their
+     compiled CSS, 2026-11-17). --tube is deliberately not registered with @property, so the browser
+     animates it discretely: opacity snaps 100 -> 50 -> 100 -> 50 -> 100 like a tube striking, then
+     holds. Plays when the element, or the link it sits in, is hovered or focused. Their orange hover
+     colour is left out: colour stays in the heat artwork.
+       .tube        the flicker and a soft glow (nav links)
+       .tube-line   adds their hover underline (the contact address) */
+  .tube {
+    --tube: 100;
+    opacity: calc(var(--tube) * 0.01);
+    transition: opacity 0.06s linear;
+  }
+  :is(a:hover, a:focus-visible) .tube,
+  .tube:is(:hover, :focus-visible) {
+    --tube: 50;
+    animation: tube 0.3s 0.06s linear forwards;
+    /* 60ms, not longer: basement pins the duration to the animation delay with !important. A
+       slower dip runs over the first blink and swallows it */
+    transition: opacity 0.06s cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 0 30px rgb(255 255 255 / 0.5);
+  }
+  .tube:active,
+  a:active .tube {
+    animation: none;
+  }
+  @keyframes tube {
+    20%,
+    60%,
+    100% {
+      --tube: 100;
+    }
+    40%,
+    80% {
+      --tube: 50;
+    }
+  }
+  .tube-line {
+    position: relative;
+    display: inline-block;
+  }
+  .tube-line::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: calc(round(max(0.06em, 1px), 1px) * -1);
+    width: 100%;
+    height: round(max(0.06em, 1px), 1px);
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.06s linear;
+  }
+  :is(a:hover, a:focus-visible) .tube-line::before,
+  .tube-line:is(:hover, :focus-visible)::before {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :is(a:hover, a:focus-visible) .tube,
+    .tube:is(:hover, :focus-visible) {
+      --tube: 100;
+      animation: none;
+    }
   }
 
   @media (max-width: 760px) {

@@ -2,6 +2,7 @@ import { Contact } from "@/components/sections/contact";
 import { Faq } from "@/components/sections/faq";
 import { Footer } from "@/components/sections/footer";
 import { Hero } from "@/components/sections/hero";
+import { Platforms } from "@/components/sections/platforms";
 import { Services } from "@/components/sections/services";
 import { Studio } from "@/components/sections/studio";
 import { Trusted } from "@/components/sections/trusted";
@@ -16,6 +17,7 @@ export default function Home() {
       <Work />
       <Studio />
       <Why />
+      <Platforms />
       <Services />
       <Faq />
       <Contact />

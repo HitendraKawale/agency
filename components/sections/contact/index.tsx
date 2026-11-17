@@ -12,7 +12,7 @@ export function Contact() {
       <p className={`big-type in ${s.ask}`} data-reveal="fade">
         <a href={`mailto:${site.email}`}>
           {lines.map((l, i) => <span key={l}>{i > 0 && <br />}{l}</span>)}
-          <span className={s.mail}>{site.email}</span>
+          <span className={s.mail}><span className="tube tube-line">{site.email}</span></span>
         </a>
       </p>
       <Clocks className={`in ${s.clocks}`} clocks={clocks} />

@@ -17,7 +17,7 @@ export function Work() {
               <img src={p.logo} alt="" style={vars({ "--w": p.logoWidth })} />
             </div>
             <div className={s.info} data-reveal="fade" data-delay="0.12">
-              <h3>{p.name}</h3>
+              <h3 className="tube">{p.name}</h3>
               <p className={s.body}>{p.body}</p>
               <p className={s.meta}>{p.services}<br />{p.year}</p>
             </div>

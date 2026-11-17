@@ -199,7 +199,7 @@ function box(src: Float32Array, dst: Float32Array, w: number, h: number, r: numb
 /** Attach the heat effect to `el`, which holds the inline wordmark <svg>. Returns null when skipped. */
 export function attachHeatLogo(
   el: HTMLElement,
-  { ink = [0.055, 0.051, 0.051], bg = [1, 1, 1], autoplay = false, delay = 7000 }: HeatLogoOptions = {},
+  { ink = [0.055, 0.055, 0.055], bg = [1, 1, 1], autoplay = false, delay = 7000 }: HeatLogoOptions = {},
 ): HeatLogo | null {
   if (!autoplay && matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
   const svg = el.querySelector("svg");

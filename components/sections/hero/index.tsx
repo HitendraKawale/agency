@@ -8,10 +8,12 @@ import { HeatMark } from "@/components/ui/heat-mark";
 import { CarFrame } from "./car-frame";
 import s from "./hero.module.css";
 
-const NOIR = [0.055, 0.051, 0.051] as const;
+const NOIR = [0.055, 0.055, 0.055] as const;
 
 export function Hero() {
   const { headline, line, actions, car } = home.hero;
+  // superscript counts beside nav links, read from the content they point at
+  const counts: Partial<Record<string, number>> = { Work: home.work.projects.length };
   return (
     <>
       <nav className={s.nav}>
@@ -24,12 +26,19 @@ export function Hero() {
         />
         <ul className={s.links}>
           {site.nav.map((l, i) => (
-            <li key={l.label}>
-              <a href={l.href} data-intro="fade" data-delay={(1.15 + i * 0.07).toFixed(2)}>{l.label}</a>
+            // data-intro sits on the <li>, not the link: GSAP leaves an inline opacity behind, which
+            // would pin the link's tubelight flicker (globals.css) at full
+            <li key={l.label} data-intro="fade" data-delay={(1.15 + i * 0.07).toFixed(2)}>
+              <a className="tube" href={l.href}>
+                {l.label}
+                {l.label in counts && <sup>({counts[l.label]})</sup>}
+              </a>
             </li>
           ))}
         </ul>
-        <a className={s.contact} href={site.contact.href} data-intro="fade" data-delay="1.36">{site.contact.label}</a>
+        <span className={s.contact} data-intro="fade" data-delay="1.5">
+          <a className="tube" href={site.contact.href}>{site.contact.label}</a>
+        </span>
       </nav>
 
       <h1 className={s.title} aria-label={headline}>
