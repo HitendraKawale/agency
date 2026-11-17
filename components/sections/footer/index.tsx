@@ -1,4 +1,5 @@
-// Footer: links, then the wordmark across the page, which heats up after a short hover.
+// Footer: links, then the wordmark across the page. The heat writes it in when it comes into view,
+// and heats it up again after a short hover.
 import { home, site } from "@/content/home";
 import { HeatMark } from "@/components/ui/heat-mark";
 import s from "./footer.module.css";
@@ -20,8 +21,7 @@ export function Footer() {
         className={s.big}
         href="#"
         aria-label={`${site.name}, home`}
-        data-reveal="lift"
-        heat={{ ink: [0.77, 0.77, 0.77], bg: [0.055, 0.055, 0.055], delay: 400 }}
+        heat={{ ink: [0.77, 0.77, 0.77], bg: [0.055, 0.055, 0.055], delay: 400, reveal: true }}
       />
     </footer>
   );

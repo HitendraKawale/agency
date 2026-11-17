@@ -188,3 +188,7 @@
 .intro :is([data-intro], [data-reveal]) {
   opacity: 0;
 }
+/* a wordmark the heat writes in stays hidden until it does (lib/mark/heat-logo.ts takes over) */
+.intro [data-heat-reveal] svg {
+  visibility: hidden;
+}

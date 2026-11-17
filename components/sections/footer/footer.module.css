@@ -1,7 +1,10 @@
 .footer {
   margin-top: 200px;
 }
+/* above the wordmark's heat canvas, so the cloud that rises off the k passes behind the type */
 .foot {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: end;
