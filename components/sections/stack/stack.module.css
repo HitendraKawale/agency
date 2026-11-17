@@ -1,0 +1,68 @@
+/* Our stack, on the grid of the "It worked for" row above it (why.module.css .refs): column 2 to
+   the edge in four equal columns. The box takes the first two, ending 48px short so the text has
+   room; the title and statement take the last two, their last line level with the box's bottom.
+   It sits 140px from its neighbours, not the 200px between other sections. */
+.stack {
+  display: grid;
+  grid-template-columns: calc((100% - 132px) / 12) repeat(4, 1fr);
+  grid-template-rows: 1fr auto auto;
+  column-gap: 12px;
+  align-items: end;
+  margin: 140px 22px 0;
+}
+.stack + section {
+  margin-top: 140px;
+}
+.title {
+  grid-column: 4 / span 2;
+  grid-row: 2;
+}
+.statement {
+  grid-column: 4 / span 2;
+  grid-row: 3;
+  margin-top: 28px;
+  font-size: clamp(40px, 4vw, 58px);
+  line-height: 0.92;
+}
+
+/* the box: the hero panel's shape on the tile grey, the stack's canvas filling it */
+.box {
+  grid-column: 2 / span 2;
+  grid-row: 1 / 4;
+  width: calc(100% - 48px);
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-tile);
+  aspect-ratio: 5 / 4;
+}
+.box canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .stack {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    margin: 96px 4px 0;
+  }
+  .stack + section {
+    margin-top: 96px;
+  }
+  .box,
+  .title,
+  .statement {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .box {
+    width: 100%;
+  }
+  .title {
+    margin-top: 32px;
+  }
+}
