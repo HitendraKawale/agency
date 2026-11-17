@@ -1,0 +1,78 @@
+/* Realtime cursors and chat (realtime.tsx), over the whole page. Neutrals only. Type is the nav's,
+   600 12/16. Labels sit on the page's noir so they read over any section. */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  overflow: clip;
+  font: 600 12px/16px var(--font-sans);
+}
+
+.cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0.8;
+}
+.cursor svg {
+  display: block;
+}
+.cursor path {
+  fill: var(--color-noir);
+  stroke: var(--color-ink-2);
+  stroke-width: 1.5;
+}
+.at {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  width: 288px;
+}
+
+.label {
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px 6px;
+  overflow-wrap: anywhere;
+  background: var(--color-noir);
+  color: var(--color-ink);
+  transform-origin: top left;
+}
+
+.me {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: 288px;
+}
+.me[data-open] {
+  pointer-events: auto;
+}
+/* the field grows with its text: an invisible copy and the input share one grid cell */
+.field {
+  display: grid;
+  min-width: 96px;
+  padding: 2px 6px;
+  background: var(--color-noir);
+  transform-origin: top left;
+}
+.field > * {
+  grid-area: 1 / 1;
+}
+.field span {
+  visibility: hidden;
+  white-space: pre;
+  padding-right: 1px;
+}
+.field input {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  color: var(--color-ink);
+  background: transparent;
+  outline: none;
+}
+.field input::placeholder {
+  color: var(--color-faint);
+}

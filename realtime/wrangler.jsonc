@@ -1,0 +1,15 @@
+// The realtime room behind the nav's "Online (n)". See worker.ts.
+{
+  "name": "blank-realtime",
+  "main": "worker.ts",
+  "compatibility_date": "2026-10-01",
+  "durable_objects": {
+    "bindings": [{ "name": "ROOM", "class_name": "Room" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+  "vars": {
+    // pages allowed to join: exact origins, or "*.domain" for any subdomain (Vercel previews).
+    // `wrangler dev` reads .dev.vars instead, which adds the local site.
+    "ORIGINS": "https://blankinterfaces.com,https://www.blankinterfaces.com,*.vercel.app"
+  }
+}

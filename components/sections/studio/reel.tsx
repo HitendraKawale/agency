@@ -62,6 +62,8 @@ function Media({ item, hidden }: { item: ReelItem; hidden: boolean }) {
         playsInline
         preload="metadata"
         aria-label={hidden ? undefined : item.alt}
+        // browser extensions (video speed controllers) tag <video> before React hydrates
+        suppressHydrationWarning
       />
     );
   }

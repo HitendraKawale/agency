@@ -7,6 +7,7 @@ import { home, site } from "@/content/home";
 import { Button } from "@/components/ui/button";
 import { HeatMark } from "@/components/ui/heat-mark";
 import { CarFrame } from "./car-frame";
+import { Online } from "./online";
 import s from "./hero.module.css";
 
 const NOIR = [0.055, 0.055, 0.055] as const;
@@ -38,11 +39,7 @@ export function Hero() {
           ))}
         </ul>
         <div className={s.end} data-intro="fade" data-delay="1.5">
-          {/* the live count of visitors needs a presence service; until then, no number */}
-          <span className={s.online}>
-            <i aria-hidden />
-            Online
-          </span>
+          <Online className={s.online} tipClassName={s.tip} />
           <a className="tube" href={site.contact.href}>{site.contact.label}</a>
         </div>
       </nav>

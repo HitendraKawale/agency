@@ -21,6 +21,8 @@ const eslintConfig = defineConfig([
     // brand studies and pinned references, not app code
     ".plannotator/**",
     "reference/**",
+    // the Cloudflare Worker has its own tsconfig and runtime types
+    "realtime/**",
   ]),
 ]);
 
