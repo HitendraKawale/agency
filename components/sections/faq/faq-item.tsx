@@ -3,15 +3,16 @@
 // One question, after Symbol's accordion (symbolstudio.pl/en, FAQ, measured live at 1440): question
 // 22/1.4 regular, grey when closed and full colour when open; hairline rules between rows (theirs, kept
 // as in the source); a 40px round +/- on the right; answer 16/1.3, ~26px under the question.
-// Motion animates the answer's height, so it opens the same way in every browser.
+// Motion animates the answer's height, so it opens the same way in every browser. An optional link
+// closes the answer, in the answer's type at full colour, with the site's tubelight hover.
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useId, useState } from "react";
 import { EXPO } from "@/lib/motion/gsap";
 import s from "./faq.module.css";
 
-type Props = { q: string; a: string; defaultOpen?: boolean; delay: number };
+type Props = { q: string; a: string; link?: { label: string; href: string }; defaultOpen?: boolean; delay: number };
 
-export function FaqItem({ q, a, defaultOpen = false, delay }: Props) {
+export function FaqItem({ q, a, link, defaultOpen = false, delay }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const reduce = useReducedMotion();
   const id = useId();
@@ -35,7 +36,17 @@ export function FaqItem({ q, a, defaultOpen = false, delay }: Props) {
             exit={{ height: 0 }}
             transition={{ duration: reduce ? 0 : 0.5, ease: EXPO }}
           >
-            <p>{a}</p>
+            <p>
+              {a}
+              {link && (
+                <>
+                  {" "}
+                  <a href={link.href} className={s.more}>
+                    <span className="tube tube-line">{link.label}</span>
+                  </a>
+                </>
+              )}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

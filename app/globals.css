@@ -55,8 +55,10 @@
   .page {
     max-width: 1600px;
     margin: 0 auto;
-    padding: 22px 22px 40px;
-    overflow-x: clip; /* the footer mark's heat canvas spills past the page edge by design */
+    padding: 36px 22px 0; /* the nav's 36px on top; the footer wordmark sits on the bottom edge */
+    /* the footer mark's heat canvas spills past the page by design: clipped on every side, or it
+       would add a scrollable strip under the footer */
+    overflow: clip;
   }
 
   /* basement's grid: 12 columns, 12px gaps. Children span the row unless placed. */
@@ -164,7 +166,7 @@
 
   @media (max-width: 760px) {
     .page {
-      padding: 16px;
+      padding: 36px 16px 0;
     }
     .grid-12 {
       margin: 0 4px;

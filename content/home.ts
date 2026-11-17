@@ -4,14 +4,16 @@
 export const site = {
   name: "Blank Interfaces",
   email: "aryan@blankinterface.com",
+  // basement's nav, in their order
   nav: [
-    { label: "Work", href: "#" },
+    { label: "Home", href: "/" },
     { label: "Services", href: "#" },
-    { label: "Labs", href: "#" },
-    { label: "About", href: "#" },
+    { label: "Showcase", href: "#" },
+    { label: "People", href: "#" },
     { label: "Blog", href: "#" },
+    { label: "Lab", href: "#" },
   ],
-  contact: { label: "Start a project", href: "#" },
+  contact: { label: "Contact Us", href: "#" },
 } as const;
 
 /** A logo image. `aspect` is width / height; tiles size logos to equal area from it. */
@@ -63,7 +65,8 @@ export type HomeContent = {
   faq: {
     title: string;
     principles: { lead: string; not: string }[];
-    items: { q: string; a: string }[];
+    /** `link` follows the answer, for a question a page answers in full */
+    items: { q: string; a: string; link?: { label: string; href: string } }[];
   };
   contact: {
     title: string;
@@ -208,18 +211,19 @@ export const home = {
       { lead: "Curiosity,", not: "not convention." },
     ],
     items: [
-      { q: "What is Blank Interfaces?", a: "Blank Interfaces is a digital studio and branding practice based in Mumbai and the UK, led by Aryan Kathawale and Hitendra Kawale. It gives a company the foundation it builds on: the brand, the website, the product and the systems under them, designed and built by one team." },
-      { q: "What does Blank do?", a: "Brand identity, websites, product design and engineering, and AI features. Engagements range from a full identity system to a production web app with its backend and infrastructure, and every site ships with pages that answer engines and AI agents can read." },
-      { q: "What makes Blank different from other studios?", a: "Brand and engineering sit in the same team. The people who design the identity also build the product and the infrastructure it runs on, so nothing is lost in a handoff and the brand holds up inside the product, not only on the launch page." },
-      { q: "How does Blank use AI?", a: "Blank uses AI to explore more directions and build faster, then holds the result to the same bar as work made by hand. Every mark, layout and line of code is reviewed and finished by the team before it reaches a client." },
-      { q: "Is work made with AI original?", a: "Yes. Each identity starts from the client's brief, research and audience, not from a model's average of existing brands. Final marks are drawn by the team and checked against existing marks before delivery." },
-      { q: "Does Blank build to SOC 2 and security standards?", a: "Blank builds software to the controls a SOC 2 audit looks for: access control, encryption in transit and at rest, audit logging and reviewed changes. A client's own audit starts with the evidence already in place." },
-      { q: "What does working with Blank look like?", a: "A project starts with a working session on goals, audience and constraints. It then moves through strategy, identity, design and build, with the same people throughout and a timeline agreed at the start." },
-      { q: "I only need a website. Can Blank help?", a: "Yes, and many projects start there. Blank designs the site from the brand outward, so if the identity needs work, that shows up early rather than after launch." },
-      { q: "I already have a logo. Do I need a rebrand?", a: "Not necessarily. If the mark works, Blank keeps it and builds the system around it: colour, type, imagery and the rules that carry it across every touchpoint." },
-      { q: "Who does Blank work with?", a: "Founders and the companies they build: AI startups, engineering and industrial firms, investment management, food retail and government. Clients include Manaslu Labs, Rainpulse, Parflow Engineering, Ralsonics, Moneybee and Organic Foods." },
-      { q: "Where is Blank based?", a: "Mumbai and the UK, with clients in India and Japan. The studio works across time zones and runs projects remotely." },
-      { q: "How do I start a project?", a: "Email aryan@blankinterface.com with what you are building and where it needs to go, or use Start a project at the top of this page." },
+      {
+        q: "What does Blank offer?",
+        a: "Website design and development, visual brand identity, 3D interactive experiences, marketing campaigns and product engineering. Engagements range from a full brand identity system to a high-performance marketing website or a real-time 3D experience on the web. Clients come for speed and accuracy: the studio moves fast and keeps refining until the work is right.",
+      },
+      {
+        q: "How does a project with Blank run?",
+        a: "It starts with a working session on goals, audience and constraints, where the timeline is agreed. Then it moves through strategy, identity, design and build, with the same people from the first session to launch.",
+        link: { label: "See the process", href: "/process" },
+      },
+      {
+        q: "What is Blank known for?",
+        a: "Award-winning marketing sites and real-time 3D experiences on the web. Design and engineering sit in the same team, which takes a brand from visual identity through production web engineering, including real-time 3D, animation and typeface design. The backend is held to national-infrastructure standards: Blank engineers government portals across India, used by tens of thousands of inspectors and by senior officers at agencies including the CID.",
+      },
     ],
   },
 

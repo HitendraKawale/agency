@@ -1,4 +1,5 @@
-// Nav, headline, the row under it, and the heat car. The approved hero (mockups/art/site.html).
+// Nav, headline, the row under it, and the heat car. The approved hero (mockups/art/site.html), with
+// basement's nav fixed along the top.
 // Intro order: logo .15s; headline words from .5s, 35ms apart; nav links, buttons and the studio
 // line from 1.15s; the artwork lifts in at 1.45s.
 import { Fragment } from "react";
@@ -13,7 +14,7 @@ const NOIR = [0.055, 0.055, 0.055] as const;
 export function Hero() {
   const { headline, line, actions, car } = home.hero;
   // superscript counts beside nav links, read from the content they point at
-  const counts: Partial<Record<string, number>> = { Work: home.work.projects.length };
+  const counts: Partial<Record<string, number>> = { Showcase: home.work.projects.length };
   return (
     <>
       <nav className={s.nav}>
@@ -36,9 +37,14 @@ export function Hero() {
             </li>
           ))}
         </ul>
-        <span className={s.contact} data-intro="fade" data-delay="1.5">
+        <div className={s.end} data-intro="fade" data-delay="1.5">
+          {/* the live count of visitors needs a presence service; until then, no number */}
+          <span className={s.online}>
+            <i aria-hidden />
+            Online
+          </span>
           <a className="tube" href={site.contact.href}>{site.contact.label}</a>
-        </span>
+        </div>
       </nav>
 
       <h1 className={s.title} aria-label={headline}>

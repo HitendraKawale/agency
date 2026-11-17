@@ -19,7 +19,7 @@ export function Faq() {
       </ul>
       <div className={s.qa}>
         {items.map((item, i) => (
-          <FaqItem key={item.q} q={item.q} a={item.a} defaultOpen={i === 0} delay={0.05 + Math.min(i, 6) * 0.05} />
+          <FaqItem key={item.q} {...item} defaultOpen={i === 0} delay={0.05 + Math.min(i, 6) * 0.05} />
         ))}
       </div>
     </section>
