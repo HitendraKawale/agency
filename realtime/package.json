@@ -1,0 +1,21 @@
+{
+  "name": "blank-realtime",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "alchemy dev --env-file .env.dev",
+    "deploy": "alchemy deploy --stage prod",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@alchemy.run/cloudflare": "2.0.0-beta.87",
+    "@effect/platform-node": "4.1.4",
+    "alchemy": "2.0.0-beta.87",
+    "effect": "4.1.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261116.1",
+    "@types/node": "^24.19.2",
+    "typescript": "^5.9.3"
+  }
+}

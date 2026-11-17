@@ -1,6 +1,10 @@
+# realtime/ is the Cloudflare backend (Effect + Alchemy), kept out of the Next app's dependencies
+packages:
+  - realtime
 allowBuilds:
   sharp: true
   unrs-resolver: true
+  workerd: true
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
