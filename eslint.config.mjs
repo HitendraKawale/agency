@@ -23,6 +23,8 @@ const eslintConfig = defineConfig([
     "reference/**",
     // the Cloudflare Worker has its own tsconfig and runtime types
     "realtime/**",
+    // standalone pages served as-is (the /services room scene and its generated wordmark file)
+    "public/**",
   ]),
 ]);
 

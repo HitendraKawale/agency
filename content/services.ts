@@ -23,6 +23,9 @@ export type ServicesContent = {
 
 const img = (name: string, width: number, height: number, alt: string, position?: string): RunItem =>
   ({ kind: "image", src: `/reel/${name}.webp`, width, height, alt, position });
+/** stills of our own products (ui.aryank.space pages and scenes), captured at the run's 1.15 shape */
+const ours = (name: string, width: number, height: number, alt: string): RunItem =>
+  ({ kind: "image", src: `/services/${name}.webp`, width, height, alt });
 const vid = (name: string, width: number, height: number, alt: string): RunItem =>
   ({ kind: "video", src: `/reel/${name}.mp4`, poster: `/reel/${name}.jpg`, width, height, alt });
 
@@ -41,11 +44,11 @@ export const services = {
         "We design the site and write the code ourselves, so nothing gets lost between a design file and someone else's guess at it. Every page is built on Next.js and measured on PageSpeed before launch, and it can be served as markdown too, so the agents people now ask for recommendations can read it.",
         "Parflow Engineering came to us with a WordPress theme. We rebuilt it as a 92-product catalogue that scores 99 for performance and 100 for accessibility, best practices and SEO.",
       ],
-      // no website in this run yet: the laptop mockup is never used (see memory), a new visual is due
+      // pages from our registry (ui.aryank.space/pages): house-of-epochs, pixelgrid-studio, settlement-layer
       run: [
-        img("phone-rock", 720, 540, "The podcast player on a phone"),
-        img("label-heat", 720, 426, "The BI mark in heat"),
-        vid("logo-motion", 720, 406, "The Blank logo animation"),
+        ours("web-house-of-epochs", 1150, 1000, "House of Epochs, a page from our component registry"),
+        ours("web-pixelgrid", 720, 626, "Pixelgrid Studio, a page with a generative pixel-field hero"),
+        ours("web-settlement-layer", 720, 626, "Settlement Layer, an infrastructure product site"),
       ],
     },
     {
@@ -72,10 +75,12 @@ export const services = {
         "Some things are easier to understand when you can move around them. We model them, write the shaders and put them in the browser, tuned to run on phones as well as desktops. Every scene has a still frame for devices that can't run it and for people who turn motion off.",
         "The heat car at the top of our homepage is one of these, rendered live in the page.",
       ],
+      // our real-time scenes: bunker-scene and neon-sign-scene (ui.aryank.space/components), and the
+      // heat shader from the homepage car on Michelangelo's David (CC BY 4.0, Thomas Flynn on Sketchfab)
       run: [
-        img("bust-heat", 720, 720, "A bust in heat", "center 20%"),
-        img("display-cybertruck", 720, 540, "Poster in a frame, a truck in heat"),
-        { kind: "image", src: "/services/heatcar.webp", width: 1200, height: 724, alt: "The heat car from our homepage", position: "60% center" },
+        ours("3d-bunker", 1150, 1000, "A concrete bunker at night, red light through a BLANK sign"),
+        ours("3d-neon-sign", 720, 626, "A lightbox sign with the Blank wordmark in a dark room"),
+        ours("3d-david-heat", 720, 626, "The head of Michelangelo's David, rendered in heat"),
       ],
     },
     {
@@ -89,7 +94,9 @@ export const services = {
       run: [
         vid("ooh-metro", 720, 540, "Blank on a metro screen"),
         img("stage", 720, 480, "The Blank wordmark on a stage screen"),
-        img("poster-launch", 720, 1019, "Poster, Agency in the era of infinite software", "center 75%"),
+        // the launch poster's art panel, its sky widened sideways to the tile's shape, so the whole
+        // rocket shows without the poster's white margin
+        ours("campaign-falcon", 720, 634, "The launch poster's rocket, in heat"),
       ],
     },
     {

@@ -5,6 +5,7 @@ import { Service } from "./service";
 import s from "./services.module.css";
 
 export { ServicesHead } from "./head";
+export { ServicesRoom } from "./room";
 
 export function ServicesList() {
   return (

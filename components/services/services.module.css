@@ -4,6 +4,31 @@
    Left out by our rules: the 01-09 numbers, the NAVIGATION and SCOPE OF WORK labels, the rules
    between sections and under the question, the orange. */
 
+/* The hero, basement's way: the room scene fixed behind everything at full viewport height, and
+   the rest of the page on a sheet that starts one screen down (less the page's 36px top padding)
+   and scrolls up over it. The sheet's colour runs to both window edges (shadow, clipped at the top
+   so it never covers the scene above the sheet). */
+.room {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+.room iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.sheet {
+  display: flow-root; /* keeps the head's top margin inside the sheet instead of collapsing through it */
+  position: relative;
+  z-index: 1;
+  margin-top: calc(100svh - 36px);
+  background: var(--color-noir);
+  box-shadow: 0 0 0 100vmax var(--color-noir);
+  clip-path: inset(0 -100vmax -100vmax);
+}
+
 /* one centred statement, a short grey paragraph under it */
 .head {
   margin-top: 200px;
