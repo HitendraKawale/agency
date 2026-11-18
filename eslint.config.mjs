@@ -8,7 +8,7 @@ const eslintConfig = defineConfig([
   {
     // Logos are CSS-sized SVG/PNG (equal-area formula) and the reel art is pre-sized 720w WebP, so
     // next/image's resizing adds nothing there.
-    files: ["components/sections/**"],
+    files: ["components/sections/**", "components/services/**"],
     rules: { "@next/next/no-img-element": "off" },
   },
   // Override default ignores of eslint-config-next.

@@ -1,48 +1,19 @@
 // Nav, headline, the row under it, and the heat car. The approved hero (mockups/art/site.html), with
-// basement's nav fixed along the top.
+// basement's nav (components/sections/nav) along the top.
 // Intro order: logo .15s; headline words from .5s, 35ms apart; nav links, buttons and the studio
 // line from 1.15s; the artwork lifts in at 1.45s.
 import { Fragment } from "react";
-import { home, site } from "@/content/home";
+import { home } from "@/content/home";
 import { Button } from "@/components/ui/button";
-import { HeatMark } from "@/components/ui/heat-mark";
+import { Nav } from "@/components/sections/nav";
 import { CarFrame } from "./car-frame";
-import { Online } from "./online";
 import s from "./hero.module.css";
-
-const NOIR = [0.055, 0.055, 0.055] as const;
 
 export function Hero() {
   const { headline, line, actions, car } = home.hero;
-  // superscript counts beside nav links, read from the content they point at
-  const counts: Partial<Record<string, number>> = { Showcase: home.work.projects.length };
   return (
     <>
-      <nav className={s.nav}>
-        <HeatMark
-          className={s.mark}
-          href="#"
-          aria-label={site.name}
-          heat={{ ink: [1, 1, 1], bg: NOIR }}
-          svgProps={{ "data-intro": "fade", "data-delay": "0.15", "data-dur": "1.4" }}
-        />
-        <ul className={s.links}>
-          {site.nav.map((l, i) => (
-            // data-intro sits on the <li>, not the link: GSAP leaves an inline opacity behind, which
-            // would pin the link's tubelight flicker (globals.css) at full
-            <li key={l.label} data-intro="fade" data-delay={(1.15 + i * 0.07).toFixed(2)}>
-              <a className="tube" href={l.href}>
-                {l.label}
-                {l.label in counts && <sup>({counts[l.label]})</sup>}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <div className={s.end} data-intro="fade" data-delay="1.5">
-          <Online className={s.online} tipClassName={s.tip} />
-          <a className="tube" href={site.contact.href}>{site.contact.label}</a>
-        </div>
-      </nav>
+      <Nav current="Home" />
 
       <h1 className={s.title} aria-label={headline}>
         {headline.split(" ").map((w, i) => (

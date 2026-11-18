@@ -7,7 +7,7 @@ export const site = {
   // basement's nav, in their order
   nav: [
     { label: "Home", href: "/" },
-    { label: "Services", href: "#" },
+    { label: "Services", href: "/services" },
     { label: "Showcase", href: "#" },
     { label: "People", href: "#" },
     { label: "Blog", href: "#" },
@@ -147,7 +147,6 @@ export const home = {
       [
         img("wall-posters", 720, 480, "Blank posters on a concrete wall"),
         img("label-heat", 720, 426, "The BI mark in heat"),
-        img("laptop", 720, 540, "The Blank site on a laptop"),
         img("beanie", 720, 480, "Beanie with the BI label in heat"),
         vid("logo-motion", 720, 406, "The Blank logo animation"),
         img("poster-gods-image", 720, 1019, "Poster, Software made in God's image"),

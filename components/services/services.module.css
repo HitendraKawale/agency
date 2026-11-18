@@ -1,0 +1,198 @@
+/* Symbol's services page (symbolstudio.pl/en/services, read live 2026-11-18 at 1440): sidebar index
+   16-212, title at 360, scope list at 377, question and text in a 500 column at 853, images
+   575x500 + 284x250 + 284x250 with 8 between, sections 1326 apart. Mapped onto our 12 columns.
+   Left out by our rules: the 01-09 numbers, the NAVIGATION and SCOPE OF WORK labels, the rules
+   between sections and under the question, the orange. */
+
+/* one centred statement, a short grey paragraph under it */
+.head {
+  margin-top: 200px;
+  justify-items: center;
+  text-align: center;
+}
+.head h1 {
+  max-width: 13em;
+  font-weight: 600;
+  font-size: clamp(40px, 5.28vw, 76px);
+  line-height: 0.895;
+  letter-spacing: -0.04em;
+  color: var(--color-ink-2);
+  text-wrap: balance;
+}
+.head p {
+  max-width: 30em;
+  margin-top: 28px;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--color-ink-3);
+  text-wrap: balance;
+}
+
+.body {
+  margin-top: 200px;
+  align-items: start;
+}
+
+/* the index: sticks below the top edge, the active service in white with a dot */
+.index {
+  grid-column: 1 / 3;
+  position: sticky;
+  top: 48px;
+  font: 600 12px/18px var(--font-sans);
+}
+.index ul {
+  list-style: none;
+  padding: 0;
+}
+.index a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-ink-4);
+  text-decoration: none;
+  transition: color 0.3s var(--ease-expo);
+}
+.index a::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-expo);
+}
+.index a:hover {
+  color: var(--color-ink-3);
+}
+.index a.on {
+  color: var(--color-ink);
+}
+.index a.on::before {
+  opacity: 1;
+}
+
+.list {
+  grid-column: 3 / -1;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  column-gap: 12px;
+  row-gap: 220px;
+}
+.svc {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  scroll-margin-top: 48px;
+}
+.svc h2 {
+  grid-column: 1 / -1;
+  font-weight: 600;
+  font-size: clamp(34px, 3.2vw, 48px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.scope {
+  grid-column: 1 / 5;
+  margin-top: 56px;
+  list-style: none;
+  padding: 0;
+  font: 500 16px/1.6 var(--font-sans);
+  color: var(--color-ink-2);
+}
+.text {
+  grid-column: 6 / -1;
+  margin-top: 56px;
+}
+.text p {
+  margin-top: 18px;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--color-ink-2);
+}
+.text .q {
+  margin-top: 0;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+}
+.text .q + p {
+  margin-top: 40px;
+}
+
+/* one large, two small beside it, top-aligned */
+.run {
+  grid-column: 1 / -1;
+  margin-top: 96px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 8px;
+  align-items: start;
+}
+.media {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: var(--pos, center);
+  border-radius: 14px;
+  background: var(--color-tile);
+}
+.run > :first-child {
+  aspect-ratio: 575 / 500;
+}
+.run > :not(:first-child) {
+  aspect-ratio: 284 / 250;
+}
+
+@media (max-width: 760px) {
+  .head {
+    margin-top: 120px;
+  }
+  .head p {
+    font-size: 17px;
+  }
+  .body {
+    margin-top: 110px;
+  }
+  .index {
+    display: none;
+  }
+  .list {
+    grid-column: 1 / -1;
+    row-gap: 120px;
+  }
+  .svc h2 {
+    font-size: 32px;
+  }
+  .scope,
+  .text {
+    grid-column: 1 / -1;
+  }
+  .scope {
+    margin-top: 24px;
+    font-size: 15px;
+  }
+  .text {
+    margin-top: 28px;
+  }
+  .text p {
+    font-size: 16px;
+  }
+  .text .q {
+    font-size: 20px;
+  }
+  .text .q + p {
+    margin-top: 20px;
+  }
+  .run {
+    margin-top: 36px;
+    grid-template-columns: 1fr 1fr;
+  }
+  .run > :first-child {
+    grid-column: 1 / -1;
+  }
+}
