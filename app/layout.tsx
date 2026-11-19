@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Geist } from "next/font/google";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { Realtime } from "@/components/realtime/realtime";
+import { CursorSynth } from "@/components/sound/cursor-synth";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {children}
         <SmoothScroll />
         <Realtime />
+        <CursorSynth />
       </body>
     </html>
   );
