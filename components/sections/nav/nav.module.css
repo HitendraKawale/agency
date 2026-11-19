@@ -86,6 +86,25 @@
 .online:hover .tip {
   opacity: 1;
 }
+/* the music button (music-toggle.tsx): basement's 24×15 slot with the 22×15 bars centred in it,
+   grey while off, ink-1 while on */
+.music {
+  display: inline-flex;
+  align-items: center;
+  width: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink-3);
+  cursor: pointer;
+}
+.music[data-on] {
+  color: var(--color-ink-1);
+}
+.music svg {
+  display: block;
+  width: 100%;
+}
 .online i {
   width: 6px;
   height: 6px;

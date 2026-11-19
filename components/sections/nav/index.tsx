@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { home, site } from "@/content/home";
 import { HeatMark } from "@/components/ui/heat-mark";
+import { MusicToggle } from "./music-toggle";
 import { Online } from "./online";
 import s from "./nav.module.css";
 
@@ -37,6 +38,7 @@ export function Nav({ current }: { current?: (typeof site.nav)[number]["label"] 
       </ul>
       <div className={s.end} data-intro="fade" data-delay="1.5">
         <Online className={s.online} tipClassName={s.tip} />
+        <MusicToggle className={s.music} />
         <a className="tube" href={site.contact.href}>{site.contact.label}</a>
       </div>
     </nav>

@@ -505,9 +505,9 @@ export function createCursorSynth(options: CursorSynthOptions = {}): CursorSynth
   return {
     setEnabled(on) {
       enabled = on;
-      if (!ac) return;
-      if (on) ac.resume();
-      else ac.suspend();
+      // Called from a click, turning on can create or resume the audio right away.
+      if (on) ensureAudio();
+      else ac?.suspend();
     },
     setOptions(next) {
       const spacing = S.spacing;
