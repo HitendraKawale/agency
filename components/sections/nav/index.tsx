@@ -1,6 +1,9 @@
 // basement's nav, shared by every page: the wordmark, the page links with their counts, Online and
 // Contact Us. `current` marks the page the visitor is on.
 // Intro order (lib/motion/choreography.ts): logo .15s; links from 1.15s, 70ms apart; the right side 1.5s.
+// Page links are next/link, so moving between pages keeps the layout (and the cursor synth's audio)
+// running instead of reloading.
+import Link from "next/link";
 import { home, site } from "@/content/home";
 import { HeatMark } from "@/components/ui/heat-mark";
 import { Online } from "./online";
@@ -25,10 +28,10 @@ export function Nav({ current }: { current?: (typeof site.nav)[number]["label"] 
           // data-intro sits on the <li>, not the link: GSAP leaves an inline opacity behind, which
           // would pin the link's tubelight flicker (globals.css) at full
           <li key={l.label} data-intro="fade" data-delay={(1.15 + i * 0.07).toFixed(2)}>
-            <a className="tube" href={l.href} aria-current={l.label === current ? "page" : undefined}>
+            <Link className="tube" href={l.href} aria-current={l.label === current ? "page" : undefined}>
               {l.label}
               {l.label in counts && <sup>({counts[l.label]})</sup>}
-            </a>
+            </Link>
           </li>
         ))}
       </ul>

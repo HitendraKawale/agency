@@ -3,17 +3,25 @@
 // Lenis owns scrolling; GSAP's ticker drives it, so ScrollTrigger and Lenis read the same frame.
 // Both choreography passes (the load intro and the scroll reveals) start here, once the fonts are in,
 // so nothing changes width mid-fade. With reduced motion or ?still, there is no Lenis and nothing plays.
+//
+// Links between pages are client-side (next/link), so this layout, and the cursor synth with it, stay
+// mounted. Lenis is set up once; the choreography runs again for each page, from the top.
 import Lenis from "lenis";
-import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { armReveals, playIntro } from "@/lib/motion/choreography";
 import { gsap, motionOn, ScrollTrigger } from "@/lib/motion/gsap";
 
 export function SmoothScroll() {
+  const pathname = usePathname();
+  const lenisRef = useRef<Lenis | null>(null);
+
   useEffect(() => {
     if (!motionOn()) return;
 
     // anchors: in-page links (the /services index) ease there too, landing at the target's scroll-margin-top
     const lenis = new Lenis({ autoRaf: false, anchors: true });
+    lenisRef.current = lenis;
     const offScroll = lenis.on("scroll", ScrollTrigger.update);
     // Lenis eases same-page # links but doesn't stop the browser's own jump, which lands first and
     // then snaps back for the ease. Stop the jump here (this runs before Lenis's listener on
@@ -29,6 +37,21 @@ export function SmoothScroll() {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    return () => {
+      offScroll();
+      document.removeEventListener("click", onAnchor);
+      gsap.ticker.remove(raf);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
+
+  // Per page: start at the top (Lenis keeps its own target, which would ease back to the old
+  // position), then play the new page's intro and arm its reveals. Leaving reverts both, which also
+  // kills the old page's ScrollTriggers.
+  useEffect(() => {
+    if (!motionOn()) return;
+    lenisRef.current?.scrollTo(0, { immediate: true, force: true });
     let ctx: gsap.Context | undefined;
     let cancelled = false;
     document.fonts.ready.then(() => {
@@ -37,17 +60,13 @@ export function SmoothScroll() {
         playIntro();
         armReveals();
       });
+      ScrollTrigger.refresh();
     });
-
     return () => {
       cancelled = true;
       ctx?.revert();
-      offScroll();
-      document.removeEventListener("click", onAnchor);
-      gsap.ticker.remove(raf);
-      lenis.destroy();
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }
