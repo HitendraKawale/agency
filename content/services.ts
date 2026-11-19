@@ -26,8 +26,8 @@ const img = (name: string, width: number, height: number, alt: string, position?
 /** stills of our own products (ui.aryank.space pages and scenes), captured at the run's 1.15 shape */
 const ours = (name: string, width: number, height: number, alt: string): RunItem =>
   ({ kind: "image", src: `/services/${name}.webp`, width, height, alt });
-const vid = (name: string, width: number, height: number, alt: string): RunItem =>
-  ({ kind: "video", src: `/reel/${name}.mp4`, poster: `/reel/${name}.jpg`, width, height, alt });
+const vid = (name: string, width: number, height: number, alt: string, dir = "reel"): RunItem =>
+  ({ kind: "video", src: `/${dir}/${name}.mp4`, poster: `/${dir}/${name}.jpg`, width, height, alt });
 
 export const services = {
   head: {
@@ -75,11 +75,12 @@ export const services = {
         "Some things are easier to understand when you can move around them. We model them, write the shaders and put them in the browser, tuned to run on phones as well as desktops. Every scene has a still frame for devices that can't run it and for people who turn motion off.",
         "The heat car at the top of our homepage is one of these, rendered live in the page.",
       ],
-      // our real-time scenes: bunker-scene and neon-sign-scene (ui.aryank.space/components), and the
+      // our real-time scenes: bunker-scene and neon-sign-scene (ui.aryank.space/components), recorded as
+      // one 39.55s camera orbit each so they loop seamlessly (reference/scene-clips/record.sh), and the
       // heat shader from the homepage car on Michelangelo's David (CC BY 4.0, Thomas Flynn on Sketchfab)
       run: [
-        ours("3d-bunker", 1150, 1000, "A concrete bunker at night, red light through a BLANK sign"),
-        ours("3d-neon-sign", 720, 626, "A lightbox sign with the Blank wordmark in a dark room"),
+        vid("3d-bunker", 1150, 1000, "A concrete bunker at night, red light through a BLANK sign", "services"),
+        vid("3d-neon-sign", 720, 626, "A lightbox sign with the Blank wordmark in a dark room", "services"),
         ours("3d-david-heat", 720, 626, "The head of Michelangelo's David, rendered in heat"),
       ],
     },
