@@ -15,7 +15,7 @@ import s from "./services.module.css";
 /** seconds without scrolling, near the top, before the screen asks for a scroll */
 const IDLE = 3.5;
 
-type RoomWindow = Window & { __paused?: boolean; __scroll?: number; __idle?: boolean };
+type RoomWindow = Window & { __paused?: boolean; __scroll?: number; __idle?: boolean; __ready?: boolean };
 
 export function ServicesRoom() {
   const ref = useRef<HTMLDivElement>(null);
@@ -23,7 +23,9 @@ export function ServicesRoom() {
   useEffect(() => {
     const frame = ref.current!.querySelector("iframe")!;
     const win = () => frame.contentWindow as RoomWindow | null;
-    let quiet = 0, idle = false;
+    // the countdown only runs once the scene has drawn: it loads for longer than IDLE, and its first
+    // frame should be the services, not the scroll-down card
+    let quiet = 0, idle = false, ready = false, waiting = 0;
 
     const sync = () => {
       const w = win();
@@ -36,18 +38,26 @@ export function ServicesRoom() {
     const scrolled = () => {
       clearTimeout(quiet);
       idle = false;
-      if (window.scrollY < window.innerHeight * 0.4) {
+      if (ready && window.scrollY < window.innerHeight * 0.4) {
         quiet = window.setTimeout(() => { idle = true; sync(); }, IDLE * 1000);
       }
       sync();
     };
+    const awaitReady = () => {
+      if (win()?.__ready) {
+        ready = true;
+        scrolled();
+      } else waiting = requestAnimationFrame(awaitReady);
+    };
 
     scrolled();
+    awaitReady();
     frame.addEventListener("load", sync);
     window.addEventListener("scroll", scrolled, { passive: true });
     window.addEventListener("resize", sync);
     return () => {
       clearTimeout(quiet);
+      cancelAnimationFrame(waiting);
       frame.removeEventListener("load", sync);
       window.removeEventListener("scroll", scrolled);
       window.removeEventListener("resize", sync);
