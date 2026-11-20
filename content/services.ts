@@ -44,11 +44,12 @@ export const services = {
         "We design the site and write the code ourselves, so nothing gets lost between a design file and someone else's guess at it. Every page is built on Next.js and measured on PageSpeed before launch, and it can be served as markdown too, so the agents people now ask for recommendations can read it.",
         "Parflow Engineering came to us with a WordPress theme. We rebuilt it as a 92-product catalogue that scores 99 for performance and 100 for accessibility, best practices and SEO.",
       ],
-      // pages from our registry (ui.aryank.space/pages): house-of-epochs, pixelgrid-studio, settlement-layer
+      // scroll recordings of our registry components (ui.aryank.space/components): shader-tunnel-slider,
+      // showreel-zoom-scroll, webgl-dissolve-scroll. Re-record with reference/web-clips/record.sh
       run: [
-        ours("web-house-of-epochs", 1150, 1000, "House of Epochs, a page from our component registry"),
-        ours("web-pixelgrid", 720, 626, "Pixelgrid Studio, a page with a generative pixel-field hero"),
-        ours("web-settlement-layer", 720, 626, "Settlement Layer, an infrastructure product site"),
+        vid("web-tunnel", 1150, 1000, "Cards flying down a shader tunnel as the page scrolls", "services"),
+        vid("web-showreel", 720, 626, "A showreel thumbnail growing to fill the frame on scroll", "services"),
+        vid("web-dissolve", 720, 626, "A portrait dissolving into colour as the page scrolls", "services"),
       ],
     },
     {

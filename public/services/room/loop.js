@@ -5,7 +5,7 @@
 //   const loop = await createLoop();
 //   const { glitch } = loop.update(t);   // then upload loop.canvas as a texture
 //
-// update(t, true) shows the idle card instead: red arrows pouring down behind "Scroll down".
+// update(t, true) shows the idle card instead: segment-display arrows pouring down behind "Scroll down".
 // Card media cycle inside a card with a slow push-in, so stills read as footage. Videos play muted
 // and are drawn from their current frame. Built in .plannotator/brand-v1/screen/loop.js.
 
@@ -62,18 +62,37 @@ export async function createLoop({ mark = "/services/room/rand.js" } = {}) {
   let playing = null;
 
   // The idle card: when the visitor hasn't scrolled for a while, the screen cuts to rows of big red
-  // arrows marching down behind "Scroll down". One glowing arrow is drawn once and stamped.
+  // arrows marching down behind "Scroll down". Each arrow is one cell of a segment display: the stem's
+  // two segments and the two head diagonals lit, the cell's other segments faint. Drawn once, stamped.
   const RED = "#d72f21", AW = 150, AH = 210, PAD = 60;
+  const SEG = 20, GAP = 9; // segment thickness and the gap where segments meet, px
   const arrow = document.createElement("canvas");
   arrow.width = AW + PAD * 2; arrow.height = AH + PAD * 2;
   {
     const a = arrow.getContext("2d");
     a.translate(PAD, PAD);
-    a.strokeStyle = RED; a.lineWidth = 24; a.lineCap = "round"; a.lineJoin = "round";
-    a.shadowColor = RED; a.shadowBlur = 44;
-    a.beginPath(); a.moveTo(AW / 2, 14); a.lineTo(AW / 2, AH - 14);
-    a.moveTo(14, AH - 80); a.lineTo(AW / 2, AH - 14); a.lineTo(AW - 14, AH - 80);
-    for (let k = 0; k < 2; k++) a.stroke(); // twice for a stronger glow
+    // a display segment from (x0,y0) to (x1,y1): a bar with pointed ends, shortened by GAP each end
+    const seg = (x0, y0, x1, y1) => {
+      const len = Math.hypot(x1 - x0, y1 - y0), dx = (x1 - x0) / len, dy = (y1 - y0) / len;
+      const nx = -dy * SEG / 2, ny = dx * SEG / 2, h = SEG / 2;
+      const ax = x0 + dx * GAP, ay = y0 + dy * GAP, bx = x1 - dx * GAP, by = y1 - dy * GAP;
+      a.moveTo(ax, ay);
+      a.lineTo(ax + dx * h + nx, ay + dy * h + ny); a.lineTo(bx - dx * h + nx, by - dy * h + ny);
+      a.lineTo(bx, by);
+      a.lineTo(bx - dx * h - nx, by - dy * h - ny); a.lineTo(ax + dx * h - nx, ay + dy * h - ny);
+      a.closePath();
+    };
+    const L = 10, R = AW - 10, C = AW / 2, T = 10, M = 108, B = AH - 6;
+    // unlit: top, upper sides, middle, upper diagonals, lower sides
+    a.beginPath();
+    seg(L, T, R, T); seg(L, T, L, M); seg(R, T, R, M); seg(L, M, C, M); seg(C, M, R, M);
+    seg(L, T, C, M); seg(R, T, C, M); seg(L, M, L, B - 40); seg(R, M, R, B - 40);
+    a.fillStyle = "rgba(215,47,33,.24)"; a.fill();
+    // lit: the stem and the head, meeting at the bottom tip
+    a.beginPath();
+    seg(C, T, C, M); seg(C, M, C, B); seg(L, B - 70, C, B); seg(R, B - 70, C, B);
+    a.fillStyle = RED; a.shadowColor = RED; a.shadowBlur = 44;
+    for (let k = 0; k < 2; k++) a.fill(); // twice for a stronger glow
   }
   function drawIdle(t) {
     ctx.fillStyle = "#070505"; ctx.fillRect(0, 0, W, H);
