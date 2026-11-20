@@ -1,0 +1,203 @@
+/* basement's Showcase (basement.studio/showcase, pinned in reference/basement-showcase, measured at
+   1440 on 2026-11-20). Head and grid only; their 3D shelf above it is not part of this page.
+   Their 16px page gutter becomes our .grid-12, so the edges line up with our nav. */
+
+/* head, then the categories block 96px below it, then the grid 8px under that */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 96px;
+  margin-top: 96px;
+}
+
+/* 600 98/88, -3.92px: "Showcase" in columns 1-6 (#C4C4C4), the count in 7-11 (#757575) */
+.head h1,
+.count {
+  font-weight: 600;
+  font-size: 98px;
+  line-height: 88px;
+  letter-spacing: -3.92px;
+}
+.head h1 {
+  grid-column: 1 / 7;
+  color: var(--color-ink-2);
+}
+.count {
+  grid-column: 7 / 12;
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bar {
+  align-items: end;
+  padding-bottom: 8px;
+}
+
+/* Grid , Rows: 600 13/16, 12px glyphs 4px from the word; the current view underlined in #E6E6E6 */
+.views {
+  grid-column: 1 / 7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font: 600 13px/16px var(--font-sans);
+  color: var(--color-ink-3);
+}
+.views button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 16px;
+  color: var(--color-ink-3);
+}
+.views button[aria-checked="true"] {
+  color: var(--color-ink-1);
+  cursor: default;
+}
+.views button[aria-checked="true"] span {
+  text-decoration: underline;
+}
+.views svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+/* Categories: the label 600 24/24 #757575, then 600 38/36 -1.52px, 16px apart, 4px between lines */
+.cats {
+  grid-column: 7 / -1;
+}
+.cats p {
+  font: 600 24px/24px var(--font-sans);
+  letter-spacing: -0.72px;
+  color: var(--color-ink-3);
+  margin-bottom: 8px;
+}
+.cats ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  list-style: none;
+  padding: 0;
+}
+.cats button {
+  font: 600 38px/36px var(--font-sans);
+  letter-spacing: -1.52px;
+  color: var(--color-ink-1);
+  text-align: left;
+  transition: color 0.3s;
+}
+/* once one is picked, the rest go grey */
+.cats[data-picked] button:not([aria-pressed="true"]) {
+  color: var(--color-ink-3);
+}
+
+/* the grid: 12px gaps both ways, each tile three columns wide at 16:9 */
+.grid {
+  row-gap: 12px;
+}
+.item {
+  grid-column: span 3;
+  transition: opacity 0.3s;
+}
+.item[data-dim] {
+  opacity: 0.1;
+}
+
+/* a 1px edge at 20% #E6E6E6 over the image, and their corner ticks: a 1px line along the top and
+   bottom that is only drawn for its first and last pixel */
+.tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+}
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(230 230 230 / 0.2);
+  pointer-events: none;
+  transition: border-color 0.3s;
+}
+.ticks::before,
+.ticks::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 10;
+  pointer-events: none;
+  background: linear-gradient(to right, #e6e6e6 0 1px, transparent 1px calc(100% - 1px), #e6e6e6 calc(100% - 1px));
+}
+.ticks::before {
+  top: 0;
+}
+.ticks::after {
+  bottom: 0;
+}
+.tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* their hover: the image breathes to 75% and back, 1s, for as long as it's hovered */
+.ticks:hover img,
+.ticks:focus-visible img {
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.75;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticks:hover img,
+  .ticks:focus-visible img {
+    animation: none;
+  }
+}
+
+/* below 1024 (their lg): 56px type, no view switch, categories across the row, one tile a row */
+@media (max-width: 1023px) {
+  .wrap {
+    gap: 36px;
+    margin-top: 64px;
+  }
+  .head h1,
+  .count {
+    font-size: 56px;
+    line-height: 52px;
+    letter-spacing: -2.24px;
+  }
+  .head h1 {
+    grid-column: 1 / 10;
+  }
+  .count {
+    grid-column: 10 / -1;
+    text-align: end;
+  }
+  .views {
+    display: none;
+  }
+  .cats {
+    grid-column: 1 / -1;
+  }
+  .cats button {
+    font-size: 28px;
+    line-height: 28px;
+    letter-spacing: -1.1px;
+  }
+  .grid {
+    row-gap: 32px;
+  }
+  .item {
+    grid-column: 1 / -1;
+  }
+}

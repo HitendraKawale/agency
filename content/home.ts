@@ -8,7 +8,7 @@ export const site = {
   nav: [
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
-    { label: "Showcase", href: "#" },
+    { label: "Showcase", href: "/showcase" },
     { label: "People", href: "#" },
     { label: "Blog", href: "#" },
     { label: "Lab", href: "#" },
@@ -93,7 +93,7 @@ export const home = {
     line: "Based in Mumbai and the UK, led by Aryan Kathawale and Hitendra Kawale.",
     actions: [
       { label: "Start a project", href: "#", variant: "primary" },
-      { label: "See the work", href: "#", variant: "quiet" },
+      { label: "See the work", href: "/showcase", variant: "quiet" },
     ],
     car: { src: "/f1/heatcar.html", title: "Heat render of a Formula 1 car" },
   },
@@ -142,7 +142,7 @@ export const home = {
       "Every brand starts with a strategy: the goals, the identity, the positioning and the way it speaks to its audience. It is the foundation for every decision that follows.",
       "We combine research, market knowledge and design, then carry the system into every touchpoint, so the brand reads as one finished whole.",
     ],
-    action: { label: "See the work", href: "#" },
+    action: { label: "See the work", href: "/showcase" },
     reel: [
       [
         img("wall-posters", 720, 480, "Blank posters on a concrete wall"),

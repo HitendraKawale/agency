@@ -4,7 +4,8 @@
 // Page links are next/link, so moving between pages keeps the layout (and the cursor synth's audio)
 // running instead of reloading.
 import Link from "next/link";
-import { home, site } from "@/content/home";
+import { site } from "@/content/home";
+import { showcase } from "@/content/showcase";
 import { HeatMark } from "@/components/ui/heat-mark";
 import { MusicToggle } from "./music-toggle";
 import { Online } from "./online";
@@ -14,7 +15,7 @@ const NOIR = [0.055, 0.055, 0.055] as const;
 
 export function Nav({ current }: { current?: (typeof site.nav)[number]["label"] }) {
   // superscript counts beside nav links, read from the content they point at
-  const counts: Partial<Record<string, number>> = { Showcase: home.work.projects.length };
+  const counts: Partial<Record<string, number>> = { Showcase: showcase.projects.length };
   return (
     <nav className={s.nav}>
       <HeatMark

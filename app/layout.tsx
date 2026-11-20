@@ -24,7 +24,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
-      <body>
+      {/* extensions such as Grammarly write attributes onto <body> before React hydrates */}
+      <body suppressHydrationWarning>
         {children}
         <SmoothScroll />
         <Realtime />

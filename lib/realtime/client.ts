@@ -24,6 +24,8 @@ type State = {
   msg: string;
 };
 
+// absolute in production (the deployed worker); "/_realtime" in dev, which next.config.ts forwards
+// to the local worker, so it works on whatever host the page came from (portless or a tunnel)
 const URL_ = process.env.NEXT_PUBLIC_REALTIME_URL;
 const PING = 25_000, HIDDEN = 10_000, MSG_FOR = 6_000;
 
@@ -104,7 +106,7 @@ export function connect() {
 
   const open = () => {
     if (!alive || ws || document.hidden) return;
-    const sock = (ws = new WebSocket(`${URL_}?id=${id}&tab=${tab}`));
+    const sock = (ws = new WebSocket(new URL(`${URL_}?id=${id}&tab=${tab}`, location.href.replace(/^http/, "ws"))));
     sent = null;
     sock.onmessage = (e) => {
       if (e.data === "pong") return void (waiting = false);

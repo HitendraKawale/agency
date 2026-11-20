@@ -1,0 +1,89 @@
+{
+ "tileCls": "group relative aspect-video max-w-[100%] will-change-[opacity,transform] after:pointer-events-none after:absolute after:inset-0 after:border after:border-brand-w1/20 after:transition-colors after:duration-300 hover:will-change-auto lg:h-full",
+ "tileAfter": {
+  "content": "\"\"",
+  "border": "1px solid rgba(230, 230, 230, 0.2)",
+  "inset": "0px",
+  "z": "auto"
+ },
+ "aAfter": {
+  "content": "\"\"",
+  "bg": "linear-gradient(to right, rgb(230, 230, 230) 0px, rgb(230, 230, 230) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) calc(100% - 1px), rgb(230, 230, 230) calc(100% - 1px), rgb(230, 230, 230) 100%)",
+  "border": "0px solid rgb(229, 231, 235)"
+ },
+ "aBefore": {
+  "content": "\"\"",
+  "bg": "linear-gradient(to right, rgb(230, 230, 230) 0px, rgb(230, 230, 230) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) calc(100% - 1px), rgb(230, 230, 230) calc(100% - 1px), rgb(230, 230, 230) 100%)"
+ },
+ "list": {
+  "cls": "grid-layout contain-layout !gap-y-8 lg:!gap-y-3",
+  "tag": "DIV",
+  "gtc": "12cols",
+  "gap": "12px",
+  "rowGap": "12px",
+  "pad": "0px 16px",
+  "y": 1257,
+  "h": 1423
+ },
+ "sec": {
+  "cls": "flex flex-col gap-2",
+  "tag": "SECTION",
+  "gtc": "1cols",
+  "gap": "8px",
+  "rowGap": "8px",
+  "pad": "0px",
+  "y": 1100,
+  "h": 1580
+ },
+ "secP": {
+  "cls": "flex scroll-m-4 flex-col gap-9 lg:gap-24",
+  "tag": "DIV",
+  "gtc": "1cols",
+  "gap": "96px",
+  "rowGap": "96px",
+  "pad": "0px",
+  "y": 916,
+  "h": 1764
+ },
+ "arts": [
+  [
+   16,
+   1257,
+   343,
+   193
+  ],
+  [
+   371,
+   1257,
+   343,
+   193
+  ],
+  [
+   726,
+   1257,
+   343,
+   193
+  ],
+  [
+   1081,
+   1257,
+   343,
+   193
+  ],
+  [
+   16,
+   1462,
+   343,
+   193
+  ],
+  [
+   371,
+   1462,
+   343,
+   193
+  ]
+ ],
+ "toggleRow": "<div class=\"col-span-1 hidden items-center gap-1 text-f-p text-brand-g1 lg:flex\"><button type=\"button\" role=\"checkbox\" aria-checked=\"true\" data-state=\"checked\" value=\"grid\" class=\"h-4 cursor-default text-brand-w1\"><span class=\"!flex items-center justify-center gap-1 underline\"><svg fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 12 12\" class=\"size-3\"><path d=\"M2 2h5v5H2zM7 7h3v3H7z\"></path></svg><span>Grid</span></span></button><span class=\"text-brand-g1\">,</span><button type=\"button\" role=\"checkbox\" aria-checked=\"false\" data-state=\"unchecked\" value=\"rows\" class=\"h-4 cursor-pointer text-brand-g1\"><span class=\"!flex items-center justify-center gap-1 actionable actionable-no-underline\"><svg fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 12 12\" class=\"size-3\"><path d=\"M1 4h10v1H1zM1 7h10v1H1z\"></path></svg><span>Rows</span></span></button></div>",
+ "toggleRowP": "grid-layout items-end pb-2",
+ "headToToggle": 1225
+}

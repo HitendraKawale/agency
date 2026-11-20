@@ -1,0 +1,9 @@
+(() => {
+ const pick=(e)=>{ if(!e) return null; const s=getComputedStyle(e), r=e.getBoundingClientRect(); return {tag:e.tagName, cls:e.className.toString().slice(0,160), text:(e.innerText||"").slice(0,40), x:Math.round(r.x), y:Math.round(r.y+scrollY), w:Math.round(r.width), h:Math.round(r.height), font:s.fontWeight+" "+s.fontSize+"/"+s.lineHeight+" "+s.fontFamily.slice(0,40), ls:s.letterSpacing, color:s.color, bg:s.backgroundColor, bT:s.borderTop, bR:s.borderRight, bB:s.borderBottom, bL:s.borderLeft, radius:s.borderRadius, gap:s.gap, gtc:s.gridTemplateColumns, pad:s.padding, mar:s.margin, display:s.display, dec:s.textDecorationLine} };
+ const by=(t,min)=>[...document.querySelectorAll("body *")].filter(e=>e.children.length===0 && e.innerText && e.innerText.trim()===t && (!min || parseFloat(getComputedStyle(e).fontSize)>min))[0];
+ const h1=by("Showcase",60), count=by("26",60), catLabel=by("Categories"), cat=by("Websites & Features"), cat2=by("Visual Branding"), grid=by("Grid"), rows=by("Rows");
+ const tile=[...document.querySelectorAll("a")].find(a=>/vercel/i.test(a.getAttribute("href")||"") && a.getBoundingClientRect().width>200);
+ const gridEl=tile && tile.parentElement;
+ const out={h1:pick(h1), h1p:pick(h1&&h1.parentElement), h1pp:pick(h1&&h1.parentElement.parentElement), count:pick(count), countP:pick(count&&count.parentElement), catLabel:pick(catLabel), cat:pick(cat), cat2:pick(cat2), catParent:pick(cat&&cat.parentElement), catPP:pick(cat&&cat.parentElement.parentElement), grid:pick(grid), gridParent:pick(grid&&grid.parentElement), gridPP:pick(grid&&grid.parentElement.parentElement), rows:pick(rows), tile:pick(tile), tileHTML: tile? tile.outerHTML.slice(0,2500):null, gridEl:pick(gridEl), gridElP:pick(gridEl&&gridEl.parentElement), body:pick(document.body)};
+ return JSON.stringify(out);
+})()
