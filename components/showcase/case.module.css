@@ -1,0 +1,31 @@
+/* basement's case study (reference/basement-case, measured at 1440 on 2026-11-21). Layout,
+   spacing and colours are Tailwind utilities in case.tsx; this file keeps what Tailwind has no
+   utility for. Type sets size, line height and tracking only, never the `font` shorthand. */
+
+/* the column fills the window under its 16px top, so More Projects sits at the bottom; below 1024
+   it stops sticking and takes its own height */
+.side {
+  height: calc(100vh - 32px);
+}
+@media (max-width: 1023px) {
+  .side {
+    height: auto;
+  }
+}
+
+/* 13/16: the column's text */
+.p {
+  font-size: 13px;
+  line-height: 16px;
+}
+/* 20/20, -0.4px: More Projects */
+.h4 {
+  font-size: 20px;
+  line-height: 20px;
+  letter-spacing: -0.4px;
+}
+
+/* Yoinkd's screen recording sits on the app's cream */
+.cream {
+  background: #f3eadb;
+}
