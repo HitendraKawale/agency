@@ -1,0 +1,260 @@
+/* basement's People page (capture 1440 wide, 2026-11): 16px gutters, three 462px thirds at 16, 489
+   and 963. Intro paragraphs 34/36 600; values: title in the left third, a near-square picture in
+   the middle, text 18/20 on the right; crew list 13/16 in the left third beside a picture grid;
+   positions table across the right two thirds. */
+
+/* The CRT wall, the services page's scroll-over in the middle of the page: the wall scrolls in,
+   holds the screen once its top reaches the top, and the rest of the page comes up over it as a
+   sheet (the services room does the same from the top of its page). The section is two screens
+   tall so the frame can stick for one; the sheet is pulled up by one screen so it starts rising
+   the moment the wall fills the screen. The page stops either side of the wall, so the wall runs
+   to both window edges. */
+.wall {
+  height: 200svh;
+  margin-top: 200px;
+}
+.wallFrame {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  background: #000;
+}
+.wallFrame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* the page after the wall: the sheet. Its colour runs to both window edges (shadow, clipped at the
+   top so it never covers the wall above the sheet). No nav above it, so no top padding. */
+.after {
+  position: relative;
+  z-index: 1;
+  margin-top: -100svh;
+  padding-top: 0;
+  background: var(--color-noir);
+  box-shadow: 0 0 0 100vmax var(--color-noir);
+  clip-path: inset(0 -100vmax -100vmax);
+}
+
+/* a picture, or the empty well that holds its place */
+.pic {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--color-tile);
+}
+
+/* "People" in the left third, two paragraphs in the middle and right thirds */
+.intro {
+  margin-top: 200px;
+  align-items: start;
+}
+.intro h1 {
+  grid-column: 1 / 5;
+}
+.intro p {
+  grid-column: span 4;
+  font-weight: 600;
+  font-size: clamp(22px, 2.36vw, 34px);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  color: var(--color-ink-2);
+  text-wrap: pretty;
+}
+
+.values {
+  row-gap: 56px;
+}
+.value {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: start;
+}
+.value h3 {
+  grid-column: 1 / 5;
+}
+.valuePic {
+  grid-column: 5 / 9;
+}
+.value p {
+  grid-column: 9 / -1;
+  font: 600 18px/1.12 var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--color-ink-2);
+}
+
+/* the title and count over the pictures; the list in the left third, level with the pictures */
+.crew {
+  align-items: start;
+  row-gap: 16px;
+}
+.crewHead {
+  grid-column: 5 / -1;
+  grid-row: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.crewHead span {
+  color: var(--color-ink-3);
+}
+.list {
+  grid-column: 1 / 5;
+  grid-row: 2;
+  list-style: none;
+  padding: 0;
+  font: 600 13px/16px var(--font-sans);
+  color: var(--color-ink-1);
+}
+.list li {
+  display: grid;
+  grid-template-columns: 9em 1fr auto;
+  gap: 12px;
+  padding: 4px 0 16px;
+}
+.links {
+  display: flex;
+  gap: 10px;
+}
+.links a {
+  color: var(--color-ink-1);
+  text-decoration: none;
+}
+.faces {
+  grid-column: 5 / -1;
+  grid-row: 2;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* two pictures in the left and middle thirds, the shorter one first, text on the right */
+.join {
+  align-items: start;
+}
+.joinA {
+  grid-column: 1 / 5;
+}
+.joinB {
+  grid-column: 5 / 9;
+}
+.join p {
+  grid-column: 9 / -1;
+  font: 600 18px/1.12 var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--color-ink-2);
+}
+.join a {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+/* title on the left, the table across the right two thirds; closed rows dim, open rows white */
+.positions {
+  align-items: start;
+}
+.positions h2 {
+  grid-column: 1 / 5;
+}
+.positions table {
+  grid-column: 5 / -1;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font: 600 13px/16px var(--font-sans);
+  color: var(--color-ink-4);
+}
+.positions th {
+  text-align: left;
+  padding-bottom: 14px;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-3);
+}
+.positions th:first-child {
+  width: 50%;
+}
+.positions td {
+  padding: 8px 0;
+  vertical-align: baseline;
+}
+.positions td:first-child {
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+.positions :is(th, td):last-child {
+  text-align: right;
+}
+.positions tr.open {
+  color: var(--color-ink);
+}
+.positions tr.open a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .wall {
+    margin-top: 130px;
+  }
+  .intro {
+    margin-top: 120px;
+    row-gap: 20px;
+  }
+  .intro h1,
+  .intro p,
+  .value h3,
+  .valuePic,
+  .value p,
+  .crewHead,
+  .list,
+  .faces,
+  .joinA,
+  .joinB,
+  .join p,
+  .positions h2,
+  .positions table {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+  .value {
+    row-gap: 20px;
+  }
+  .values {
+    row-gap: 64px;
+  }
+  .crew,
+  .join,
+  .positions {
+    row-gap: 24px;
+  }
+  .faces {
+    gap: 6px;
+  }
+  .list li {
+    grid-template-columns: 1fr auto;
+    row-gap: 2px;
+  }
+  .list li > :nth-child(2) {
+    grid-row: 2;
+    color: var(--color-ink-3);
+  }
+  .positions td:first-child {
+    font-size: 18px;
+  }
+  .positions :is(th, td):nth-child(3) {
+    display: none;
+  }
+  .positions th {
+    font-size: 16px;
+  }
+}

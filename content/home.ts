@@ -9,7 +9,7 @@ export const site = {
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
     { label: "Showcase", href: "/showcase" },
-    { label: "People", href: "#" },
+    { label: "People", href: "/people" },
     { label: "Blog", href: "#" },
     { label: "Lab", href: "#" },
   ],
