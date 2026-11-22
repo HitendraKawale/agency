@@ -8,7 +8,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { caseStudies, type CaseProject, type Frame } from "@/content/showcase";
+import { caseStudies, type CaseProject, type Frame, type Quote } from "@/content/showcase";
 import s from "./case.module.css";
 
 const arrow = "size-4 flex-none fill-none stroke-current";
@@ -22,6 +22,7 @@ export function CaseStudy({ project }: { project: CaseProject }) {
   const site = "site" in project ? project.site : undefined;
 
   return (
+    <>
     <div className="grid-12 mt-4 items-start">
       <aside
         className={cn(s.side, s.p, "sticky top-4 col-start-1 col-end-3 flex flex-col gap-4 font-semibold max-lg:static max-lg:col-span-full max-lg:mb-12")}
@@ -56,7 +57,7 @@ export function CaseStudy({ project }: { project: CaseProject }) {
           {site && (
             <li>
               <span className="text-ink-3">Link</span>
-              <a className="col-span-3 hover:underline" href={site.href} target="_blank" rel="noreferrer">{site.label}</a>
+              <a className="col-span-3 min-w-0 wrap-anywhere hover:underline" href={site.href} target="_blank" rel="noreferrer">{site.label}</a>
             </li>
           )}
         </ul>
@@ -83,12 +84,67 @@ export function CaseStudy({ project }: { project: CaseProject }) {
         </nav>
       </aside>
 
-      <div className="col-start-3 col-end-13 grid grid-cols-2 gap-2 max-lg:col-span-full max-lg:grid-cols-1">
-        {project.run.map((f, i) => (
-          <RunFrame key={i} frame={f} full={isFull(i, project.run.length)} eager={i < 2} />
-        ))}
+      <div className="col-start-3 col-end-13 max-lg:col-span-full">
+        <div className="grid grid-cols-2 gap-2 max-lg:grid-cols-1">
+          {project.run.map((f, i) => (
+            <RunFrame key={i} frame={f} full={isFull(i, project.run.length)} eager={i < 2} />
+          ))}
+        </div>
       </div>
     </div>
+    {"brief" in project && <Brief brief={project.brief} />}
+    {"quote" in project && <ClientQuote quote={project.quote} />}
+    </>
+  );
+}
+
+// the write-up under the run, in basement's Services article idiom: a #757575 heading at 24/24, the
+// text under it, three across
+function Brief({ brief }: { brief: { brand: string; needed: string; built: string } }) {
+  const parts = [
+    ["The brand", brief.brand],
+    ["What it needed", brief.needed],
+    ["What we built", brief.built],
+  ] as const;
+  return (
+    <section className="grid-12 mt-44 gap-y-12 font-semibold max-lg:mt-24" aria-label="About the project">
+      {parts.map(([title, text]) => (
+        <article key={title} className="col-span-4 flex flex-col gap-3 max-lg:col-span-full">
+          <h2 className={cn(s.h3, "text-ink-3")}>{title}</h2>
+          <p className={cn(s.doc, "text-pretty text-ink-2")}>{text}</p>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+// basement's one quote, copied from their Services page (reference/basement-quote, measured at 1440
+// and 390 on 2026-11-22): the words across the full width at 56/52 (theirs is 76/68; the user asked for smaller) with a #2E2E2E rule under every
+// line, then 32px below, centred, a 96px square portrait with dots at its corners beside the name and
+// role. The portrait is the person's photo in black and white, as basement's is; until it arrives
+// there is no square.
+function ClientQuote({ quote }: { quote: Quote }) {
+  return (
+    <figure className="grid-12 mt-44 gap-y-8 font-semibold max-lg:mt-24">
+      <blockquote className={cn(s.lines, "col-span-full")}>
+        <p className={cn(s.quote, "relative z-10 mx-auto max-w-[1440px] text-center text-ink-1")}>
+          &ldquo;{quote.words}&rdquo;
+        </p>
+      </blockquote>
+      <figcaption className="col-span-full mx-auto flex gap-x-4 lg:col-start-3 lg:col-end-11">
+        {quote.photo && (
+          <div className={s.dots}>
+            <div className="after:pointer-events-none after:absolute after:inset-0 after:border after:border-ink-1/20">
+              <Image src={quote.photo} alt="" width={192} height={192} sizes="96px" className="size-16 object-cover grayscale lg:size-24" />
+            </div>
+          </div>
+        )}
+        <div className={cn(s.who, "flex flex-col justify-center gap-1")}>
+          <p className="text-ink-1">{quote.by ?? "Name to confirm"}</p>
+          <p className="text-ink-3">{quote.role ? `${quote.role} at ${quote.org}` : quote.org}</p>
+        </div>
+      </figcaption>
+    </figure>
   );
 }
 

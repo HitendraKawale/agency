@@ -28,6 +28,22 @@ export type Project = {
   /** the case study's paragraphs, about 100 words in all */
   story: readonly string[];
   run: readonly Frame[];
+  /** the write-up under the run: who the client is, what the job needed, what we built */
+  brief?: { brand: string; needed: string; built: string };
+  /** the client's words, set at the end of the case study */
+  quote?: Quote;
+};
+
+/** A client's review. Every one is our draft until that client signs off its words, name, role and photo;
+ *  until then `by` is missing and the page says "Name to confirm". */
+export type Quote = {
+  words: string;
+  /** the organisation, as the client names it */
+  org: string;
+  by?: string;
+  role?: string;
+  /** the person's photo, square, in public/showcase/people; the page shows it in black and white */
+  photo?: string;
 };
 
 const tile = (slug: string, name: string): Frame => ({ kind: "image", src: `/showcase/tiles/${slug}.webp`, alt: `${name} mark` });
@@ -40,6 +56,12 @@ export const showcase = {
     {
       name: "Parflow Engineering",
       slug: "parflow",
+      brief: {
+        brand: "Parflow Engineering makes instrumentation tube fittings, valves and manifolds in Mumbai for oil and gas, refining, power and chemical plants. One engineering blue, #0B5CFF, carries the brand, with heavy capitals for headlines and a layout taken from the datasheets engineers already read.",
+        needed: "The old site ran on a WordPress theme. Parflow needed every product online with its exact part numbers, a way for an engineer to ask for a quote on several parts at once, and an admin the team could run without a developer.",
+        built: "A Next.js 16 site on Vercel, every page prerendered. The catalogue holds 92 products, each traced to its source specification tables and part numbers. An enquiry basket gathers rows from several products into one quote request. The admin manages products, posts and enquiries, on Neon Postgres and Vercel Blob. Live since 30 July 2026.",
+      },
+      quote: { words: "Blank changed how the world finds Parflow. Our website finally feels as precise as the parts we make.", org: "Parflow Engineering", by: "Kunal Parikh" },
       categories: ["Websites", "Brand identity"],
       year: 2026,
       site: { href: "https://parflowengineering.com/", label: "parflowengineering.com" },
@@ -54,6 +76,7 @@ export const showcase = {
         montage("parflow", "Parflow"),
         shot("parflow", "products", "Parflow's products section, needle valves in a row"),
         shot("parflow", "vision", "The world's critical flows run on Parflow"),
+        { kind: "video", src: "/showcase/parflow/stack.mp4", poster: "/showcase/parflow/stack.jpg", alt: "Parflow moved from WordPress to Next.js 16 on Vercel: 99.99% uptime, every page prerendered" },
         shot("parflow", "hero", "Parflow's home page, precision flow control solutions"),
         shot("parflow", "ratings", "What the range is rated for, 10,000 psi and -196 °C"),
         shot("parflow", "insights", "Parflow's blogs and case studies"),
@@ -63,6 +86,12 @@ export const showcase = {
     {
       name: "Organic Foods",
       slug: "organic",
+      quote: { words: "We brought Blank our eggs. They gave us a brand we're proud to put on every carton.", org: "Organic Foods", by: "Vivek Mengji" },
+      brief: {
+        brand: "Organic Foods sells eggs. When they came to us they had the eggs and a name, and nothing else: no mark, no colours, no packaging, no store.",
+        needed: "A whole brand, from the first idea, and a website people could order from.",
+        built: "The egg mark, the green #20472E and the cream #F4F0DF, Fraunces for type, and the kraft carton with its green band. The site follows one egg from the box to the breakfast plate, then sells it: a storefront, checkout, and an admin where staff handle the orders. Built with Astro, React and PostgreSQL.",
+      },
       categories: ["Brand identity", "Websites"],
       year: 2026,
       site: { href: "https://organic-market-eight.vercel.app/", label: "organic-market-eight.vercel.app" },
@@ -87,6 +116,12 @@ export const showcase = {
     {
       name: "Relay, Manaslu Labs",
       slug: "relay",
+      quote: { words: "Blank gave Relay a look as memorable as what it does. Nobody forgets the pixels.", org: "Manaslu Labs", by: "codimow" },
+      brief: {
+        brand: "Relay, from Manaslu Labs, remembers the fixes a coding agent's model makes and replays them, verified, so the model stops paying to rediscover them.",
+        needed: "A look as particular as the product. The product asked for 8-bit, and the research had to read clearly inside it.",
+        built: "A brand built from pixels: orange fields that drift across the page, small pixel creatures, Space Grotesk, and diagrams of how a fix is watched, learned, transferred and verified. We did the research, the brand and the site at relay.manaslulabs.xyz.",
+      },
       categories: ["Research", "Brand identity", "Websites"],
       year: 2026,
       site: { href: "https://relay.manaslulabs.xyz/", label: "relay.manaslulabs.xyz" },
@@ -111,6 +146,12 @@ export const showcase = {
     {
       name: "Moneybee",
       slug: "moneybee",
+      quote: { words: "Blank kept the brand we loved, and gave it the website it deserved.", org: "Moneybee", by: "Shreyam Shah" },
+      brief: {
+        brand: "Moneybee is a SEBI-registered portfolio manager. They back small Indian companies, and invest only after meeting the management and visiting the plants. Six of Us designed their brand: the bee, the hive and the orange, #F6A11A.",
+        needed: "A new website without a new brand. Moneybee liked their identity and wanted to keep it.",
+        built: "A Next.js 16 site on Vercel, set in Rethink Sans, built inside the brand Six of Us made. Their record is drawn in the brand's own shapes: returns by year as hives, and Rs. 10 lakh invested in 2007 compounded against the index. It runs at moneybee.in.",
+      },
       categories: ["Websites", "Brand identity"],
       year: 2026,
       site: { href: "https://moneybee.in/", label: "moneybee.in" },
@@ -134,6 +175,12 @@ export const showcase = {
     {
       name: "Rainpulse",
       slug: "rainpulse",
+      quote: { words: "Blank found colours for the way we think. Rainpulse finally looks like our research.", org: "Rainpulse", by: "Shuji Iwata" },
+      brief: {
+        brand: "Rainpulse is two engineers in Osaka who take AI and software from an unsettled idea to a system in daily use. Their work starts as research.",
+        needed: "New colours that keep the research voice, and a site that shows how they work.",
+        built: "A set of five colours, from blue #2F55E4 to red #D7261E, and a site drawn as a field of live dots: rain, wind, terrain and a helix, all on one shared canvas. Each service has its own figure. Built with SvelteKit, GSAP and Lenis, set in Geist.",
+      },
       categories: ["Research", "Brand identity", "Websites"],
       year: 2026,
       site: { href: "https://rainpulse-six.vercel.app/", label: "rainpulse-six.vercel.app" },
@@ -156,9 +203,15 @@ export const showcase = {
     {
       name: "Ralsonics",
       slug: "ralsonics",
+      brief: {
+        brand: "Ralsonics has built industrial cleaning and surface treatment systems for over 50 years, each one engineered around the component, the contaminant and the production line. The brand is their blue, #3D82C4, on a warm white, with a line drawing for each step of their process.",
+        needed: "The old site ran on WordPress 6.7 with the WPBakery page builder. Everything on it had to move across: 93 posts, 28 products, 29 industry pages and the gallery. The team also needed one place to manage products, jobs, enquiries and exhibitions.",
+        built: "One Next.js 16 application on Vercel holds the site and a private admin. The content lives in Neon Postgres and the uploads in Vercel Blob; nothing from WordPress is left. Every page is prerendered. In the footer, the mark comes apart into a cleaning arm, works a part and closes back into the mark.",
+      },
+      quote: { words: "Blank reworked our relationship with the internet, and gave Ralsonics a home on it.", org: "Ralsonics", by: "Kunal Parikh" },
       categories: ["Websites", "Brand identity"],
       year: 2026,
-      site: { href: "https://ralsonics-engineering.vercel.app/", label: "ralsonics-engineering.vercel.app" },
+      site: { href: "https://www.ralsonics.com/", label: "ralsonics.com" },
       montage: "/showcase/ralsonics/montage.mp4",
       story: [
         "Ralsonics has built industrial cleaning and surface treatment systems for over 50 years. Every machine is engineered around the component, the contaminant and the production line.",
@@ -174,6 +227,7 @@ export const showcase = {
         { kind: "video", src: "/showcase/ralsonics/footer.mp4", poster: "/showcase/ralsonics/footer.jpg", alt: "The Ralsonics footer mark becoming a cleaning arm and back" },
         shot("ralsonics", "products", "Cleaning and surface treatment, ultrasonics, drying"),
         shot("ralsonics", "services", "Contract designing and contract manufacturing"),
+        { kind: "video", src: "/showcase/ralsonics/stack.mp4", poster: "/showcase/ralsonics/stack.jpg", alt: "Ralsonics moved from WordPress to Next.js 16 on Vercel: 99.99% uptime, every page prerendered" },
         shot("ralsonics", "evaluation", "Component and process evaluation, drawn"),
         shot("ralsonics", "testing", "System integration and internal testing, drawn"),
         shot("ralsonics", "commissioning", "Delivery, installation and site commissioning, drawn"),
@@ -182,6 +236,12 @@ export const showcase = {
     {
       name: "Kitse",
       slug: "kitse",
+      quote: { words: "Blank built Kitse a site that feels like the first day of the trip.", org: "Kitse", by: "Mayank Bisht" },
+      brief: {
+        brand: "Kitse plans holidays across India and beyond: Kashmir, Kerala, Ladakh, Bali.",
+        needed: "A site that starts where a traveller starts, with a search for the trip.",
+        built: "The trip search sits on the first screen, over their hero film. Under it come the destinations, featured packages and occasion specials, on dark green #181A18 with a warm #D99865, set in Rethink Sans.",
+      },
       categories: ["Websites"],
       year: 2026,
       site: { href: "https://www.kitse.in/", label: "kitse.in" },
@@ -203,6 +263,12 @@ export const showcase = {
     {
       name: "Yoinkd",
       slug: "yoinkd",
+      quote: { words: "Yoinkd feels like it came with the phone. Share a link, and it's yours.", org: "Yoinkd", by: "Mayank Bisht" },
+      brief: {
+        brand: "Yoinkd is our own iPhone app, a native take on Pablo Stanley's Yoinks. The ember icon and the lockup are ours.",
+        needed: "Downloads that run on the phone itself, with no server, in an app that feels native to iOS.",
+        built: "Swift and SwiftUI, with native tabs and glass controls. Share a link, pick video or audio and a quality, and it downloads. It has an artwork-first audio player, video with fullscreen, and six themes: Neutral, Sage, Lavender, Amber, Ocean and Dynamic.",
+      },
       categories: ["Apps", "Brand identity"],
       year: 2026,
       montage: "/showcase/yoinkd/montage.mp4",

@@ -108,7 +108,7 @@ export const home = {
       { kind: "logo", href: "https://relay.manaslulabs.xyz/", src: "/logos/manaslu.webp", alt: "Manaslu Labs", aspect: 5.71 },
       { kind: "logo", href: "https://rainpulse-six.vercel.app/", src: "/logos/rainpulse.svg", alt: "Rainpulse", aspect: 8.56, height: 48 },
       { kind: "logo", href: "https://parflowengineering.com/", src: "/logos/parflow.svg", alt: "Parflow Engineering", aspect: 4.69 },
-      { kind: "logo", href: "https://ralsonics-engineering.vercel.app/", src: "/logos/ralsonics.webp", alt: "Ralsonics", aspect: 3.72 },
+      { kind: "logo", href: "https://www.ralsonics.com/", src: "/logos/ralsonics.webp", alt: "Ralsonics", aspect: 3.72 },
       { kind: "logo", href: "https://moneybee-virid.vercel.app/", src: "/logos/moneybee.svg", alt: "Moneybee", aspect: 3.27 },
       { kind: "organic", href: "https://organic-market-eight.vercel.app/", src: "/logos/organic-symbol.svg", label: "Organic Foods", lines: ["organic", "foods"] },
     ],
