@@ -1,12 +1,13 @@
-// /people, basement's People page in our look (basement.studio/people, capture in
-// .plannotator/brand-v1/reference/basement/people.png). Columns at 1440 map onto our 12: the left
+// /people, basement's People page in our look (basement.studio/people, measured live at 1440 on
+// 2026-11-22, .plannotator/people/basement/layout.txt). Columns at 1440 map onto our 12: the left
 // third (titles, the crew list), the middle third (pictures) and the right third (text).
-// Left out by our rules: the rules between rows and table lines, the A-Z and group labels.
+// Left out by our rules: the rules between rows and table lines.
 import { site } from "@/content/home";
 import { people, type Picture } from "@/content/people";
+import { CrewBoard } from "./crew-list";
 import s from "./people.module.css";
 
-/** the picture, or an empty well at its shape until it is made */
+/** the photo (in black and white), or an empty well at its size until it arrives */
 function Pic({ p, className }: { p: Picture; className?: string }) {
   const cls = `${s.pic} ${className ?? ""}`;
   if (!p.src) return <div className={cls} style={{ aspectRatio: `${p.width} / ${p.height}` }} aria-hidden />;
@@ -19,7 +20,7 @@ export function PeopleIntro() {
   const { title, text } = people.intro;
   return (
     <header className={`grid-12 ${s.intro}`}>
-      <h1 className="big-type" data-intro="fade" data-delay="0.5">{title}</h1>
+      <h1 data-intro="fade" data-delay="0.5">{title}</h1>
       {text.map((t, i) => (
         <p key={t} data-intro="fade" data-delay={(0.7 + i * 0.1).toFixed(1)}>{t}</p>
       ))}
@@ -44,33 +45,14 @@ export function PeopleValues() {
 }
 
 export function PeopleCrew() {
-  const { title, people: crew } = people.crew;
+  const { title, join, people: crew } = people.crew;
   return (
     <section className={`section grid-12 ${s.crew}`} aria-labelledby="crew-title">
       <div className={s.crewHead} data-reveal="fade">
         <h2 className="big-type" id="crew-title">{title}</h2>
         <span className="big-type" aria-label={`${crew.length} people`}>{crew.length}</span>
       </div>
-      <ul className={s.list} data-reveal="fade">
-        {crew.map((p) => (
-          <li key={p.name}>
-            <span>{p.name}</span>
-            <span>{p.role}</span>
-            <span className={s.links}>
-              {p.links.map((l) => (
-                <a key={l.href} className="tube" href={l.href} target="_blank" rel="noreferrer">{l.label}</a>
-              ))}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <ul className={s.faces} data-reveal="lift">
-        {crew.map((p) => (
-          <li key={p.name}>
-            <Pic p={p.picture} />
-          </li>
-        ))}
-      </ul>
+      <CrewBoard crew={crew} join={join} />
     </section>
   );
 }

@@ -1,7 +1,9 @@
-/* basement's People page (capture 1440 wide, 2026-11): 16px gutters, three 462px thirds at 16, 489
-   and 963. Intro paragraphs 34/36 600; values: title in the left third, a near-square picture in
-   the middle, text 18/20 on the right; crew list 13/16 in the left third beside a picture grid;
-   positions table across the right two thirds. */
+/* basement's People page, measured live at 1440 (2026-11-22): three 461px thirds at 16, 489 and
+   963. "People" 98/88, intro 38/36. Values: label 24, then rows 494 apart, each a 76/68 title, a
+   461 square photo and 20/20 text. The Crew: 76/68 title and count over a six-across grid of
+   149x171 portraits, 8 apart; beside it the list, 13/16 rows under 20/20 group names. Joining:
+   photos 461x624 and 461x750 side by side, 20/20 text. Positions: 76/68 title, the table across
+   the right two thirds. Sections about 200 apart. */
 
 /* The CRT wall, the services page's scroll-over in the middle of the page: the wall scrolls in,
    holds the screen once its top reaches the top, and the rest of the page comes up over it as a
@@ -38,14 +40,15 @@
   clip-path: inset(0 -100vmax -100vmax);
 }
 
-/* a picture, or the empty well that holds its place */
+/* a photo, or the empty well that holds its place; basement's photos are black and white with
+   square corners */
 .pic {
   display: block;
   width: 100%;
   height: auto;
   object-fit: cover;
-  border-radius: 14px;
   background: var(--color-tile);
+  filter: grayscale(1);
 }
 
 /* "People" in the left third, two paragraphs in the middle and right thirds */
@@ -55,19 +58,27 @@
 }
 .intro h1 {
   grid-column: 1 / 5;
+  font-weight: 600;
+  font-size: clamp(56px, 6.8vw, 98px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--color-ink-2);
 }
 .intro p {
   grid-column: span 4;
   font-weight: 600;
-  font-size: clamp(22px, 2.36vw, 34px);
-  line-height: 1.06;
-  letter-spacing: -0.03em;
+  font-size: clamp(24px, 2.64vw, 38px);
+  line-height: 0.947;
+  letter-spacing: -0.04em;
   color: var(--color-ink-2);
   text-wrap: pretty;
 }
 
 .values {
-  row-gap: 56px;
+  row-gap: 33px;
+}
+.values > h2 {
+  margin-bottom: 33px;
 }
 .value {
   grid-column: 1 / -1;
@@ -83,15 +94,15 @@
 }
 .value p {
   grid-column: 9 / -1;
-  font: 600 18px/1.12 var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 600 20px/1 var(--font-sans);
+  letter-spacing: -0.02em;
   color: var(--color-ink-2);
 }
 
 /* the title and count over the pictures; the list in the left third, level with the pictures */
 .crew {
   align-items: start;
-  row-gap: 16px;
+  row-gap: 12px;
 }
 .crewHead {
   grid-column: 5 / -1;
@@ -103,19 +114,72 @@
 .crewHead span {
   color: var(--color-ink-3);
 }
+/* the list's first heading sits just above the first row of portraits (pulled up by its own
+   height), the rows alongside them */
 .list {
   grid-column: 1 / 5;
   grid-row: 2;
-  list-style: none;
-  padding: 0;
+  margin-top: -25px;
   font: 600 13px/16px var(--font-sans);
   color: var(--color-ink-1);
 }
-.list li {
+.list ul {
+  list-style: none;
+  padding: 0;
+}
+.list li,
+.listHead {
   display: grid;
-  grid-template-columns: 9em 1fr auto;
-  gap: 12px;
-  padding: 4px 0 16px;
+  grid-template-columns: 109px 1fr auto;
+  column-gap: 8px;
+}
+.list li {
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+/* basement's hover: the row and its portrait share a fine diagonal hatch, the row in white */
+.list li[data-on],
+.faces li[data-on]::after {
+  background: repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.09) 0 1px, transparent 1px 7px);
+}
+.list li[data-on] {
+  color: var(--color-ink);
+}
+.faces li {
+  position: relative;
+}
+.faces li[data-on]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.faces li[data-on] .pic {
+  filter: grayscale(1) brightness(1.25);
+}
+.group + .group {
+  margin-top: 20px;
+}
+.listHead {
+  margin-bottom: 5px;
+  font: 600 20px/20px var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--color-ink-3);
+}
+.listHead h3 {
+  font: inherit;
+  grid-column: 2 / -1;
+}
+.az {
+  justify-self: start;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  transition: color 0.2s;
+}
+.az:hover,
+.az[aria-pressed="true"] {
+  color: var(--color-ink-1);
 }
 .links {
   display: flex;
@@ -131,8 +195,20 @@
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
+}
+.joinTile {
+  background: var(--color-tile);
+}
+.joinTile a {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 100px;
+  font: 600 13px/16px var(--font-sans);
+  color: var(--color-ink-1);
+  text-decoration: none;
 }
 
 /* two pictures in the left and middle thirds, the shorter one first, text on the right */
@@ -146,10 +222,10 @@
   grid-column: 5 / 9;
 }
 .join p {
-  grid-column: 9 / -1;
-  font: 600 18px/1.12 var(--font-sans);
-  letter-spacing: -0.01em;
-  color: var(--color-ink-2);
+  grid-column: 9 / 12;
+  font: 600 20px/1 var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--color-ink-1);
 }
 .join a {
   color: var(--color-ink);
@@ -238,11 +314,29 @@
     row-gap: 24px;
   }
   .faces {
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
+  }
+  .joinTile {
+    grid-column: 1 / -1 !important;
+  }
+  .list {
+    margin-top: 0;
+  }
+  .intro p {
+    font-size: 24px;
+    line-height: 1;
+  }
+  .join p {
+    grid-column: 1 / -1;
   }
   .list li {
     grid-template-columns: 1fr auto;
     row-gap: 2px;
+  }
+  .listHead {
+    grid-template-columns: auto 1fr;
+    column-gap: 16px;
   }
   .list li > :nth-child(2) {
     grid-row: 2;
@@ -256,5 +350,9 @@
   }
   .positions th {
     font-size: 16px;
+  }
+  /* later groups have an empty cell where A-Z sits on the first; on a phone it would indent them */
+  .listHead > span:empty {
+    display: none;
   }
 }
