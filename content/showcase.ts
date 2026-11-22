@@ -116,7 +116,7 @@ export const showcase = {
     {
       name: "Relay, Manaslu Labs",
       slug: "relay",
-      quote: { words: "Blank gave Relay a look as memorable as what it does. Nobody forgets the pixels.", org: "Manaslu Labs", by: "codimow" },
+      quote: { words: "Blank gave Relay a look as memorable as what it does. Nobody forgets the pixels.", org: "Manaslu Labs", by: "Himansu Rawal", photo: "/showcase/people/himansu-rawal.webp" },
       brief: {
         brand: "Relay, from Manaslu Labs, remembers the fixes a coding agent's model makes and replays them, verified, so the model stops paying to rediscover them.",
         needed: "A look as particular as the product. The product asked for 8-bit, and the research had to read clearly inside it.",
@@ -146,7 +146,7 @@ export const showcase = {
     {
       name: "Moneybee",
       slug: "moneybee",
-      quote: { words: "Blank kept the brand we loved, and gave it the website it deserved.", org: "Moneybee", by: "Shreyam Shah" },
+      quote: { words: "Blank kept the brand we loved, and gave it the website it deserved.", org: "Moneybee", by: "Shreyam Shah", photo: "/showcase/people/shreyam-shah.webp" },
       brief: {
         brand: "Moneybee is a SEBI-registered portfolio manager. They back small Indian companies, and invest only after meeting the management and visiting the plants. Six of Us designed their brand: the bee, the hive and the orange, #F6A11A.",
         needed: "A new website without a new brand. Moneybee liked their identity and wanted to keep it.",
@@ -175,7 +175,7 @@ export const showcase = {
     {
       name: "Rainpulse",
       slug: "rainpulse",
-      quote: { words: "Blank found colours for the way we think. Rainpulse finally looks like our research.", org: "Rainpulse", by: "Shuji Iwata" },
+      quote: { words: "Blank found colours for the way we think. Rainpulse finally looks like our research.", org: "Rainpulse", by: "Shuji Iwata", photo: "/showcase/people/shuji-iwata.webp" },
       brief: {
         brand: "Rainpulse is two engineers in Osaka who take AI and software from an unsettled idea to a system in daily use. Their work starts as research.",
         needed: "New colours that keep the research voice, and a site that shows how they work.",
