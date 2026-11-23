@@ -3,7 +3,7 @@
 
 export const site = {
   name: "Blank Interfaces",
-  email: "aryan@blankinterface.com",
+  email: "aryan@blankinterfaces.com",
   // basement's nav, in their order
   nav: [
     { label: "Home", href: "/" },
