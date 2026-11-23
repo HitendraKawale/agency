@@ -3,6 +3,7 @@
 
 export const site = {
   name: "Blank Interfaces",
+  url: "https://blankinterfaces.com",
   email: "aryan@blankinterfaces.com",
   // basement's nav, in their order
   nav: [
@@ -251,13 +252,13 @@ export const home = {
   },
 
   footer: {
-    // not the nav again. MACHINE will be the agent-readable view (llms.txt and a .md for each page)
+    // not the nav again. MACHINE is the agent-readable view: /ai pages, a .md for each page, llms.txt
     links: [
       { label: "About", href: "#" },
       { label: "Manifesto", href: "#" },
       { label: "Terms", href: "#" },
       { label: "Privacy", href: "#" },
-      { label: "MACHINE", href: "#" },
+      { label: "MACHINE", href: "/ai/home" },
     ],
     copyright: "© 2026 Blank Interfaces",
   },
