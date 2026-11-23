@@ -4,11 +4,14 @@
 @import "lenis/dist/lenis.css";
 
 @custom-variant dark (&:is(.dark *));
+/* only while the intro plays: app/layout.tsx puts .intro on <html> unless reduced motion or ?still */
+@custom-variant intro (&:where(.intro *));
 
-/* Fonts come from next/font in app/layout.tsx as --font-geist and --font-fraunces. */
+/* Fonts come from next/font in app/layout.tsx as --font-geist, --font-fraunces and --font-geist-mono. */
 @theme inline {
   --font-sans: var(--font-geist), sans-serif;
   --font-serif: var(--font-fraunces), serif;
+  --font-mono: var(--font-geist-mono), monospace;
   --color-background: var(--color-noir);
   --color-foreground: var(--color-ink);
 }
@@ -29,9 +32,30 @@
   --color-ink-4: #4a4a4a; /* the "not" half of the principles */
   --color-muted: rgb(255 255 255 / 0.72);
   --color-faint: rgb(255 255 255 / 0.5);
+  --color-sandpaper: #f1efeb; /* the Rerun neutral; the machine view's bright tone */
 
   /* the one curve the whole page moves on; GSAP registers it as "out" (lib/motion/gsap.ts) */
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The machine view's intro (components/machine): a ground-coloured sheet steps down out of view
+   while the content flickers in. Timings from basement (reference/basement-machine/0mqjjonkx9iz9.css). */
+@theme {
+  --animate-machine-reveal: machine-reveal 1.4s steps(32, end) forwards;
+  --animate-machine-flicker: machine-flicker 0.18s steps(3, end);
+  @keyframes machine-reveal {
+    to {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes machine-flicker {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
 }
 
 @layer base {
