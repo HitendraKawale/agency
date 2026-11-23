@@ -38,6 +38,11 @@ export function Hero() {
       </div>
 
       <div className={s.panel} data-intro="lift" data-delay="1.45">
+        {/* the car's first frame, until the live car has loaded and fades in over it */}
+        <picture>
+          <source media="(max-width: 760px)" srcSet={car.poster.tall} />
+          <img src={car.poster.wide} alt="" fetchPriority="high" />
+        </picture>
         <CarFrame src={car.src} title={car.title} />
       </div>
     </>

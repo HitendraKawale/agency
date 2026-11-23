@@ -24,7 +24,8 @@ export type HomeContent = {
     headline: string;
     line: string;
     actions: { label: string; href: string; variant: "primary" | "quiet" }[];
-    car: { src: string; title: string };
+    /** the live car page, and its first frame as stills (desktop 16:8.64, mobile 4:5.4) shown until it loads */
+    car: { src: string; title: string; poster: { wide: string; tall: string } };
   };
   trusted: {
     title: string;
@@ -95,7 +96,11 @@ export const home = {
       { label: "Start a project", href: "#", variant: "primary" },
       { label: "See the work", href: "/showcase", variant: "quiet" },
     ],
-    car: { src: "/f1/heatcar.html", title: "Heat render of a Formula 1 car" },
+    car: {
+      src: "/f1/heatcar.html",
+      title: "Heat render of a Formula 1 car",
+      poster: { wide: "/f1/poster/wide.webp", tall: "/f1/poster/tall.webp" },
+    },
   },
 
   trusted: {
@@ -103,7 +108,7 @@ export const home = {
     clients: [
       // official marks with the name beside them: the State Emblem (Wikimedia, line engraving) and the
       // Mumbai Police badge (mumbaipolice.gov.in, white parts cut out so it stays one colour)
-      { kind: "official", variant: "goi", src: "/logos/emblem-of-india.svg", label: "Government of India", lines: ["Government", "of India"] },
+      { kind: "official", variant: "goi", src: "/logos/emblem-of-india.webp", label: "Government of India", lines: ["Government", "of India"] },
       { kind: "official", variant: "cid", src: "/logos/mumbai-police.png", label: "CID, Mumbai Police", lines: ["CID"] },
       { kind: "logo", href: "https://relay.manaslulabs.xyz/", src: "/logos/manaslu.webp", alt: "Manaslu Labs", aspect: 5.71 },
       { kind: "logo", href: "https://rainpulse-six.vercel.app/", src: "/logos/rainpulse.svg", alt: "Rainpulse", aspect: 8.56, height: 48 },

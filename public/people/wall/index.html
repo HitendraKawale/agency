@@ -22,8 +22,8 @@
 </style>
 <script type="importmap">
 { "imports": {
-  "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-  "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+  "three": "/vendor/three@0.170.0/build/three.module.min.js",
+  "three/addons/": "/vendor/three@0.170.0/examples/jsm/"
 } }
 </script>
 </head><body>
@@ -45,20 +45,11 @@ const FIXED_T = qs.has("t") ? parseFloat(qs.get("t")) : matchMedia("(prefers-red
 // Every clip the sets play: one montage per Showcase project, our own scenes, and our registry
 // components (ui.aryank.space) recorded at 4:3 by .plannotator/people/tv-clips/record.sh.
 const COMPONENTS = ["ascii-monogram-hero", "ascii-tv-hero", "cassette-tower", "drone-fleet", "fluid-refraction", "glyph-rain", "halftone-wave-hero", "lava-particle-field", "neon-iceberg", "odometer-load-hero", "particle-fluid-hero", "phatake", "pixel-cube-field", "pixel-smear-wordmark", "plasma-tunnel-background", "prism-light-instrument", "unfocused"];
+// The montages and scenes are the wall's own small copies (scripts/wall-clips.sh): 480px wide,
+// since no screen here is much bigger than that.
 const CLIPS = [
-  "/showcase/parflow/montage.mp4",
-  "/showcase/organic/montage.mp4",
-  "/showcase/relay/montage.mp4",
-  "/showcase/moneybee/montage.mp4",
-  "/showcase/rainpulse/montage.mp4",
-  "/showcase/ralsonics/montage.mp4",
-  "/showcase/kitse/montage.mp4",
-  "/showcase/yoinkd/montage.mp4",
-  "/showcase/gov/montage.mp4",
-  "/services/3d-bunker.mp4",
-  "/services/3d-neon-sign.mp4",
-  "/services/web-tunnel.mp4",
-  "/services/web-dissolve.mp4",
+  ...["parflow", "organic", "relay", "moneybee", "rainpulse", "ralsonics", "kitse", "yoinkd", "gov",
+    "3d-bunker", "3d-neon-sign", "web-tunnel", "web-dissolve"].map((n) => `/people/wall/clips/${n}.mp4`),
   ...COMPONENTS.map((n) => `/people/clips/${n}.mp4`),
 ];
 

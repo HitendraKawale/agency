@@ -15,8 +15,9 @@
 //   engraving  BI is cut into the luminous slab's top face as geometry, so it belongs to the slab.
 //              That slab sits out the shuffle, which would leave the mark sideways.
 //
-// three is imported on demand, so it stays out of the page's first load. GSAP's ticker renders
-// only while the box is on screen; still mode renders the finished stack once.
+// three (~166 KB gzipped) is imported only once the box is within a screen and a half of the
+// viewport, so it stays out of the page's first load and doesn't compete with the hero car.
+// GSAP's ticker renders only while the box is on screen; still mode renders the finished stack once.
 import { useRef } from "react";
 import { gsap, motionOn, ScrollTrigger, useGSAP } from "@/lib/motion/gsap";
 import { BI_CONTOURS } from "@/lib/mark/bi-icon";
@@ -49,7 +50,14 @@ export function StackScene({ marks, label }: { marks: readonly Mark[]; label: st
     let disposed = false;
     let cleanup = () => {};
 
-    import("three").then(async (THREE) => {
+    const near = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      near.disconnect();
+      load();
+    }, { rootMargin: "150% 0px" });
+    near.observe(box);
+
+    const load = () => import("three").then(async (THREE) => {
       const { RoomEnvironment } = await import("three/examples/jsm/environments/RoomEnvironment.js");
       if (disposed) return;
 
@@ -298,6 +306,7 @@ export function StackScene({ marks, label }: { marks: readonly Mark[]; label: st
 
     return () => {
       disposed = true;
+      near.disconnect();
       cleanup();
     };
   }, []);

@@ -27,10 +27,13 @@
   html, body { margin: 0; height: 100%; background: #93b6dc; overflow: hidden; }
   canvas { display: block; width: 100vw; height: 100vh; }
 </style>
+<!-- fetch three and the car in parallel with the HTML, instead of the car waiting for three to run -->
+<link rel="modulepreload" href="/vendor/three@0.170.0/build/three.module.min.js" />
+<link rel="preload" href="./model/car-hi.glb" as="fetch" type="model/gltf-binary" crossorigin="anonymous" />
 <script type="importmap">
 { "imports": {
-  "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-  "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+  "three": "/vendor/three@0.170.0/build/three.module.min.js",
+  "three/addons/": "/vendor/three@0.170.0/examples/jsm/"
 } }
 </script>
 </head>
@@ -257,6 +260,7 @@ resize();
 
 // ---------- model ----------
 let ready = false;
+let start = 0;
 const loader = new GLTFLoader();
 loader.setMeshoptDecoder(MeshoptDecoder);
 loader.load(MODEL, (gltf) => {
@@ -278,15 +282,16 @@ loader.load(MODEL, (gltf) => {
   wrap.scale.setScalar(s);
   wrap.position.y = (size.y * s) / 2;
   pivot.add(wrap);
+  // the clock starts with the car, so the first frame is t = 0, the frame the hero's poster shows
+  start = performance.now();
   ready = true;
   window.__ready = true;
 }, undefined, (e) => { console.error(e); document.title = "model failed"; });
 
 // ---------- frame ----------
-const start = performance.now();
 function frame() {
   requestAnimationFrame(frame);
-  const t = FIXED_T ?? (performance.now() - start) / 1000;
+  const t = FIXED_T ?? (ready ? (performance.now() - start) / 1000 : 0);
 
   // camera: close three-quarter front; the car turns back and forth once per P.orbit seconds
   const sway = Math.sin((2 * Math.PI * t) / P.orbit);

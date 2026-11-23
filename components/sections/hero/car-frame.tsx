@@ -2,7 +2,11 @@
 
 // The heat car, still the standalone three.js page in public/f1 until the new car moves into the
 // R3F canvas. `?t=2` on the page URL passes through to freeze the car for screenshots. When the car
-// reports ready, <html data-ready> is set, so screenshot scripts can wait on it.
+// reports ready, the frame gets data-ready (hero.module.css fades it in over the poster) and so
+// does <html>, so screenshot scripts can wait on it.
+//
+// src is in the server HTML, so the browser starts the frame while it parses the page rather than
+// after hydration.
 //
 // An iframe keeps the mouse to itself, so while it is over the car the page would hear nothing and
 // the live cursors (components/realtime) would freeze. The frame is ours, so its mouse moves are
@@ -15,11 +19,12 @@ export function CarFrame({ src, title }: { src: string; title: string }) {
   useEffect(() => {
     const frame = ref.current!;
     const t = new URLSearchParams(location.search).get("t");
-    frame.src = t ? `${src}?t=${t}` : src;
+    if (t) frame.src = `${src}?t=${t}`;
     const poll = window.setInterval(() => {
       const win = frame.contentWindow as (Window & { __ready?: boolean }) | null;
       if (win?.__ready) {
         clearInterval(poll);
+        frame.dataset.ready = "";
         document.documentElement.dataset.ready = "true";
       }
     }, 100);
@@ -43,6 +48,8 @@ export function CarFrame({ src, title }: { src: string; title: string }) {
       }
     };
     frame.addEventListener("load", attach);
+    // the frame may have finished loading before hydration got here
+    if (frame.contentDocument?.readyState === "complete" && frame.contentWindow?.location.href !== "about:blank") attach();
     return () => {
       clearInterval(poll);
       frame.removeEventListener("load", attach);
@@ -51,5 +58,5 @@ export function CarFrame({ src, title }: { src: string; title: string }) {
     };
   }, [src]);
 
-  return <iframe ref={ref} title={title} scrolling="no" />;
+  return <iframe ref={ref} src={src} title={title} scrolling="no" />;
 }

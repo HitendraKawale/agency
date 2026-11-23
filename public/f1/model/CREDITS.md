@@ -6,5 +6,7 @@
 
 Changes: the smoothing was applied, the car was split into its separate parts and renamed, all textures were
 removed (the paint and lettering are drawn by this site), and the geometry was welded and meshopt-compressed.
+`car-hi.glb` was then simplified to 30% of its triangles with gltfpack 1.3 (`-cc -si 0.3 -sp`), 3.7 MB to 0.7 MB;
+under the heat blur it renders the same.
 
 `aero.bin` is a coarse airflow field this site bakes from the car's shape (src/aero/bake.ts).

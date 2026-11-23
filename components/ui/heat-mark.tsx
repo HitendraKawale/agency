@@ -5,9 +5,14 @@
 // Extra props (data-intro, data-reveal, ...) land on the link; `svgProps` on the <svg>.
 import NextLink from "next/link";
 import { useEffect, useRef, type ComponentProps, type SVGProps } from "react";
-import { attachHeatLogo, type HeatLogoOptions } from "@/lib/mark/heat-logo";
+import { attachHeatLogo, type HeatLogo, type HeatLogoOptions } from "@/lib/mark/heat-logo";
 import { motionOn } from "@/lib/motion/gsap";
 import { wordmark } from "@/lib/mark/wordmark";
+
+// Safari has no requestIdleCallback; there the build waits for the next task instead
+const idleOK = () => typeof requestIdleCallback === "function";
+const whenIdle = (fn: () => void) => (idleOK() ? requestIdleCallback(fn, { timeout: 3000 }) : window.setTimeout(fn, 200));
+const cancelIdle = (id: number) => (idleOK() ? cancelIdleCallback(id) : window.clearTimeout(id));
 
 type Props = ComponentProps<"a"> & {
   heat: HeatLogoOptions;
@@ -19,9 +24,24 @@ export function HeatMark({ heat, svgProps, ...link }: Props) {
   const { ink, bg, delay, autoplay, reveal } = heat;
 
   useEffect(() => {
+    const el = ref.current!;
+    let logo: HeatLogo | null = null, idle = 0;
     // the reveal only runs with the intro: reduced motion and ?still get the finished mark
-    const logo = attachHeatLogo(ref.current!, { ink, bg, delay, autoplay, reveal: reveal && motionOn() });
-    return () => logo?.destroy();
+    const attach = () => { logo = attachHeatLogo(el, { ink, bg, delay, autoplay, reveal: reveal && motionOn() }); };
+    // Building the heat (a large shader, and five blurred copies of the mark made on the CPU) holds
+    // the main thread for hundreds of ms, so it waits until the mark is within a screen of view and
+    // the browser has a free moment. The footer's mark is built when you scroll down to it, not on load.
+    const near = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      near.disconnect();
+      idle = whenIdle(attach);
+    }, { rootMargin: "100% 0px" });
+    near.observe(el);
+    return () => {
+      near.disconnect();
+      cancelIdle(idle);
+      logo?.destroy();
+    };
     // the colours are fixed per mark; reattaching on every render would rebuild the blur levels
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
