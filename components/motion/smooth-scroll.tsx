@@ -36,9 +36,20 @@ export function SmoothScroll() {
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
+    // ScrollTrigger measures trigger positions once. When the page's height changes after that
+    // (Lab sections under content-visibility swap their size estimate for the real height as they
+    // render), re-measure, or a reveal near the bottom can sit past the end of the page and never fire.
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 200);
+    });
+    ro.observe(document.body);
 
     return () => {
       offScroll();
+      ro.disconnect();
+      clearTimeout(refreshTimer);
       document.removeEventListener("click", onAnchor);
       gsap.ticker.remove(raf);
       lenis.destroy();
