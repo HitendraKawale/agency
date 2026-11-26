@@ -183,7 +183,7 @@ export const showcase = {
       },
       categories: ["Research", "Brand identity", "Websites"],
       year: 2026,
-      site: { href: "https://rainpulse-six.vercel.app/", label: "rainpulse-six.vercel.app" },
+      site: { href: "http://rainpulse.ai/", label: "rainpulse.ai" },
       montage: "/showcase/rainpulse/montage.mp4",
       story: [
         "Rainpulse is two engineers in Osaka who take AI and software from an unsettled idea to a system in daily use. Their work starts as research.",
