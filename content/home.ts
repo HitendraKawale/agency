@@ -12,7 +12,7 @@ export const site = {
     { label: "Showcase", href: "/showcase" },
     { label: "People", href: "/people" },
     { label: "Blog", href: "#" },
-    { label: "Lab", href: "#" },
+    { label: "Lab", href: "/lab" },
   ],
   contact: { label: "Contact Us", href: "#" },
 } as const;

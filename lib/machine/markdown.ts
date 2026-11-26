@@ -50,13 +50,15 @@ export function toMarkdown(doc: Doc) {
 /** every page's twin, as basement's sitemap.md lists them */
 export function sitemap() {
   const link = (path: string, text: string) => `- [${text}](${abs(urls(path).md)})`;
-  const pages = ["home", "services", "showcase", "people"];
+  const pages = ["home", "services", "showcase", "people", "lab"];
   return [
     `# ${site.name} — Content Index`,
     "## Pages",
     pages.map((p) => link(p, heading(p.toUpperCase()))).join("\n"),
     "## Projects",
     docs.filter((d) => d.path.startsWith("showcase/")).map((d) => link(d.path, d.title)).join("\n"),
+    "## Lab",
+    docs.filter((d) => d.path.startsWith("lab/")).map((d) => link(d.path, d.title)).join("\n"),
     "",
   ].join("\n\n");
 }

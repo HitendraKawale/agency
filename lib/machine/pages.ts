@@ -1,6 +1,7 @@
 // Every machine page, built from the same content the human pages render. Nothing here is new copy
 // except each page's title and `#` line, which follow basement's.
 import { home, site } from "@/content/home";
+import { lab, labGroups, labItems, sourceUrl, type LabItem } from "@/content/lab";
 import { people } from "@/content/people";
 import { services } from "@/content/services";
 import { caseStudies, showcase, type CaseProject } from "@/content/showcase";
@@ -116,7 +117,7 @@ const homeDoc: Doc = {
       blocks: [
         {
           kind: "rows",
-          rows: ["/llms.txt", "/sitemap.md", ...["home", "services", "showcase", "people"].map((p) => urls(p).md)].map(
+          rows: ["/llms.txt", "/sitemap.md", ...["home", "services", "showcase", "people", "lab"].map((p) => urls(p).md)].map(
             (href): Row => ({ key: href.slice(1), value: [{ text: href, href }] }),
           ),
         },
@@ -218,10 +219,39 @@ const peopleDoc: Doc = {
   ],
 };
 
+const labDoc: Doc = {
+  path: "lab",
+  title: `${name} :: lab`,
+  note: "# every component and page in our library, recorded. each entry links its clip and the behaviour it has to get right.",
+  meta: [{ key: "recordings", value: [String(labItems.length)] }],
+  upper: false,
+  head: { title: `Lab machine view | ${site.name}`, description: lab.intro },
+  sections: labGroups.map((g) => ({
+    name: g.title.toUpperCase().replaceAll(/[^A-Z0-9]+/g, "_"),
+    blocks: [{ kind: "list", lines: g.items.map((i): Line => [{ text: i.title, page: `lab/${i.name}` }]) }],
+  })),
+};
+
+const labItemDoc = (i: LabItem): Doc => ({
+  path: `lab/${i.name}`,
+  title: i.title,
+  meta: [
+    { key: "group", value: [i.group] },
+    { key: "recording", value: [{ text: i.clip.src, href: i.clip.src }] },
+    { key: "source", value: [{ text: sourceUrl(i), href: sourceUrl(i) }] },
+  ],
+  upper: false,
+  head: { title: `${i.title} | Lab machine view`, description: i.description },
+  sections: [
+    { name: "WHAT_IT_IS", blocks: [{ kind: "text", lines: [[i.description]] }] },
+    ...(i.notes.length ? [{ name: "BEHAVIOUR", blocks: [{ kind: "items" as const, items: i.notes.map((n) => ({ title: [n.label], body: [[n.description]] })) }] }] : []),
+  ],
+});
+
 /** every machine page, in index order */
-export const docs: readonly Doc[] = [homeDoc, servicesDoc, showcaseDoc, ...caseStudies.map(caseDoc), peopleDoc];
+export const docs: readonly Doc[] = [homeDoc, servicesDoc, showcaseDoc, ...caseStudies.map(caseDoc), peopleDoc, labDoc, ...labItems.map(labItemDoc)];
 
 /** the pages the index at the top of every machine page lists */
-export const index = ["home", "services", "showcase", "people"] as const;
+export const index = ["home", "services", "showcase", "people", "lab"] as const;
 
 export const docByPath = (path: string) => docs.find((d) => d.path === path);

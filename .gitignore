@@ -44,3 +44,6 @@ next-env.d.ts
 # cloudflare local state (wrangler, alchemy)
 .wrangler
 .alchemy
+
+# lab recordings (clips live on Vercel Blob)
+/.lab/
