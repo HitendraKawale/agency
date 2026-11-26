@@ -40,9 +40,12 @@ export default function LabPage() {
             className="[content-visibility:auto]"
             style={{ containIntrinsicSize: `auto ${Math.ceil(group.items.length / 3) * 330 + 60}px` }}
           >
-            <h2 id={`lab-${group.title}`} className="s-title mx-[22px] mb-6 max-[760px]:mx-1">
+            {/* count as the nav sets it: (n) in faint grey at the cap line, not lifted by preflight's top */}
+            <h2 id={`lab-${group.title}`} className="s-title mx-[22px] mb-6 flex items-start gap-1 max-[760px]:mx-1">
               {group.title}
-              <sup className="ml-1 align-super text-xs tracking-normal">{group.items.length}</sup>
+              <sup className="static text-xs leading-none tracking-normal text-faint tabular-nums">
+                ({group.items.length})
+              </sup>
             </h2>
             <ul className="grid-12 gap-y-8">
               {group.items.map((item) => (

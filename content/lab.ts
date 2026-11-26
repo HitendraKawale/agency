@@ -31,11 +31,14 @@ export const labGroups = data.groups
 
 export const labItem = (name: string) => labItems.find((i) => i.name === name);
 
-/** the live page on ui.aryank.space */
+/** the live page on ui.aryank.space (the machine view links it) */
 export const sourceUrl = (i: Pick<LabEntry, "section" | "name">) => `https://ui.aryank.space/${i.section}/${i.name}`;
+
+/** the description's first sentence, cut before any colon-led feature list, for the detail page */
+export const summary = (i: Pick<LabEntry, "description">) =>
+  (i.description.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? i.description).replace(/:\s[\s\S]*$/, ".");
 
 export const lab = {
   title: "Lab",
   intro: "Every component and page in our library, recorded doing what it was built to do. Open one to see the behaviour it has to get right.",
-  source: "Open on ui.aryank.space",
 };
