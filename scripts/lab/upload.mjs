@@ -5,7 +5,7 @@
 // uploaded is skipped unless --force or named; one missing only its tile gets just the tile.
 // .env.lab holds BLOB_READ_WRITE_TOKEN (`vercel env pull .env.lab --environment=development`).
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { put } from "@vercel/blob";
 
@@ -21,12 +21,27 @@ const todo = data.entries.filter(
 );
 const opts = (contentType) => ({ access: "public", addRandomSuffix: false, allowOverwrite: true, contentType, cacheControlMaxAge: 31536000 });
 const ff = (...a) => execFileSync("ffmpeg", ["-loglevel", "error", "-y", ...a]);
+// Blob folder. Files are cached for a year, so a re-encode goes up under a new folder, never over old URLs.
+const DIR = "lab/v2";
+// a keyframe every second: the site starts each clip at its midpoint, and without one near there
+// the browser downloads and decodes everything from 0 first (~1s before the clip shows)
+const KEYS = ["-force_key_frames", "expr:gte(t,n_forced)"];
+
+/** recordings from before record.mjs set KEYS get them once, re-encoded in place at the same settings */
+function keyed(mp4, duration) {
+  const keys = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v", "-skip_frame", "nokey", "-show_entries", "frame=pts_time", "-of", "csv=p=0", mp4])
+    .toString().trim().split("\n").length;
+  if (keys >= Math.floor(duration)) return;
+  const tmp = `${mp4}.keyed.mp4`;
+  ff("-i", mp4, "-c:v", "libx264", "-preset", "medium", "-crf", "22", "-maxrate", "3M", "-bufsize", "6M", ...KEYS, "-movflags", "+faststart", "-an", tmp);
+  renameSync(tmp, mp4);
+}
 
 /** the grid's encode, and its poster from the same midpoint as the full clip's */
 function tile(name, duration) {
   const mp4 = join(clips, `${name}.tile.mp4`), webp = join(clips, `${name}.tile.webp`), png = join(clips, `.${name}.tile.png`);
   ff("-i", join(clips, `${name}.mp4`), "-vf", "scale=960:-2:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-preset", "slow", "-crf", "26",
-    "-maxrate", "1.5M", "-bufsize", "3M", "-movflags", "+faststart", "-an", mp4);
+    "-maxrate", "1.5M", "-bufsize", "3M", ...KEYS, "-movflags", "+faststart", "-an", mp4);
   ff("-ss", String(duration / 2), "-i", mp4, "-frames:v", "1", png);
   execFileSync("cwebp", ["-quiet", "-q", "72", png, "-o", webp]);
   rmSync(png);
@@ -42,15 +57,17 @@ for (const e of todo) {
   }
   const full = !e.clip || named.includes(e.name) || args.includes("--force");
   if (full) {
-    const [width, height, duration] = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v", "-show_entries", "stream=width,height:format=duration", "-of", "csv=p=0:s=,", mp4])
+    const probe = () => execFileSync("ffprobe", ["-v", "error", "-select_streams", "v", "-show_entries", "stream=width,height:format=duration", "-of", "csv=p=0:s=,", mp4])
       .toString().trim().split(/[\n,]/).filter(Boolean).map(Number);
-    const video = await put(`lab/${e.name}.mp4`, readFileSync(mp4), opts("video/mp4"));
-    const poster = await put(`lab/${e.name}.jpg`, readFileSync(jpg), opts("image/jpeg"));
+    keyed(mp4, probe()[2]);
+    const [width, height, duration] = probe();
+    const video = await put(`${DIR}/${e.name}.mp4`, readFileSync(mp4), opts("video/mp4"));
+    const poster = await put(`${DIR}/${e.name}.jpg`, readFileSync(jpg), opts("image/jpeg"));
     e.clip = { src: video.url, poster: poster.url, width, height, duration: Number(duration.toFixed(2)) };
   }
   const t = tile(e.name, e.clip.duration);
-  e.clip.tile = (await put(`lab/${e.name}.tile.mp4`, readFileSync(t.mp4), opts("video/mp4"))).url;
-  e.clip.tilePoster = (await put(`lab/${e.name}.tile.webp`, readFileSync(t.webp), opts("image/webp"))).url;
+  e.clip.tile = (await put(`${DIR}/${e.name}.tile.mp4`, readFileSync(t.mp4), opts("video/mp4"))).url;
+  e.clip.tilePoster = (await put(`${DIR}/${e.name}.tile.webp`, readFileSync(t.webp), opts("image/webp"))).url;
   writeFileSync(file, JSON.stringify(data, null, 2) + "\n"); // after each, so an interrupted run keeps its progress
   console.log(`${++n}/${todo.length} ${e.name}${full ? "" : " (tile)"}`);
 }

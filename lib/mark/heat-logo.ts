@@ -214,38 +214,35 @@ function blobs(t: number, revealing: boolean): [Float32Array, Float32Array, Floa
   return [B, V, C];
 }
 
-// Gaussian blur of a one-channel image (sigma in px) as three box passes each way. Edges clamp; the
-// canvas margin keeps the glyphs well clear of them.
-function gauss(src: Float32Array, w: number, h: number, sigma: number): Float32Array {
-  if (sigma < 0.3) return src;
-  const n = 3, wIdeal = Math.sqrt((12 * sigma * sigma) / n + 1);
-  let wl = Math.floor(wIdeal); if (wl % 2 === 0) wl--;
-  const m = Math.round((12 * sigma * sigma - n * wl * wl - 4 * n * wl - 3 * n) / (-4 * wl - 4));
-  let a = src;
-  const b = new Float32Array(w * h);
-  for (let k = 0; k < n; k++) {
-    const r = ((k < m ? wl : wl + 2) - 1) / 2;
-    box(a, b, w, h, r, true);
-    if (a === src) a = new Float32Array(w * h);
-    box(b, a, w, h, r, false);
-  }
-  return a;
-}
+// The blurred levels, as one-channel bytes, by mask size and scale. The blur is the slow part of a
+// mark (about 400 ms for the footer's), so it runs in a worker (heat-blur.worker.ts), and its result
+// is kept: every page renders its own nav and footer, so each client navigation attaches both marks
+// again at the same sizes. The last few sizes are kept (nav and footer, at a resize or two).
+const levelCache = new Map<string, Promise<Uint8Array[]>>();
+const CACHED = 4;
 
-// one box pass of radius r along rows (horizontal) or columns, running sum, edges clamped
-function box(src: Float32Array, dst: Float32Array, w: number, h: number, r: number, horizontal: boolean) {
-  const len = horizontal ? w : h, lines = horizontal ? h : w, step = horizontal ? 1 : w, stride = horizontal ? w : 1;
-  const inv = 1 / (2 * r + 1);
-  for (let L = 0; L < lines; L++) {
-    const base = L * stride, first = src[base], last = src[base + (len - 1) * step];
-    let sum = (r + 1) * first;
-    for (let i = 1; i <= r; i++) sum += src[base + Math.min(i, len - 1) * step];
-    for (let i = 0; i < len; i++) {
-      dst[base + i * step] = sum * inv;
-      const add = i + r + 1, sub = i - r;
-      sum += (add < len ? src[base + add * step] : last) - (sub >= 0 ? src[base + sub * step] : first);
+let worker: Worker | null | undefined;
+let jobs = 0;
+const waiting = new Map<number, (levels: Uint8Array[]) => void>();
+function blurred(rgba: Uint8ClampedArray, w: number, h: number, sigmas: number[]): Promise<Uint8Array[]> {
+  if (worker === undefined) {
+    try {
+      worker = new Worker(new URL("./heat-blur.worker.ts", import.meta.url), { type: "module" });
+      worker.onmessage = ({ data }: MessageEvent<{ id: number; levels: Uint8Array[] }>) => {
+        waiting.get(data.id)?.(data.levels);
+        waiting.delete(data.id);
+      };
+    } catch {
+      worker = null;
     }
   }
+  // no worker: the same blur, here
+  if (!worker) return import("./heat-blur").then((m) => m.blurLevels(rgba, w, h, sigmas));
+  const id = ++jobs, live = worker;
+  return new Promise((done) => {
+    waiting.set(id, done);
+    live.postMessage({ id, rgba, w, h, sigmas }, [rgba.buffer]);
+  });
 }
 
 /** Attach the heat effect to `el`, which holds the inline wordmark <svg>. Returns null when skipped. */
@@ -287,9 +284,7 @@ export function attachHeatLogo(
   const tex = (cv: HTMLCanvasElement, unit: number) => {
     setTex(unit); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
   };
-  const texR8 = (f: Float32Array, w: number, h: number, unit: number) => { // a 0-255 float image as one channel
-    const b = new Uint8Array(w * h);
-    for (let i = 0; i < b.length; i++) b[i] = f[i] + 0.5;
+  const texR8 =(b: Uint8Array, w: number, h: number, unit: number) => {
     setTex(unit); gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, w, h, 0, gl.RED, gl.UNSIGNED_BYTE, b);
   };
@@ -298,10 +293,15 @@ export function attachHeatLogo(
   // The canvas covers the logo plus MARGIN on every side at the screen's pixel density. The masks are
   // drawn sharper than that (at least 2 px per wordmark unit, up to 4x the canvas), and each pixel
   // averages several samples, so a small nav logo stays sharp.
+  let laid = "";
   function layout() {
     const box = (svg ?? el).getBoundingClientRect(), host = el.getBoundingClientRect();
     if (!box.width) return;
     const k = box.width / wordmark.width, m = MARGIN * k, dpr = Math.min(devicePixelRatio || 1, 3);
+    // the ResizeObserver reports the size it was attached at, right after the first layout
+    const at = `${box.left - host.left},${box.top - host.top},${box.width},${box.height},${dpr}`;
+    if (at === laid) return;
+    laid = at;
     // svg elements have no offsetLeft/Top, so place the canvas from the two rects
     Object.assign(canvas.style, {
       left: `${box.left - host.left - el.clientLeft - m}px`, top: `${box.top - host.top - el.clientTop - m}px`,
@@ -319,17 +319,24 @@ export function attachHeatLogo(
     tex(mask, 0); gl!.uniform1i(U("uL0"), 0);
     // The blurred levels never change, so they are made once, here rather than with the canvas
     // `filter`, which some browsers ignore (the bands then never appear).
-    const W = mask.width, H = mask.height, px = c.getImageData(0, 0, W, H).data;
-    let cur: Float32Array = new Float32Array(W * H), prev = 0;
-    for (let i = 0; i < W * H; i++) cur[i] = px[i * 4];
-    RADII.slice(1).forEach((r, i) => {
-      const sigma = r * scale * ms; // each level blurs the previous one by what it lacks
-      cur = gauss(cur, W, H, Math.sqrt(sigma * sigma - prev * prev)); prev = sigma;
-      texR8(cur, W, H, i + 1); gl!.uniform1i(U(`uL${i + 1}`), i + 1);
-    });
+    const W = mask.width, H = mask.height, key = `${W}x${H}@${scale * ms}`;
+    let levels = levelCache.get(key);
+    if (!levels) {
+      levels = blurred(c.getImageData(0, 0, W, H).data, W, H, RADII.slice(1).map((r) => r * scale * ms));
+      levelCache.set(key, levels);
+      if (levelCache.size > CACHED) levelCache.delete(levelCache.keys().next().value!);
+    }
     gl!.uniform2f(U("uRes"), canvas.width, canvas.height);
     gl!.uniform2f(U("uOrigin"), origin, origin); gl!.uniform1f(U("uScale"), scale);
-    if (!running) draw(0);
+    // a pass waits for the levels; a newer layout or a destroy drops these
+    ready = false;
+    levels.then((ls) => {
+      if (!alive || laid !== at) return;
+      ls.forEach((b, i) => { texR8(b, W, H, i + 1); gl!.uniform1i(U(`uL${i + 1}`), i + 1); });
+      ready = true;
+      if (pending) { pending = false; play(); }
+      else if (!running) draw(0);
+    });
   }
 
   function draw(t: number) {
@@ -345,6 +352,8 @@ export function attachHeatLogo(
   }
 
   let running = false, hovering = false, start = 0, fixed: number | null = null, raf = 0, wait = 0, alive = true;
+  // the blurred levels are in their textures; a pass asked for before then starts when they are
+  let ready = false, pending = false;
   // until the reveal has played, the mark is hidden (globals.css hides it before this runs)
   let revealing = reveal;
   const show = (on: boolean) => {
@@ -365,6 +374,7 @@ export function attachHeatLogo(
   }
   function play() {
     if (running) return;
+    if (!ready) { pending = true; return; }
     running = true; start = performance.now(); show(true); raf = requestAnimationFrame(frame);
   }
 

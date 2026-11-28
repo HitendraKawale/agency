@@ -1,0 +1,847 @@
+/* ---------- All projects page ---------- */
+/* Shares fonts, cursors, the top bar / island and the letter hover with styles.css. */
+
+/* this page scrolls: the artboard grows with its content (height set by projects.js) */
+.pj-page .stage { height: auto; min-height: 1080px; }
+.pj-page .viewport { overflow: hidden; }
+
+/* ---------- hero (Figma "Hero only") ----------
+   1920-wide artboard; every piece sits where it is in Figma, measured from the centre so it stays
+   in place on wider screens. The flower hill is cut off at 1085px; the phone hangs a little lower. */
+.pj-hero { position: relative; height: 1145px; }
+
+/* flower hill: full width, cut at the bottom; its white background melts into the page */
+.hx-hill { position: absolute; left: 0; right: 0; top: 513px; height: 572px; overflow: hidden; pointer-events: none; }   /* page tint + 80% are baked into hill.jpg (no live blending) */
+.hx-hill-img, .hx-hill-pix {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  /* the crest stays where it is in Figma (783px) however wide the screen is: on wider screens the
+     photo grows, so it's lifted by the same amount (margin % = share of the width) */
+  margin-top: calc(230.6px - 14.0924%);   /* 40px higher than in Figma, as asked */
+}
+.hx-hill-img { opacity: 0; }
+.hx-hill.is-done .hx-hill-img { opacity: 1; }
+.hx-hill.is-done .hx-hill-pix { visibility: hidden; }
+
+/* title — live text, so the letters pop blue on hover like the home page */
+.hx-title.headline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 171px;
+  margin: 0;
+  text-align: center;
+  font-size: 89.4px;
+  line-height: 100px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  color: #1e1e1e;
+  text-shadow: 0 2.5px 12.6px rgba(0, 0, 0, 0.05);
+  z-index: 3;
+}
+
+/* the five things that open a video */
+.hx-thing {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  background: none;
+  z-index: 2;                                   /* behind the phone, so they come out from behind it */
+  -webkit-tap-highlight-color: transparent;
+  animation: hx-pop 1s var(--spring) backwards;
+  --spring: linear(0.0000, 0.0167, 0.0616, 0.1272, 0.2072, 0.2958, 0.3885, 0.4814, 0.5714, 0.6563, 0.7344, 0.8047, 0.8664, 0.9195, 0.9640, 1.0003, 1.0289, 1.0506, 1.0661, 1.0763, 1.0818, 1.0835, 1.0822, 1.0785, 1.0731, 1.0664, 1.0590, 1.0513, 1.0436, 1.0360, 1.0289, 1.0224, 1.0165, 1.0113, 1.0068, 1.0031, 1.0001, 0.9976, 0.9958, 0.9945, 0.9936, 0.9932, 0.9930, 0.9931, 0.9934, 0.9939, 0.9944, 0.9950, 0.9957, 0.9963, 0.9970, 0.9976, 0.9981, 0.9986, 0.9990, 0.9994, 0.9997, 1.0000, 1.0002, 1.0003, 1);   /* damped spring, zeta 0.62 */
+  transition: scale 0.5s cubic-bezier(.34, 1.56, .64, 1), rotate 0.5s cubic-bezier(.34, 1.56, .64, 1);
+}
+.hx-thing > .hx-art { display: block; width: 100%; height: 100%; animation: hx-float 5s ease-in-out infinite alternate; pointer-events: none; }
+.hx-thing:hover { scale: 1.06; rotate: -2deg; }
+.hx-thing:active { scale: 0.97; }
+.hx-thing:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; border-radius: 24px; }
+/* they shoot out of the phone: start at its centre (--fx/--fy = offset to it), tiny, then fly to
+   their spot with a little overshoot */
+@keyframes hx-pop {                             /* out of the phone on a real spring (easing --spring) */
+  0%   { opacity: 0; translate: var(--fx) var(--fy); scale: 0.3; rotate: var(--r0, -10deg); filter: blur(6px); }
+  10%  { opacity: 1; }
+  30%  { filter: blur(0); }
+  100% { opacity: 1; translate: 0 0; scale: 1; rotate: 0deg; filter: none; }
+}
+/* the plane comes last and slowly: it flies out of the phone along a smooth curve, climbing first
+   and then levelling off, nose always pointing where it's going (generated path, linear between points) */
+@keyframes hx-fly {
+  0.0% { translate: 452.5px 273.5px; rotate: 20.7deg; scale: 0.400; opacity: 0.00; filter: blur(4.0px); }
+  7.1% { translate: 369.5px 205.9px; rotate: 16.8deg; scale: 0.520; opacity: 0.71; filter: blur(2.6px); }
+  14.3% { translate: 295.5px 153.1px; rotate: 13.4deg; scale: 0.622; opacity: 1.00; filter: blur(1.1px); }
+  21.4% { translate: 230.8px 112.2px; rotate: 10.5deg; scale: 0.709; opacity: 1.00; filter: blur(0.0px); }
+  28.6% { translate: 175.4px 80.7px; rotate: 8.0deg; scale: 0.781; opacity: 1.00; filter: blur(0.0px); }
+  35.7% { translate: 129.0px 56.7px; rotate: 6.0deg; scale: 0.841; opacity: 1.00; filter: blur(0.0px); }
+  42.9% { translate: 91.3px 38.6px; rotate: 4.4deg; scale: 0.888; opacity: 1.00; filter: blur(0.0px); }
+  50.0% { translate: 61.5px 25.2px; rotate: 3.2deg; scale: 0.925; opacity: 1.00; filter: blur(0.0px); }
+  57.1% { translate: 38.9px 15.6px; rotate: 2.2deg; scale: 0.953; opacity: 1.00; filter: blur(0.0px); }
+  64.3% { translate: 22.6px 8.9px; rotate: 1.6deg; scale: 0.973; opacity: 1.00; filter: blur(0.0px); }
+  71.4% { translate: 11.6px 4.5px; rotate: 1.1deg; scale: 0.986; opacity: 1.00; filter: blur(0.0px); }
+  78.6% { translate: 4.9px 1.9px; rotate: 0.9deg; scale: 0.994; opacity: 1.00; filter: blur(0.0px); }
+  85.7% { translate: 1.5px 0.6px; rotate: 0.7deg; scale: 0.998; opacity: 1.00; filter: blur(0.0px); }
+  92.9% { translate: 0.2px 0.1px; rotate: 0.7deg; scale: 1.000; opacity: 1.00; filter: blur(0.0px); }
+  100.0% { translate: 0.0px 0.0px; rotate: 0.0deg; scale: 1.000; opacity: 1.00; filter: blur(0.0px); }
+}
+@keyframes hx-float { from { translate: 0 -4px; rotate: -1deg; } to { translate: 0 5px; rotate: 1.2deg; } }
+
+.hx-plane { left: calc(50% + -536.00px); top: 383px; width: 167px; height: 167px; animation: hx-fly 2.3s linear 1.05s backwards; --fx: 452.5px; --fy: 273.5px; }
+.hx-plane > .hx-art { animation-duration: 4.2s; }
+.hx-alien { left: calc(50% + -304.60px); top: 502.6px; width: 220.4px; height: 220.4px; z-index: 2; animation-delay: 0.7s; --fx: 194.4px; --fy: 127.2px; }
+.hx-alien > .hx-art { animation-delay: -1.6s; }
+.hx-pool  { left: calc(50% + -501.30px); top: 711.1px; width: 341px; height: 203px; animation-delay: 0.77s; --fx: 330.8px; --fy: -72.6px; }
+.hx-pool > .hx-art { animation-delay: -2.4s; animation-duration: 5.6s; filter: drop-shadow(10.4px 16.8px 29.7px rgba(0, 0, 0, 0.13)); }   /* Figma drop shadow */
+.hx-sat   { left: calc(50% + 177.70px); top: 442.9px; width: 236px; height: 120px; animation-delay: 0.84s; --fx: -295.7px; --fy: 237.1px; --r0: 10deg; }
+.hx-sat > .hx-art { animation-delay: -0.8s; }
+.hx-book  { left: calc(50% + 175.20px); top: 539.2px; width: 303px; height: 379px; animation-name: hx-pop-move; animation-delay: 0.91s; --fx: -326.7px; --fy: 11.3px; --r0: 10deg; }
+.hx-book > svg, .hx-book > img { position: relative; display: block; width: 100%; height: 100%; pointer-events: none; }
+/* the book card has a real backdrop blur, which browsers switch off while its parent fades or blurs —
+   so the card itself only moves (hx-pop-move) and its two parts fade/sharpen in on their own */
+@keyframes hx-pop-move {
+  0%   { translate: var(--fx) var(--fy); scale: 0.3; rotate: var(--r0, -10deg); }
+  100% { translate: 0 0; scale: 1; rotate: 0deg; }
+}
+@keyframes hx-part-in {
+  0%   { opacity: 0; filter: blur(6px); }
+  10%  { opacity: 1; }
+  30%  { filter: blur(0); }
+  100% { opacity: 1; filter: none; }
+}
+.hx-book > svg, .hx-book > img { animation: hx-part-in 1s linear 0.91s backwards; }
+.hx-book > .hx-book-card { animation: hx-card-in 1s linear 0.91s backwards; }   /* fade only: a filter here would turn its blur off too */
+@keyframes hx-card-in { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 1; } }
+
+/* the plane's trail: soft grey puffs left behind its tail while it flies (projects.js) */
+.hx-smoke { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.hx-puff {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(150, 156, 164, 0.5), rgba(150, 156, 164, 0.22) 55%, rgba(150, 156, 164, 0));
+  animation: hx-puff var(--life, 1.6s) cubic-bezier(.2, .6, .3, 1) forwards;
+}
+@keyframes hx-puff {
+  0%   { opacity: 0; scale: 0.35; }
+  12%  { opacity: 0.9; }
+  100% { opacity: 0; scale: 2.4; translate: var(--dx, 0px) var(--dy, 0px); }
+}
+
+/* frosted card behind the book (real blur of the hill behind it) */
+.hx-book-card {
+  position: absolute;
+  left: 32.8px;
+  top: 2.8px;
+  width: 237px;
+  height: 313.14px;
+  border-radius: 45.26px;
+  background: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(11.45px);
+          backdrop-filter: blur(11.45px);
+  box-shadow: 0 30px 33px rgba(0, 0, 0, 0.08);
+}
+
+/* phone with the Instagram profile (Figma: 449 × 807 frame incl. its shadow) */
+.hx-phone {
+  position: absolute;
+  left: calc(50% + -224.60px);
+  top: 336px;
+  width: 449px;
+  height: 807px;
+  z-index: 3;
+  animation: hx-phone-in 1.5s cubic-bezier(.22, 1, .36, 1) 0.25s backwards;   /* after the title */
+}
+@keyframes hx-phone-in { 0% { opacity: 0; translate: 0 120px; filter: blur(16px); } 35% { opacity: 1; } 75% { filter: blur(0); } 100% { opacity: 1; translate: 0 0; filter: none; } }   /* rises, fades and sharpens in, no scaling */
+.hx-phone-glass { position: absolute; left: 47.32px; top: 23.23px; width: 355.62px; height: 746.91px; border-radius: 74.21px; background: #fff; box-shadow: 0 22.17px 35.76px rgba(0, 0, 0, 0.11); }
+.hx-screen { position: absolute; left: 57.93px; top: 54.07px; width: 334.42px; height: 710.28px; border-radius: 32.77px; overflow: hidden; }
+.hx-screen > img { position: absolute; left: -0.16px; top: -16.38px; width: 334.23px; height: 726.67px; display: block; pointer-events: none; }
+.hx-frame { position: absolute; left: 35.76px; top: 13.59px; width: 376.93px; height: 770.61px; pointer-events: none; z-index: 2; }   /* the black frame always stays on top */
+
+/* posts: the one under the cursor stays bright, the rest of the screen fades back */
+.hx-hits { position: absolute; left: 47.32px; top: 23.23px; width: 355.62px; height: 746.91px; border-radius: 74.21px; overflow: hidden; pointer-events: none; z-index: 1; }   /* own layer: the fade can never get above the frame */
+.hx-post {
+  position: absolute;
+  /* glass-relative (screen starts 10.61 / 30.84px in); 1.5px bigger than the post on every side, so
+     the fade never touches the post's own edges on the scaled page */
+  top: calc(30.84px + 454.37px);
+  left: calc(10.61px + var(--c) * 111.69px - 1.66px);
+  width: 113.86px;
+  height: 150.72px;
+  pointer-events: auto;
+  box-shadow: 0 0 0 900px rgba(255, 255, 255, 0);
+  transition: box-shadow 0.35s ease;
+}
+.hx-post:hover { z-index: 1; box-shadow: 0 0 0 900px rgba(255, 255, 255, 0.62); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-thing, .hx-thing > .hx-art, .hx-phone { animation: none; }
+}
+
+/* ---------- latest projects ---------- */
+.pj-latest {
+  position: relative;
+  width: 1920px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 60px 97px 180px;
+}
+.pj-h2.headline {
+  display: inline-block;
+  font-size: 60px;
+  line-height: 70px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  color: #000;
+  margin: 0;
+}
+.pj-h2 .w { animation: none; }   /* it reveals on scroll instead */
+
+.pj-project {
+  display: flex;
+  align-items: flex-start;
+  gap: 56px;
+  margin-top: 112px;
+}
+
+/* window-style video card */
+.pj-window {
+  position: relative;
+  flex: none;
+  width: 939px;
+  height: 615px;
+  border-radius: 29px;
+  background: #f6f6f6;
+  box-shadow: 8px 22px 21px rgba(0, 0, 0, 0.06);
+}
+.pj-dots { position: absolute; left: 21px; top: 18px; display: flex; gap: 6px; }
+.pj-dots i { width: 16px; height: 16px; border-radius: 50%; display: block; }
+.pj-dots i:nth-child(1) { background: #ff4e4e; }
+.pj-dots i:nth-child(2) { background: #ffb84e; }
+.pj-dots i:nth-child(3) { background: #1dc51d; }
+.pj-window-video {
+  position: absolute;
+  left: 21px;
+  top: 50px;
+  width: 896px;
+  height: 543px;
+  padding: 0;
+  border: 0;
+  border-radius: 17px;
+  overflow: hidden;
+  background: #fff;            /* the faded pixel view sits on white, not black */
+}
+.pj-window-video video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s cubic-bezier(.22, .8, .25, 1); }
+/* hover: the video blurs and 👀 pops in with a bounce */
+.pj-window-video video { transition: transform 0.6s cubic-bezier(.22, .8, .25, 1), filter 0.45s ease; }
+.pj-window-video:hover video { transform: scale(1.03); opacity: 0; }   /* only the pixel copy shows */
+.pj-window-video video { transition: transform 0.6s cubic-bezier(.22, .8, .25, 1), opacity 0.15s ease; }
+/* hover: the video turns into big pixels (a tiny canvas copy, scaled up without smoothing) */
+.pj-pixels {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.pj-window-video:hover .pj-pixels { opacity: 0.88; transition-duration: 0.3s; }   /* slightly faded */
+.pj-eyes {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;      /* centred on the pointer */
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18));
+  will-change: transform;
+}
+/* 👀 replaces the cursor over the video: pops in with a bounce… */
+.pj-eyes.is-in  { opacity: 1; animation: eyes-in 0.6s cubic-bezier(.34, 1.56, .64, 1) both; }
+/* …and shrinks, spins and blurs away when the cursor leaves */
+.pj-eyes.is-out { animation: eyes-out 0.16s ease-in both; }   /* gone right away when the cursor leaves */
+@keyframes eyes-in {
+  0%   { opacity: 0; transform: scale(0.2) rotate(-18deg); filter: blur(6px) drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18)); }
+  45%  { opacity: 1; transform: scale(1.22) rotate(8deg); filter: blur(0) drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18)); }
+  72%  { transform: scale(0.92) rotate(-4deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes eyes-out {
+  0%   { opacity: 1; transform: scale(1) rotate(0); }
+  100% { opacity: 0; transform: scale(0.4) rotate(20deg); filter: blur(6px); }
+}
+.pj-window-video:hover { cursor: none; }
+}
+
+.pj-info { padding-top: 31px; width: 750px; }
+.pj-info p { max-width: 620px; }
+.pj-client {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  height: 68px;
+  padding: 0 28px 0 7px;
+  border-radius: 34px;
+  background: #f6f6f6;
+  font-size: 27px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #1c1c1c;
+}
+.pj-client img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
+.pj-info p {
+  margin: 28px 0 0;
+  font-size: 24px;
+  line-height: 29px;
+  letter-spacing: -0.02em;
+  color: rgba(0, 0, 0, 0.7);
+}
+.pj-info p + p { margin-top: 26px; }
+
+.pj-tags { display: flex; align-items: flex-start; gap: 20px; margin-top: 44px; }
+.pj-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 26px 0 22px;
+  border-radius: 26px;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.45s cubic-bezier(.34, 1.56, .64, 1);
+}
+.pj-tag svg { width: 24px; height: 24px; }
+.pj-tag-blue  { background: var(--blue); box-shadow: 1px 7px 0.4px rgba(0, 0, 0, 0.05); }
+.pj-tag-black { background: #000; }
+a.pj-tag:hover { transform: translateY(-2px) scale(1.04); }
+
+/* ---------- reveal on scroll ---------- */
+[data-reveal] {
+  opacity: 0;
+  filter: blur(12px);
+  translate: 0 36px;
+  transition:
+    opacity 0.9s ease var(--d, 0s),
+    filter 0.9s ease var(--d, 0s),
+    translate 1s cubic-bezier(.22, .8, .25, 1) var(--d, 0s);
+}
+[data-reveal].is-in { opacity: 1; filter: none; translate: 0 0; }
+
+/* ---------- quick view ---------- */
+.qv {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  visibility: hidden;
+  pointer-events: none;
+}
+.qv.is-open { visibility: visible; pointer-events: auto; }
+.qv-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 18, 0.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+          backdrop-filter: blur(22px) saturate(1.2);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.qv.is-shown .qv-backdrop { opacity: 1; }
+.qv-player {
+  position: fixed;
+  overflow: hidden;
+  background: #000;
+  border-radius: 28px;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.45);
+  transform-origin: 0 0;
+}
+.qv-player video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.qv-btn {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(30, 30, 30, 0.45);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+          backdrop-filter: blur(14px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.3s ease, transform 0.45s cubic-bezier(.34, 1.56, .64, 1), background 0.2s ease;
+}
+.qv-btn svg { width: 20px; height: 20px; }
+.qv.is-shown .qv-btn { opacity: 1; transform: none; transition-delay: 0.35s; }
+.qv-btn:hover { background: rgba(60, 60, 60, 0.6); }
+.qv-close { top: 16px; right: 16px; }
+/* volume: glass pill at the bottom-left — icon + slider that slides open on hover */
+.qv-vol {
+  position: absolute;
+  left: 16px;
+  bottom: 22px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  border-radius: 21px;
+  background: rgba(30, 30, 30, 0.45);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+          backdrop-filter: blur(14px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 21px 50%;
+  transition: opacity 0.3s ease, transform 0.45s cubic-bezier(.34, 1.56, .64, 1);
+}
+.qv.is-shown .qv-vol { opacity: 1; transform: none; transition-delay: 0.35s; }
+.qv-vol .qv-sound { position: static; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.qv-range {
+  width: 0;
+  margin: 0;
+  opacity: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #fff var(--vol, 100%), rgba(255, 255, 255, 0.3) var(--vol, 100%));
+  transition: width 0.35s cubic-bezier(.22, .8, .25, 1), opacity 0.25s ease, margin 0.35s ease;
+  cursor: inherit;
+}
+.qv-vol:hover .qv-range,
+.qv-vol:focus-within .qv-range { width: 96px; opacity: 1; margin: 0 16px 0 2px; }
+.qv-range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+.qv-range::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #fff; }
+.qv-sound .off { display: none; }
+.qv-sound.is-muted .on { display: none; }
+.qv-sound.is-muted .off { display: block; }
+.qv-progress {
+  position: absolute;
+  left: 80px;
+  right: 22px;
+  bottom: 41px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.25);
+  opacity: 0;
+  transition: opacity 0.3s ease 0.35s;
+  overflow: hidden;
+}
+.qv.is-shown .qv-progress { opacity: 1; }
+/* when the volume slider opens, the progress line moves out of its way */
+.qv-progress { transition: opacity 0.3s ease 0.35s, left 0.35s cubic-bezier(.22, .8, .25, 1); }
+.qv-vol:hover ~ .qv-progress,
+.qv-vol:focus-within ~ .qv-progress { left: 210px; }
+.qv-progress i { display: block; height: 100%; width: 0; background: #fff; border-radius: inherit; }
+
+/* phones: the player is edge to edge with square corners (projects.js sizes it), the controls a bit smaller */
+@media (max-width: 767px) {
+  .qv-player { border-radius: 0; }
+  .qv-btn { width: 34px; height: 34px; }
+  .qv-btn svg { width: 17px; height: 17px; }
+  .qv-close { top: 10px; right: 10px; }
+  .qv-vol { left: 10px; bottom: 10px; height: 34px; border-radius: 17px; transform-origin: 17px 50%; }
+  .qv-progress { left: 56px; right: 14px; bottom: 25px; height: 3px; }
+}
+
+/* hand cursor on everything clickable here */
+.pj-card, .pj-window-video, .qv-btn, .qv-backdrop, .qv-player video {
+  cursor: url(assets/cursors/pointer.png?v=1792255509) 26 20, pointer;
+  cursor: -webkit-image-set(url(assets/cursors/pointer.png?v=1792255509) 1x, url(assets/cursors/pointer@2x.png?v=1792255509) 2x) 26 20, pointer;
+  cursor: image-set(url(assets/cursors/pointer.png?v=1792255509) 1x, url(assets/cursors/pointer@2x.png?v=1792255509) 2x) 26 20, pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; filter: none; translate: none; transition: none; }
+}
+
+/* ---------- mobile ---------- */
+@media (max-width: 767px) {
+  .pj-latest { width: 100%; padding: 56px 0 120px; }
+  .pj-h2.headline { font-size: 38px; line-height: 46px; }
+  .pj-project { flex-direction: column; gap: 20px; margin-top: 36px; }   /* name, video, text, buttons: one gap everywhere */
+  .pj-window { width: 100%; height: auto; aspect-ratio: 939 / 615; border-radius: 20px; }
+  .pj-dots { left: 14px; top: 12px; }
+  .pj-dots i { width: 11px; height: 11px; }
+  /* no hover over the video on phones: it stays the plain video, no pixels, no 👀 */
+  .pj-window-video:hover video { transform: none; opacity: 1; }
+  .pj-pixels, .pj-eyes { display: none; }
+  .pj-window-video { left: 3%; right: 3%; top: 32px; bottom: 3.5%; width: auto; height: auto; border-radius: 12px; }
+  .pj-info { width: 100%; padding-top: 0; }
+  .pj-client { height: 56px; font-size: 22px; padding-right: 22px; gap: 10px; }
+  .pj-client img { width: 44px; height: 44px; }
+  .pj-info { display: flex; flex-direction: column; gap: 20px; }
+  .pj-info p { font-size: 18px; line-height: 24px; margin: 0; }
+  .pj-info p + p { margin-top: 0; }
+  .pj-tags { gap: 12px; margin-top: 0; }
+  .pj-project > .pj-client { align-self: flex-start; }
+  .pj-tag { height: 46px; font-size: 17px; padding: 0 20px 0 18px; gap: 8px; }
+  .pj-tag svg { width: 22px; height: 22px; }
+}
+
+/* ---------- top notch on this page: white glass instead of the sky showing through blue ---------- */
+.pj-page .island {
+  background: linear-gradient(to bottom,
+    rgba(8, 8, 10, 1) 0%,
+    rgba(8, 8, 10, 1) 38%,
+    rgba(14, 14, 16, calc(1 - 0.12 * var(--g))) 58%,
+    rgba(20, 20, 22, calc(1 - 0.62 * var(--g))) 100%);   /* black that turns see-through at the bottom */
+  -webkit-backdrop-filter: blur(18px);
+          backdrop-filter: blur(18px);               /* bottom is truly see-through: the sky shows */
+}
+/* no white sheen at the bottom on this page — just black fading to clear */
+.pj-page .island::after { display: none; }
+.island-white { background: #fff; color: #111; }
+.island-white:hover { background: #f1f1f1; }
+
+/* the top bar follows the scroll on this page, so it just sits there on load (no entrance) */
+.pj-page .top { animation: none; }
+
+/* "7 days" / "watch on X": the Figma buttons as-is (174×67 incl. shadow, 219×63) */
+.pj-tag-img { display: inline-block; line-height: 0; transition: transform 0.45s cubic-bezier(.34, 1.56, .64, 1); }
+.pj-tag-img img, .pj-tag-img svg { display: block; height: auto; }
+.pj-tag-days img, .pj-tag-days svg { width: 148px; }   /* 85% like the rest of the project text */
+.pj-tag-x img, .pj-tag-x svg { width: auto; height: 50.3px; }   /* same height as the "N days" pills (50px) */
+a.pj-tag-img:hover { transform: translateY(-2px) scale(1.04); }
+@media (max-width: 767px) {
+  .pj-tag-days img, .pj-tag-days svg { width: 118.7px; }   /* 40px tall pill, like the HTML ones */
+  .pj-tag-x img, .pj-tag-x svg { width: auto; height: 40.2px; }
+}
+
+/* ---------- more projects (alternating sides) ---------- */
+.pj-project + .pj-project { margin-top: 220px; }
+.pj-project.is-flipped { flex-direction: row-reverse; justify-content: flex-end; }
+/* window on the right → text stays left-aligned, but the block sits right next to the window
+   (same gap as the other projects) instead of out at the page edge */
+.pj-project.is-flipped .pj-info {
+  flex: none;
+  width: 660px;
+  padding-top: 0;
+  align-self: center;
+  margin-left: auto;
+}
+
+/* placeholder video area: soft light-grey with a slow shine */
+.pj-placeholder {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(120deg, #eef1f4 0%, #f8f9fb 40%, #eef1f4 60%, #e9edf1 100%);
+  background-size: 300% 100%;
+  animation: pj-shine 3.5s ease-in-out infinite;
+  color: rgba(0, 0, 0, 0.28);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  cursor: inherit;
+}
+@keyframes pj-shine { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+.pj-client-dot { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #dde3ea, #c7d0da); }
+
+/* ---------- scroll animation: each window tilts up out of the page and settles flat ----------
+   --p goes 0 → 1 as the project scrolls into view (set by projects.js) */
+.pj-project { --p: 0; perspective: 1600px; }
+.pj-window {
+  transform-origin: 50% 100%;
+  transform:
+    translateY(calc((1 - var(--p)) * 140px))
+    rotateX(calc((1 - var(--p)) * 22deg))
+    scale(calc(0.86 + var(--p) * 0.14));
+  opacity: calc(0.15 + var(--p) * 0.85);
+  filter: blur(calc((1 - var(--p)) * 8px));
+  will-change: transform;
+}
+.pj-project.is-settled .pj-window { filter: none; }
+/* the text column drifts in from the side the window isn't on */
+.pj-info { transform: translateX(calc((1 - var(--p)) * 70px)); }
+.pj-project.is-flipped .pj-info { transform: translateX(calc((1 - var(--p)) * -70px)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pj-window, .pj-info { transform: none !important; opacity: 1 !important; filter: none !important; }
+}
+@media (max-width: 767px) {
+  .pj-project.is-flipped { flex-direction: column; }
+  .pj-project.is-flipped .pj-info { width: 100%; margin-left: 0; align-self: stretch; }
+  .pj-project + .pj-project { margin-top: 96px; }
+  .pj-info, .pj-project.is-flipped .pj-info { transform: translateY(calc((1 - var(--p)) * 40px)); }
+}
+
+/* placeholders: normal cursor (no 👀 there yet) */
+.pj-window-video.pj-placeholder, .pj-window-video.pj-placeholder:hover { cursor: inherit; }
+
+/* "N days" pill built in HTML (same look as the Figma one), coloured per project with --accent */
+.pj-days {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  height: 50px;
+  padding: 0 24px 0 25px;
+  border-radius: 25px;
+  background: var(--accent, #1F66FF);
+  box-shadow: 1px 7px 0.4px rgba(0, 0, 0, 0.05);
+  color: #fff;
+  font-size: 20.5px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.pj-days svg { width: 24px; height: 25px; }
+@media (max-width: 767px) { .pj-days { height: 40px; font-size: 16px; padding: 0 18px; gap: 9px; } .pj-days svg { width: 19px; height: 20px; } }
+
+/* ---------- descriptions: each paragraph softly fades up out of a blur, one after another ---------- */
+.pj-type { opacity: 0; filter: blur(10px); translate: 0 14px;
+  transition: opacity 0.9s ease, filter 0.9s ease, translate 1s cubic-bezier(.22, .8, .25, 1); }
+.pj-type.is-shown { opacity: 1; filter: none; translate: 0 0; }
+/* hovering the text paints the letters under the cursor in the project colour, which then fades back */
+.pj-type .tc.done.lit { color: var(--accent-text, var(--accent, #1F66FF)); transition: color 0s; }
+.pj-type .tc.done { opacity: 1; color: rgba(0, 0, 0, 0.7); transition: color 0.9s ease; animation: none; }
+@media (prefers-reduced-motion: reduce) { .pj-type { opacity: 1; filter: none; translate: none; transition: none; } }
+
+/* rounded-square logos are pre-cropped to fill the circle (see shotbase-logo.png) */
+
+/* top bar pinned to the screen (moved out of the artboard by projects.js) */
+/* (.pj-fixed-top lives in styles.css: the home page pins its top bar the same way) */
+
+/* logo with its own shape (Clyro's cloud): sits on white inside the circle */
+.pj-client img.pj-logo-pad { background: #fff; padding: 5px; object-fit: contain; }
+
+/* "watch on site": same black pill as "watch on X", built in HTML */
+.pj-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 53px;
+  padding: 0 26px 0 24px;
+  border-radius: 27px;
+  background: #000;
+  color: #fff;
+  font-size: 20.5px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.45s cubic-bezier(.34, 1.56, .64, 1);
+}
+.pj-watch svg { width: 23px; height: 23px; }
+.pj-watch:hover { transform: translateY(-2px) scale(1.04); }
+@media (max-width: 767px) { .pj-watch { height: 42px; font-size: 16px; padding: 0 18px; gap: 8px; } .pj-watch svg { width: 18px; height: 18px; } }
+
+/* hero title comes in right away, together with the hill */
+.hx-title .w:nth-of-type(1) { animation-delay: 0.05s; }
+.hx-title .w:nth-of-type(2) { animation-delay: 0.12s; }
+.hx-title .w:nth-of-type(3) { animation-delay: 0.19s; }
+/* "Latest projects" comes in with its reveal (projects.js), not with the page-load word animation */
+.pj-h2 .w { animation: none; }
+
+/* hero off screen: its floating things stop (no work for nothing) */
+.pj-hero.is-away .hx-art { animation-play-state: paused; }
+
+/* ---------- a lot more projects (Figma "2section") ----------
+   Title, then an endless row of 545 × 748 cards (24.5px apart) drifting across the whole width; it slows
+   down on hover, and near both edges the cards stretch, turn away and blur (projects.js). */
+.pj-more { position: relative; padding: 0 0 180px; overflow: hidden; }
+.pj-more-title {
+  /* live text matching the Figma export (372 × 158): letters can turn into logos on hover (projects.js) */
+  display: block; width: max-content; margin: -9.6px 0 9.6px calc(50% - 960px + 97px);   /* baselines where the Figma text has them */
+  font-size: 89.9px; line-height: 78.7px; font-weight: 500; letter-spacing: -0.018em; color: #000;
+  cursor: default;
+}
+.pj-more-title .ln { display: block; }
+.pj-more-title .ch { position: relative; display: inline-block; transition: opacity 0.25s ease, filter 0.25s ease, scale 0.35s cubic-bezier(.34, 1.56, .64, 1); }
+.pj-more-title .ch.is-logo { opacity: 0; filter: blur(4px); scale: 0.6; }
+/* the logo that takes a letter's place */
+.pj-more-logo {
+  position: absolute; width: 0.62em; height: 0.62em; object-fit: contain; pointer-events: none;
+  translate: -50% -50%; animation: more-logo-in 0.45s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.pj-more-logo.out { animation: more-logo-out 0.3s ease forwards; }
+@keyframes more-logo-in { from { opacity: 0; scale: 0.3; rotate: -14deg; filter: blur(6px); } }
+@keyframes more-logo-out { to { opacity: 0; scale: 0.5; filter: blur(6px); } }
+.pj-more-row { position: relative; width: 100%; height: 673px; margin-top: 76px; }   /* cards at 90% (748 × 0.9) */   /* cards are placed by projects.js (endless loop) */
+.pj-more-card { position: absolute; left: 0; top: 0; display: block; width: 545px; height: 748px; will-change: transform, filter; backface-visibility: hidden; -webkit-tap-highlight-color: transparent; }   /* own GPU layer: moving + blurring it doesn't repaint it */   /* width grows on hover (projects.js) */
+.pj-more-shape {
+  /* ONE shape: the card itself. On hover it widens (same height) into 16:9 and the video shows inside it
+     (the card's width is set by projects.js) */
+  position: absolute; left: 0; top: 0; width: 100%; height: 663.19px;
+  border-radius: 41.59px; overflow: hidden; background: var(--bg); display: block;
+}
+.pj-more-label { position: absolute; left: 0; top: 0; width: 545px; height: 748px; display: block; }
+.pj-more-shape { z-index: 1; transition: opacity 0.4s ease; }   /* the card lies over its name tab, like in Figma */
+.pj-more-label { z-index: 0; transform: scale(0.82); transform-origin: 0 613px; }   /* name tabs a bit smaller, still hooked under the card's corner */
+.pj-more-svg { position: absolute; left: 50%; top: 50%; width: 545px; height: 663.19px; translate: -50% -50%; display: block; transition: opacity 0.35s ease; }   /* the logo stays centred while the shape morphs */
+.pj-more-card.is-playing .pj-more-svg { opacity: 0; }
+.pj-more-shape video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
+.pj-more-card.is-playing video { opacity: 1; }
+/* hover: the others step back (their names stay as they are) */
+/* (a page-coloured veil instead of opacity, so the name tab under the card never shows through) */
+.pj-more-shape::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(249, 253, 255, 0.65); opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
+}
+.pj-more-row.has-hover .pj-more-card:not(.is-hover) .pj-more-shape::after { opacity: 1; }
+.pj-more-label { transition: opacity 0.4s ease; }
+.pj-more-row.has-hover .pj-more-card:not(.is-hover) .pj-more-label { opacity: 0.35; }   /* their names fade back too */
+.pj-more-card:focus-visible { outline: none; }
+.pj-more-card:focus-visible .pj-more-shape { outline: 2px solid var(--blue); outline-offset: 4px; border-radius: 44px; }
+
+@media (max-width: 767px) {
+  .pj-more { align-self: flex-start; padding: 0 0 90px; overflow: hidden; width: 100vw; margin-left: -16px; }   /* edge to edge, from the screen's left edge (not centred) */
+  .pj-more-title { font-size: 52px; line-height: 46px; margin: 0 0 0 16px; }
+  .pj-more-row { height: 411px; margin-top: 36px; }   /* 748 × 0.55, the phone card scale in projects.js */
+}
+
+/* entrance: the title like the rest of the page, then the cards rise in one after another */
+.pj-more-row[data-reveal] { translate: none; filter: none; }          /* the cards animate themselves */
+.pj-more-row.is-in .pj-more-card { animation: more-in 1s cubic-bezier(.22, .9, .25, 1) backwards; animation-delay: calc(0.12s + var(--i, 0) * 0.08s); }
+@keyframes more-in { from { opacity: 0; translate: 0 70px; scale: 0.94; } }
+@media (prefers-reduced-motion: reduce) { .pj-more-row.is-in .pj-more-card { animation: none; } }
+
+/* Editucation / VoiceOS icons: plain images (inside an SVG they were re-drawn every frame while moving) */
+.pj-more-icon { position: absolute; overflow: hidden; }
+.pj-more-icon img { position: absolute; display: block; }
+
+/* Safari: no scroll-linked blur on the project windows, and the moving cards without the filter hint */
+.is-safari .pj-window { filter: none !important; }
+.is-safari .pj-more-card { will-change: transform; }
+
+@keyframes hx-fly-m {   /* phones: the same flight, from where the phone is in the phone layout */
+  0.0% { translate: 235.0px 283.0px; rotate: 39.7deg; scale: 0.400; opacity: 0.00; filter: blur(4.0px); }
+  4.2% { translate: 209.3px 240.1px; rotate: 37.6deg; scale: 0.472; opacity: 0.42; filter: blur(3.2px); }
+  8.3% { translate: 185.2px 203.0px; rotate: 35.6deg; scale: 0.538; opacity: 0.83; filter: blur(2.3px); }
+  12.5% { translate: 162.6px 170.8px; rotate: 33.6deg; scale: 0.598; opacity: 1.00; filter: blur(1.5px); }
+  16.7% { translate: 141.7px 143.1px; rotate: 31.7deg; scale: 0.653; opacity: 1.00; filter: blur(0.7px); }
+  20.8% { translate: 122.5px 119.2px; rotate: 29.8deg; scale: 0.702; opacity: 1.00; filter: blur(0.0px); }
+  25.0% { translate: 104.9px 98.7px; rotate: 28.1deg; scale: 0.747; opacity: 1.00; filter: blur(0.0px); }
+  29.2% { translate: 88.9px 81.1px; rotate: 26.5deg; scale: 0.787; opacity: 1.00; filter: blur(0.0px); }
+  33.3% { translate: 74.5px 66.1px; rotate: 25.1deg; scale: 0.822; opacity: 1.00; filter: blur(0.0px); }
+  37.5% { translate: 61.7px 53.4px; rotate: 23.6deg; scale: 0.854; opacity: 1.00; filter: blur(0.0px); }
+  41.7% { translate: 50.4px 42.7px; rotate: 21.9deg; scale: 0.881; opacity: 1.00; filter: blur(0.0px); }
+  45.8% { translate: 40.5px 33.6px; rotate: 19.9deg; scale: 0.905; opacity: 1.00; filter: blur(0.0px); }
+  50.0% { translate: 31.9px 26.1px; rotate: 17.8deg; scale: 0.925; opacity: 1.00; filter: blur(0.0px); }
+  54.2% { translate: 24.7px 19.9px; rotate: 15.7deg; scale: 0.942; opacity: 1.00; filter: blur(0.0px); }
+  58.3% { translate: 18.6px 14.8px; rotate: 13.5deg; scale: 0.957; opacity: 1.00; filter: blur(0.0px); }
+  62.5% { translate: 13.6px 10.7px; rotate: 11.4deg; scale: 0.968; opacity: 1.00; filter: blur(0.0px); }
+  66.7% { translate: 9.5px 7.5px; rotate: 9.4deg; scale: 0.978; opacity: 1.00; filter: blur(0.0px); }
+  70.8% { translate: 6.4px 5.0px; rotate: 7.5deg; scale: 0.985; opacity: 1.00; filter: blur(0.0px); }
+  75.0% { translate: 4.0px 3.1px; rotate: 5.8deg; scale: 0.991; opacity: 1.00; filter: blur(0.0px); }
+  79.2% { translate: 2.3px 1.8px; rotate: 4.2deg; scale: 0.995; opacity: 1.00; filter: blur(0.0px); }
+  83.3% { translate: 1.2px 0.9px; rotate: 2.8deg; scale: 0.997; opacity: 1.00; filter: blur(0.0px); }
+  87.5% { translate: 0.5px 0.4px; rotate: 1.7deg; scale: 0.999; opacity: 1.00; filter: blur(0.0px); }
+  91.7% { translate: 0.1px 0.1px; rotate: 0.8deg; scale: 1.000; opacity: 1.00; filter: blur(0.0px); }
+  95.8% { translate: 0.0px 0.0px; rotate: 0.2deg; scale: 1.000; opacity: 1.00; filter: blur(0.0px); }
+  100.0% { translate: 0.0px 0.0px; rotate: 0.0deg; scale: 1.000; opacity: 1.00; filter: blur(0.0px); }
+}
+/* ---------- phones: the hero as its own 600 × 924 composition, scaled to the screen width (--hs, projects.js) ---------- */
+/* big and packed: a large phone, the things big too, pressed against its edges */
+@media (max-width: 767px) {
+  .pj-hero {
+    align-self: flex-start; flex: none;
+    width: 600px; height: 924px; margin: calc(18vh - 87.6px) 0 calc(924px * (var(--hs, 0.655) - 1)) -16px;   /* 18vh: the title sits where the home headline is */
+    transform: scale(var(--hs, 0.655)); transform-origin: 0 0; overflow: visible;
+    clip-path: inset(-400px 0 0 0);   /* cut at the bottom of the grass: the phone sinks into it (~40% hidden) */
+  }
+  .hx-title.headline { top: 120.5px; font-size: 70px; line-height: 84px; }   /* halfway between the top bar and the phone */
+  .hx-hill { left: -600px; right: -600px; top: 407px; height: 517px; }   /* a bigger hill whose photo ends exactly at the hero cut: the phone sinks into the grass */
+  .hx-phone { left: 75.5px; top: 364px; scale: 1.1; transform-origin: 50% 0; }
+  .hx-thing > .hx-art, .hx-book > svg, .hx-book > img { width: 100%; height: 100%; }
+  .hx-plane { left: 0; top: 459px; width: 130px; height: 130px; animation: hx-fly-m 2.3s linear 1.05s backwards; }
+  .hx-sat   { left: 373.4px; top: 493px; width: 255.5px; height: 129.9px; z-index: 4; --fx: -201px; --fy: 250px; }   /* as wide as the book card, right on top of it */
+  .hx-alien { left: 5px; top: 613px; width: 150px; height: 150px; z-index: 2; --fx: 220px; --fy: 118px; }   /* peeks from behind the phone */
+  .hx-pool  { left: 0; top: 760px; width: 220px; height: 131px; z-index: 4; --fx: 190px; --fy: -56px; }
+  .hx-book  { left: 380px; top: 587px; width: 242px; height: 303px; z-index: 4; --fx: -201px; --fy: 69px; }
+  .hx-book-card { left: 10.82%; top: 0.74%; width: 78.22%; height: 68%; border-radius: 36px; }   /* shorter: only "Book" under the book */
+  .hx-book-desc { display: none; }
+  /* the things come in earlier on phones, right after the phone */
+  .hx-plane { animation-delay: 0.6s; }
+  .hx-alien { animation-delay: 0.4s; }
+  .hx-pool  { animation-delay: 0.47s; }
+  .hx-sat   { animation-delay: 0.54s; }
+  .hx-book, .hx-book > svg, .hx-book > img, .hx-book > .hx-book-card { animation-delay: 0.6s; }
+}
+
+/* ---------- liquid glass on this page (liquid-glass.css / .js) ---------- */
+/* the frosted card behind the book */
+.hx-book-card.liquid-glass {
+   --glass-fallback-blur: 11.45px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(0, 0, 0, 0.05), 0 30px 33px rgba(0, 0, 0, 0.08);
+}
+/* "watch on X": the black pill of the drawn button turns into dark glass, the logo + text stay */
+.pj-tag-x.liquid-glass {
+  border-radius: 999px;
+  background: rgba(10, 10, 12, 0.62);
+}
+.pj-tag-x.liquid-glass svg rect[fill="black"] { fill: transparent; }
+/* video player controls */
+.qv-btn.liquid-glass, .qv-vol.liquid-glass {
+  background: rgba(30, 30, 30, 0.28);
+}
+.qv-btn.liquid-glass:hover { background: rgba(60, 60, 60, 0.45); }
+
+/* a client chip that opens the client's own page (Clyro): same look, a soft lift on hover, a press on click */
+a.pj-client-link { color: inherit; text-decoration: none; transition: transform 0.45s cubic-bezier(.22, 1, .36, 1), opacity 0.25s ease; }
+a.pj-client-link:hover { transform: translateY(-2px); }
+a.pj-client-link:hover img { transform: scale(1.06); }
+a.pj-client-link img { transition: transform 0.5s cubic-bezier(.22, 1, .36, 1); }
+a.pj-client-link:active { transform: scale(0.97); transition-duration: 0.15s; }
+a.pj-client-link {
+  transition:
+    opacity 0.9s ease var(--d, 0s),
+    filter 0.9s ease var(--d, 0s),
+    translate 1s cubic-bezier(.22, .8, .25, 1) var(--d, 0s),
+    transform 0.45s cubic-bezier(.22, 1, .36, 1);
+}
+
+/* Editucation block (under "A lot more projects"): the same layout as a project, its own section */
+.pj-edu { padding-top: 40px; }
+.pj-client img.pj-logo-edu { padding: 0; background: none; object-fit: cover; transform: scale(1.06); }
+@media (max-width: 767px) { .pj-edu { padding-top: 24px; } }
+/* Editucation: the whole app icon shows (no crop), and the window frame is in its red */
+.pj-client img.pj-logo-edu { transform: none; object-fit: contain; border-radius: 14px; background: none; }
+#editucation .pj-window { background: linear-gradient(160deg, #8A2420 0%, #5E1616 55%, #3A0B0B 100%); box-shadow: 8px 22px 30px rgba(94, 22, 22, 0.22); }
+#editucation .pj-dots i { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15); }
+/* Editucation logo: a circle like the other clients' chips (zoomed just past the icon's own rim) */
+.pj-client img.pj-logo-edu { border-radius: 50%; object-fit: cover; transform: scale(1.12); }
+.pj-client img.pj-logo-edu { transform: none; object-view-box: inset(6%); }
+
+/* Editucation section v2: the whole section sits on Editucation red (full-bleed); the video window is the
+   same white frame as the projects above; white type, light-red hover; less room under the title */
+.pj-edu { position: relative; isolation: isolate; padding-top: 150px; padding-bottom: 170px; margin-top: 40px; }
+.pj-edu::before {
+  content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: -3000px; right: -3000px;
+  background: radial-gradient(60% 90% at 30% 0%, #7A1E1B 0%, rgba(122, 30, 27, 0) 70%), linear-gradient(180deg, #4A1010 0%, #2A0808 100%);
+}
+.pj-edu .pj-h2.headline { color: #fff; }
+.pj-edu .headline .ch:hover { color: #FF8A7C; }
+#editucation { margin-top: 64px; }
+#editucation .pj-window { background: #f6f6f6; box-shadow: 8px 22px 40px rgba(0, 0, 0, 0.35); }
+#editucation .pj-dots i { box-shadow: none; }
+.pj-edu .pj-client { background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.pj-edu .pj-type .tc.done { color: rgba(255, 255, 255, 0.78); }
+.pj-edu .pj-type .tc.done.lit { color: #FF8A7C; }
+.pj-edu .pj-days { background: #E5392B; box-shadow: 0 8px 20px rgba(229, 57, 43, 0.25); }
+.pj-edu .pj-watch { background: #fff; color: #2A0808; }
+@media (max-width: 767px) {
+  .pj-edu { padding-top: 80px; padding-bottom: 90px; }
+  #editucation { margin-top: 28px; }
+}
+/* Editucation section: one solid red, no button glow, a tighter section */
+.pj-edu::before { background: #4A1010; }
+.pj-edu .pj-days { box-shadow: none; }
+.pj-edu .pj-watch { box-shadow: none; }
+.pj-edu { padding-top: 96px; padding-bottom: 110px; }
+#editucation { margin-top: 48px; }
+@media (max-width: 767px) { .pj-edu { padding-top: 56px; padding-bottom: 64px; } #editucation { margin-top: 22px; } }
+#editucation .pj-window { box-shadow: 8px 22px 21px rgba(0, 0, 0, 0.1); }
+/* the window frame on the red: a see-through white, not solid */
+#editucation .pj-window { background: rgba(246, 246, 246, 0.16); }

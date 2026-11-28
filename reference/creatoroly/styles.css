@@ -1,0 +1,745 @@
+:root {
+  --bg: #f9fdff;
+  --ink: #000;
+  --muted: rgba(0, 0, 0, 0.5);
+  --blue: #1f66ff;
+  --wordmark: #ebf0f3;   /* softer, closer to the background */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* nothing on the page can be selected or dragged (fields still work normally) */
+html, body { -webkit-user-select: none; user-select: none; }
+html { scrollbar-gutter: stable; }   /* the scrollbar's room is kept from the start, so nothing shifts when it appears */
+img, svg { -webkit-user-drag: none; user-drag: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }
+
+/* custom cursors: arrow everywhere, hand on anything interactive */
+html, body {
+  cursor: url(assets/cursors/cursor.png?v=1792255496) 21 23, auto;
+  cursor: -webkit-image-set(url(assets/cursors/cursor.png?v=1792255496) 1x, url(assets/cursors/cursor@2x.png?v=1792255496) 2x) 21 23, auto;
+  cursor: image-set(url(assets/cursors/cursor.png?v=1792255496) 1x, url(assets/cursors/cursor@2x.png?v=1792255496) 2x) 21 23, auto;
+}
+a, button, .btn, .float, .headline, .status,
+[role="button"], [role="option"], [role="tab"], label, select, summary,
+input[type="range"], input[type="checkbox"], input[type="radio"],
+.rq-dd-trigger, .rq-messenger, .wh-card, .wh-icon, .wh-hint, .wh-x, .wh-seg, .wh-seg *, .hx-thing, .pj-more-card, .qv-btn, .cl-buddy, .cl-player,
+.island:not([data-kind="spots"]):not([data-kind="leave"]):not([data-kind="home"]) {   /* everything you can click: the hand (notifications can be clicked away) */
+  cursor: url(assets/cursors/pointer.png?v=1792255496) 26 20, pointer;
+  cursor: -webkit-image-set(url(assets/cursors/pointer.png?v=1792255496) 1x, url(assets/cursors/pointer@2x.png?v=1792255496) 2x) 26 20, pointer;
+  cursor: image-set(url(assets/cursors/pointer.png?v=1792255496) 1x, url(assets/cursors/pointer@2x.png?v=1792255496) 2x) 26 20, pointer;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.viewport {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* 1920×1080 artboard, scaled by JS */
+.stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* scale + width are worked out in <head> (--s / --sw) so the page is centred from the very first
+     paint; the page scripts then keep them up to date */
+  width: var(--sw, 1920px);
+  height: 1080px;
+  transform: scale(var(--s, 1));
+  transform-origin: 0 0;
+  translate: 0 calc(-1 * var(--dip, 0px));          /* rubber-band scroll (set from JS) */
+}
+
+/* ---------- top bar ---------- */
+.top {
+  position: absolute;
+  top: calc(22px + var(--dip-counter, 0px));
+  left: calc(50% - 125px);
+  display: flex;
+  align-items: center;
+  gap: 0;                    /* (island.js PILL.x = avatar width + this gap) */
+  transform: scale(1);
+  transform-origin: 50% 50%;
+  z-index: 5;
+  --rounded: ui-rounded, "SF Pro Rounded", "Nunito", -apple-system, sans-serif;
+}
+
+/* ---------- dynamic island notification ---------- */
+.avatar { transition: opacity 0.3s ease, scale 0.4s cubic-bezier(.34, 1.56, .64, 1); }
+.top.island-open .avatar { opacity: 0; scale: 0.6; }
+
+.island {
+  --iw: 400px;
+  position: absolute;
+  /* closed: exactly on top of the black pill */
+  left: 54px;
+  top: 10px;
+  width: 134px;
+  height: 34px;
+  border-radius: 17px;
+  /* liquid glass: solid black while it's the pill, turns into tinted see-through glass as it
+     opens (--g goes 0 → 1 from JS with the island's size) */
+  --g: 0;
+  /* solid black at the top (like it grows out of the notch) fading into see-through glass at the bottom */
+  background: linear-gradient(to bottom,
+    rgba(8, 8, 10, 1) 0%,
+    rgba(8, 8, 10, 1) 38%,
+    rgba(8, 8, 10, calc(1 - 0.1 * var(--g))) 55%,
+    rgba(14, 14, 16, calc(1 - 0.55 * var(--g))) 100%);
+  /* live: whatever passes behind (icons, text) shows through blurred and colour-boosted */
+  -webkit-backdrop-filter: blur(14px) saturate(2) brightness(1.05);
+          backdrop-filter: blur(14px) saturate(2) brightness(1.05);
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px 0 14px;
+  overflow: hidden;
+  visibility: hidden;
+  font-family: var(--rounded);
+  color: #fff;
+  /* size, position, shadow and bounce are driven by a spring simulation in index.html */
+}
+.top.island-on .island { visibility: visible; }
+
+/* glass edge: thin light stroke, brightest at the top-left and bottom-right like real glass */
+.island::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.2px;
+  background: linear-gradient(to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0) 45%,
+    rgba(255, 255, 255, 0.08) 65%,
+    rgba(255, 255, 255, 0.38) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: var(--g);
+  pointer-events: none;
+}
+/* glass body: soft specular sheen from the top + faint inner light */
+.island::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(110% 80% at 50% 125%, rgba(255, 255, 255, 0.14), transparent 60%);
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -14px 28px rgba(255, 255, 255, 0.05);
+  opacity: var(--g);
+  pointer-events: none;
+}
+.island > * { position: relative; z-index: 1; }
+
+/* buttons get a little glassy highlight too */
+.island-ok { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.12); }
+
+/* the green dot hides under the island and softly fades back in once it has closed */
+.status .dot { transition: opacity 0.7s ease, filter 0.7s ease; }
+.top.island-on .status .dot { opacity: 0; filter: blur(3px); transition-duration: 0.15s; }
+/* the real pill hides while the island is out, so the island's bounce on closing
+   (shrinking a bit past the pill and springing back) is actually visible */
+.top.island-on .status { opacity: 0; }
+
+.island > * {
+  opacity: 0;                 /* opacity + blur are driven from JS with the island's size */
+}
+
+.island-avatar {
+  width: 54px;
+  height: 54px;
+  flex: none;
+  object-fit: contain;
+}
+
+.island-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+}
+.island-text strong { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+.island-text span   { font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.55); }
+
+.island-ok {
+  flex: none;
+  height: 40px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--blue);
+  color: #fff;
+  font-family: var(--rounded);
+  font-size: 15px;
+  font-weight: 700;
+  transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1), background 0.2s ease;
+}
+.island-ok:hover  { transform: scale(1.06); background: #3a7bff; }
+.island-ok:active { transform: scale(0.95); }
+
+/* the scroll "Okay" uses Apple's system red (dark-mode tint) so it reads differently from Request */
+#islandOk, .island-red { background: #ff453a; }
+#islandOk:hover, .island-red:hover { background: #ff5f55; }
+
+/* which button shows depends on the message */
+.island-request { display: inline-flex; align-items: center; text-decoration: none; }
+[data-for][hidden] { display: none; }
+
+/* green "done" check (Apple style): the circle pops in with a spring, then the tick draws */
+.island-check { flex: none; width: 40px; height: 40px; overflow: visible; }
+.island-check circle { fill: #30d158; transform-origin: 50% 50%; transform-box: fill-box; }
+.island-check path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+}
+.island-check.play circle { animation: check-pop 0.55s cubic-bezier(.34, 1.7, .5, 1) 0.15s both; }
+.island-check.play path   { animation: check-draw 0.35s cubic-bezier(.6, 0, .3, 1) 0.45s forwards; }
+@keyframes check-pop  { from { transform: scale(0); } to { transform: scale(1); } }
+/* red "!" variant: same pop, then the mark drops in */
+.island-alert circle { fill: #ff453a; }
+.island-alert path { stroke-dasharray: 12; stroke-dashoffset: 12; stroke-width: 3.6; }
+.island-alert path.dot { stroke-dasharray: 2; stroke-dashoffset: 2; stroke-width: 4; }
+.island-alert.play path { animation: check-draw 0.3s cubic-bezier(.6, 0, .3, 1) 0.42s forwards; }
+@keyframes check-draw { to { stroke-dashoffset: 0; } }
+
+.avatar {
+  width: 54px;
+  height: 54px;
+  padding: 4px;              /* picture a touch smaller, same spot in the bar */
+  display: block;
+  object-fit: contain;
+}
+
+.status {
+  width: 134px;
+  height: 34px;
+  border-radius: 17px;
+  background: #0e0e0e;
+  position: relative;
+}
+
+.status .dot {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: #0b3e2d;
+}
+
+.status .dot::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #00ffaa;
+  box-shadow: 0 0 6px rgba(0, 255, 170, 0.8);
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+/* live signal: ring that keeps pinging out of the dot */
+.status .ping {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #00ffaa;
+  animation: ping 1.6s cubic-bezier(0, 0, .2, 1) infinite;
+}
+
+@keyframes ping {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  80%, 100% { transform: scale(2.8); opacity: 0; }
+}
+
+@keyframes breathe {               /* opacity only: runs on the compositor, no repaint every frame */
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+
+/* ---------- logos ---------- */
+.lane {
+  position: absolute;
+  top: 0;
+  width: 700px;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+  /* fade in from behind the hero, fade out at the very edge and at top/bottom */
+  -webkit-mask:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%),
+    linear-gradient(var(--fade-dir), transparent 0, #000 45%, #000 92%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask:
+    linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%),
+    linear-gradient(var(--fade-dir), transparent 0, #000 45%, #000 92%, transparent 100%);
+          mask-composite: intersect;
+}
+.lane-left  { left: 0;  --fade-dir: to left; }
+.lane-right { right: 0; --fade-dir: to right; }
+
+.float {
+  position: absolute;
+  top: 0;
+  will-change: transform;
+  pointer-events: auto;
+}
+
+.float img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  user-select: none;
+  animation: bob var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+/* logos without a project page yet: plain arrow, nothing happens on click */
+.stage .float.float-idle { cursor: inherit; }
+
+/* hover: the icon stops, gently grows and sways */
+.float:hover img {
+  animation: pop 0.9s cubic-bezier(.25, .8, .3, 1) forwards, sway 2.4s ease-in-out 0.9s infinite;
+}
+
+@keyframes pop {
+  from { transform: scale(1) rotate(var(--rot)); }
+  to   { transform: scale(1.15) rotate(0deg); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: scale(1.15) rotate(0deg); }
+  25%      { transform: scale(1.17) rotate(-3deg); }
+  75%      { transform: scale(1.17) rotate(3deg); }
+}
+
+@keyframes bob {
+  from { transform: translate(-6px, 0) rotate(calc(var(--rot) - 4deg)); }
+  to   { transform: translate(6px, -10px) rotate(calc(var(--rot) + 4deg)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float img { animation: none; transform: rotate(var(--rot)); }
+  .cups:hover .hp-band, .cups:hover .hp-cup, .btn:hover::after { animation: none; }
+  .status .ping, .status .dot::after { animation: none; }
+}
+
+/* ---------- hero ---------- */
+.hero {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(346px + var(--extra, 0px));
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+  transform: scale(1.1);
+  transform-origin: 50% 50%;
+}
+
+.headline {
+  display: inline-block;
+  -webkit-user-select: none;
+          user-select: none;
+  pointer-events: auto;
+  font-size: 62px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 60px;
+  white-space: nowrap;
+}
+
+.cups {
+  display: inline-block;
+  width: 1.115em;   /* 58×53 at 52px */
+  height: 1.019em;
+  margin: 0 -0.02em;
+  vertical-align: -0.04em;
+  overflow: visible;
+  color: var(--ink);
+}
+
+/* each letter pops up and turns CTA blue on hover */
+.headline .ch {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1), color 0.25s ease;
+}
+.headline .ch:hover {
+  transform: translateY(-2px) scale(1.18);
+  color: var(--blue);
+  transition-duration: 0.2s, 0.15s;
+}
+
+.hp-band, .hp-cup {
+  transform-box: fill-box;
+  transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1);
+}
+.hp-band { transform-origin: 50% 100%; }
+.hp-cup  { transform-origin: 50% 50%; }
+
+/* hover on the headphones: they start bumping to the beat */
+.cups:hover .hp-band  { animation: band-bump 0.46s ease-in-out infinite; }
+.cups:hover .hp-cup-l { animation: cup-thump 0.46s ease-in-out infinite; }
+.cups:hover .hp-cup-r { animation: cup-thump 0.46s ease-in-out 0.23s infinite; }
+
+@keyframes band-bump {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  30%      { transform: translateY(-4px) scaleX(1.04); }
+}
+
+@keyframes cup-thump {
+  0%, 100% { transform: scale(1) rotate(0); }
+  25%      { transform: scale(1.12) rotate(-6deg); }
+  50%      { transform: scale(0.96) rotate(3deg); }
+}
+
+.sub {
+  margin-top: 9px;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn {
+  pointer-events: auto;
+  height: 45px;
+  border-radius: 23px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17.5px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.45s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.3s ease;
+}
+
+.btn:hover  { transform: translateY(-3px) scale(1.04); }
+.btn:active { transform: translateY(0) scale(0.97); transition-duration: 0.12s; }
+
+/* light sweep across the button on hover */
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 40%;
+  transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  pointer-events: none;
+}
+.btn:hover::after { animation: sweep 0.75s ease; }
+
+@keyframes sweep {
+  to { left: 130%; }
+}
+
+.btn-primary {
+  width: 179px;
+  background: var(--blue);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 6px 16px rgba(31, 102, 255, 0.18);
+}
+.btn-primary:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25), 0 12px 28px rgba(31, 102, 255, 0.38);
+}
+
+.btn-secondary {
+  width: 142px;
+  background: #fff;
+  color: #363636;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+.btn-secondary::after { background: linear-gradient(90deg, transparent, rgba(31, 102, 255, 0.12), transparent); }
+.btn-secondary:hover { box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1); }
+
+/* ---------- background wordmark ---------- */
+.wordmark {
+  position: absolute;
+  left: calc(50% - 455px);
+  bottom: -110px;               /* sits lower so its bottom stays cut off even when the page dips */
+  width: 926px;
+  height: 433px;
+  background: var(--wordmark);
+  -webkit-mask: url(assets/oly.svg) no-repeat 0 0 / 100% 100%;
+          mask: url(assets/oly.svg) no-repeat 0 0 / 100% 100%;
+  z-index: 0;
+}
+
+/* home: the OLY slides down into the footer while you scroll, turns white and goes from bold to
+   regular (transform, colour and --w are set from index.html) */
+.wordmark.morph svg { display: none; }
+@media (min-width: 768px) {
+  .wordmark.morph { background: none; -webkit-mask: none; mask: none; }
+  .wordmark.morph svg { display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+}
+
+/* blur trail left by the cursor over OLY */
+.trail {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.blob {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  margin: -65px 0 0 -65px;
+  border-radius: 50%;
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%);
+          mask: radial-gradient(circle, #000 30%, transparent 70%);
+  animation: blob-fade 1.1s cubic-bezier(.3, .6, .4, 1) forwards;
+}
+
+@keyframes blob-fade {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.55); }
+}
+
+/* ---------- soft blur-in entrance ---------- */
+/* uses the individual `translate` property so it never fights the elements' own transforms */
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(14px); translate: 0 14px; }
+  to   { opacity: 1; filter: blur(0);    translate: 0 0; }
+}
+@keyframes fade-soft {
+  from { opacity: 0; filter: blur(24px); }
+  to   { opacity: 1; filter: blur(0); }
+}
+
+.top,
+.headline .w,
+.sub,
+.btn {
+  animation: blur-in 1.1s cubic-bezier(.22, .8, .25, 1) both;
+}
+.headline .w { display: inline-block; }
+/* top bar: don't keep a (blur(0)) filter after its entrance — a filter there would stop the
+   island's backdrop blur from seeing the page behind it */
+.top { animation-fill-mode: backwards; }
+
+.top                     { animation-delay: 0.05s; }
+.headline .w:nth-of-type(1) { animation-delay: 0.25s; }
+.headline .w:nth-of-type(2) { animation-delay: 0.35s; }
+.headline .w:nth-of-type(3) { animation-delay: 0.45s; }
+.headline .w:nth-of-type(4) { animation-delay: 0.55s; }
+.sub                     { animation-delay: 0.75s; }
+.btn-primary             { animation-delay: 0.9s; }
+.btn-secondary           { animation-delay: 1s; }
+
+/* headphones: drop in with a bounce while flashing through colours, then settle to black */
+.cups { animation: hp-colors 1.6s ease-in-out 0.55s both; }
+.in-band, .in-cup { transform-box: fill-box; }
+.in-band { transform-origin: 50% 100%; animation: hp-drop 1s cubic-bezier(.34, 1.56, .64, 1) 0.55s both; }
+.in-cup  { transform-origin: 50% 60%;  animation: hp-pop 0.9s cubic-bezier(.34, 1.8, .64, 1) both; }
+.in-cup-l { animation-delay: 0.7s; }
+.in-cup-r { animation-delay: 0.82s; }
+
+@keyframes hp-colors {
+  0%   { color: #1f66ff; }
+  25%  { color: #00d68f; }
+  50%  { color: #ff5a1f; }
+  75%  { color: #ff3d8b; }
+  100% { color: var(--ink); }
+}
+@keyframes hp-drop {
+  0%   { opacity: 0; transform: translateY(-28px) scale(0.6); }
+  50%  { opacity: 1; }
+  70%  { transform: translateY(2px) scale(1.05, 0.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes hp-pop {
+  0%   { opacity: 0; transform: scale(0) rotate(-25deg); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+/* the big OLY doesn't move in: it fades in from top to bottom with a soft blur */
+.wordmark { animation: wm-fade 1.6s ease 0.3s backwards; }
+@keyframes wm-fade {
+  from { opacity: 0; filter: blur(10px); }
+  to   { opacity: 1; filter: blur(0); }
+}
+@media (min-width: 768px) {
+  .wordmark.morph svg {
+    -webkit-mask: linear-gradient(#000 40%, transparent 60%) 0 100% / 100% 250% no-repeat;
+            mask: linear-gradient(#000 40%, transparent 60%) 0 100% / 100% 250% no-repeat;
+    animation: wm-wipe 1.8s cubic-bezier(.4, 0, .2, 1) 0.3s forwards;
+  }
+}
+@keyframes wm-wipe {
+  to { -webkit-mask-position: 0 0; mask-position: 0 0; }
+}
+
+/* the big OLY slowly rises from below the fold */
+@keyframes rise-up {
+  from { opacity: 0; filter: blur(6px); translate: 0 260px; }
+  40%  { opacity: 1; }
+  to   { opacity: 1; filter: blur(0);   translate: 0 0; }
+}
+.lane     { animation: fade-soft 1.6s ease 1.1s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .top, .headline .w, .sub, .btn, .wordmark, .lane, .cups, .in-band, .in-cup { animation: none; }
+}
+
+/* ---------- mobile (no Figma frame yet — sensible fallback) ---------- */
+/* mobile-only bits stay hidden on desktop */
+.m-br, .m-marquee { display: none; }
+@keyframes m-scroll { to { transform: translateX(-50%); } }
+
+@media (max-width: 767px) {
+  .stage {
+    position: relative;
+    transform: none;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    padding: 24px 16px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .top { position: relative; left: auto; top: var(--dip-counter, 0px); transform: none; margin-top: -14px; left: -27px; scale: 0.82; transform-origin: 121px 0;   /* smaller on phones, around the pill's centre */   /* real Dynamic-Island size, pill centred on screen (avatar to its left) */ }
+  .island { --iw: min(400px, calc(100vw - 24px)); }
+  .lane { display: none; }
+  .hero { position: static; margin-top: 18vh; transform: none; }
+  /* headline fills the screen width (≈ 9.3em wide), capped at the desktop size */
+  /* headline on two lines ("i make" / "smooth motion"), as big as the screen allows */
+  .m-br { display: inline; }
+  .headline { font-size: min(60px, calc((100vw - 32px) / 7.6)); line-height: 1.05; }
+  .sub { font-size: min(20px, 4.6vw); line-height: 1.35; margin: 16px auto 0; max-width: 290px; }
+  /* buttons stacked, full width, thumb-friendly */
+  .actions { flex-direction: row; justify-content: center; gap: 8px; margin: 24px auto 0; width: auto; }   /* side by side */
+  .btn { height: 44px; border-radius: 22px; font-size: 15.5px; width: auto; padding: 0 20px; }
+  .btn-primary, .btn-secondary { width: auto; }
+  .btn-primary, .btn-secondary { padding: 0 20px; }   /* same side padding on both, each as wide as its text */
+  .btn:hover { transform: none; }
+
+  /* client logos gliding by in one row, fading + blurring out at both edges */
+  .m-marquee {
+    display: block;
+    position: relative;
+    width: 100vw;
+    margin-top: calc(18vh + 10px);    /* same gap under the hero as above it; the logos sit right on the footer */
+    overflow: hidden;
+    -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+            mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+    animation: fade-soft 1.4s ease 1.1s both;
+  }
+  .m-marquee::before,
+  .m-marquee::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 30%;
+    z-index: 1;
+    -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+  }
+  .m-marquee::before { left: 0;  -webkit-mask: linear-gradient(90deg, #000, transparent); mask: linear-gradient(90deg, #000, transparent); }
+  .m-marquee::after  { right: 0; -webkit-mask: linear-gradient(-90deg, #000, transparent); mask: linear-gradient(-90deg, #000, transparent); }
+  .m-strip {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    width: max-content;
+    padding: 6px 20px;
+    animation: m-scroll 26s linear infinite;
+  }
+  .m-strip img { display: block; width: auto; }
+  .wordmark {
+    position: absolute;
+    left: 50%;
+    top: auto;
+    bottom: 0;
+    width: 92vw;
+    height: calc(92vw * 433 / 926);
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- Safari: lighter effects (it redraws blur behind fixed elements on every scroll frame) ---------- */
+.is-safari .top:not(.island-on) .island { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.is-safari .fb-btn { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(18, 18, 20, 0.94); }
+
+/* phones: every message in the pill shows only its main line (no second line) */
+@media (max-width: 767px) {
+  .island .island-text span { display: none; }
+}
+
+
+/* ---------- liquid glass on the site (liquid-glass.css / .js) ---------- */
+/* the open island: its own black-to-glass gradient stays, the refraction comes on top */
+.island.liquid-glass { background-color: transparent; }
+/* feedback button */
+.fb-btn.liquid-glass {
+  background: rgba(14, 14, 16, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+.is-safari .fb-btn.liquid-glass {
+  background: rgba(14, 14, 16, 0.62);
+  -webkit-backdrop-filter: blur(var(--glass-fallback-blur)) saturate(var(--glass-saturate));
+          backdrop-filter: blur(var(--glass-fallback-blur)) saturate(var(--glass-saturate));
+}
+
+/* top bar pinned to the screen (moved out of the scaled artboard by the page script: home + projects) */
+.pj-fixed-top { position: fixed !important; z-index: 60; margin: 0 !important; translate: none !important; }
+/* phones (home): the pinned bar used to sit in the page flow — this keeps the same room above the hero */
+.top-spacer { display: none; }
+@media (max-width: 767px) { .top-spacer { display: block; height: 40px; } }   /* 54px bar − 14px margin */
+
+/* touch screens: tapping anything clickable never selects its text, never pops the long-press menu and
+   never flashes the grey tap highlight (everywhere on the site) */
+@media (hover: none), (max-width: 767px) {
+  a, button, .btn, .float, .headline, .status, .island, .island *,
+  [role="button"], [role="option"], [role="tab"], label, summary, select,
+  input[type="range"], input[type="checkbox"], input[type="radio"],
+  .rq-dd-trigger, .rq-messenger, .wh-card, .wh-icon, .wh-hint, .wh-x, .wh-seg, .hx-thing, .pj-more-card, .qv-btn,
+  .pj-window-video, .pj-client-link, .cl-buddy, .cl-player, .cl-card, .cl-play, .cl-pill, .cl-reply, .cl-arrows, .ft-cta,
+  a *, button *, [role="button"] * {
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

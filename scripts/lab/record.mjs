@@ -181,9 +181,11 @@ function encode(entry, frames) {
   const black = cold ? probe("-f", "concat", "-safe", "0", "-i", join(tmp, "list.txt"), "-vf", "blackdetect=d=0.3:pix_th=0.02") : "";
   // capped: a load is black for a second or two, while a dark scene can read as black throughout
   const lead = String(Math.min(3, Number(/black_start:0 black_end:([\d.]+)/.exec(black)?.[1] ?? 0)));
+  // a keyframe every second: the site starts each clip at its midpoint, and without one near there
+  // the browser downloads and decodes everything from 0 first (~1s before the clip shows)
   ff("-ss", lead, "-f", "concat", "-safe", "0", "-i", join(tmp, "list.txt"),
     "-vf", "fps=30,scale=1600:-2:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-preset", "medium", "-crf", "22",
-    "-maxrate", "3M", "-bufsize", "6M", "-movflags", "+faststart", "-an", mp4);
+    "-maxrate", "3M", "-bufsize", "6M", "-force_key_frames", "expr:gte(t,n_forced)", "-movflags", "+faststart", "-an", mp4);
   rmSync(tmp, { recursive: true, force: true });
   const dur = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4]));
   ff("-ss", String(dur / 2), "-i", mp4, "-frames:v", "1", "-vf", "scale=1200:-2", "-q:v", "3", join(OUT, `${name}.jpg`));
