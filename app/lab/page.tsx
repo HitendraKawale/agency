@@ -41,7 +41,7 @@ export default function LabPage() {
             style={{ containIntrinsicSize: `auto ${Math.ceil(group.items.length / 3) * 330 + 60}px` }}
           >
             {/* count as the nav sets it: (n) in faint grey at the cap line, not lifted by preflight's top */}
-            <h2 id={`lab-${group.title}`} className="s-title mx-[22px] mb-6 flex items-start gap-1 max-[760px]:mx-1">
+            <h2 id={`lab-${group.title}`} className="s-title mb-6 flex items-start gap-1">
               {group.title}
               <sup className="static text-xs leading-none tracking-normal text-faint tabular-nums">
                 ({group.items.length})

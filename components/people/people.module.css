@@ -2,8 +2,7 @@
    963. "People" 98/88, intro 38/36. Values: label 24, then rows 494 apart, each a 76/68 title, a
    461 square photo and 20/20 text. The Crew: 76/68 title and count over a six-across grid of
    149x171 portraits, 8 apart; beside it the list, 13/16 rows under 20/20 group names. Joining:
-   photos 461x624 and 461x750 side by side, 20/20 text. Positions: 76/68 title, the table across
-   the right two thirds. Sections about 200 apart. */
+   photos 461x624 and 461x750 side by side, 20/20 text. Sections about 200 apart. */
 
 /* The CRT wall, the services page's scroll-over in the middle of the page: the wall scrolls in,
    holds the screen once its top reaches the top, and the rest of the page comes up over it as a
@@ -232,52 +231,6 @@
   text-decoration: none;
 }
 
-/* title on the left, the table across the right two thirds; closed rows dim, open rows white */
-.positions {
-  align-items: start;
-}
-.positions h2 {
-  grid-column: 1 / 5;
-}
-.positions table {
-  grid-column: 5 / -1;
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  font: 600 13px/16px var(--font-sans);
-  color: var(--color-ink-4);
-}
-.positions th {
-  text-align: left;
-  padding-bottom: 14px;
-  font-size: 20px;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--color-ink-3);
-}
-.positions th:first-child {
-  width: 50%;
-}
-.positions td {
-  padding: 8px 0;
-  vertical-align: baseline;
-}
-.positions td:first-child {
-  font-size: 24px;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-}
-.positions :is(th, td):last-child {
-  text-align: right;
-}
-.positions tr.open {
-  color: var(--color-ink);
-}
-.positions tr.open a {
-  color: inherit;
-  text-decoration: none;
-}
-
 @media (max-width: 760px) {
   .wall {
     margin-top: 130px;
@@ -296,9 +249,7 @@
   .faces,
   .joinA,
   .joinB,
-  .join p,
-  .positions h2,
-  .positions table {
+  .join p {
     grid-column: 1 / -1;
     grid-row: auto;
   }
@@ -309,8 +260,7 @@
     row-gap: 64px;
   }
   .crew,
-  .join,
-  .positions {
+  .join {
     row-gap: 24px;
   }
   .faces {
@@ -341,15 +291,6 @@
   .list li > :nth-child(2) {
     grid-row: 2;
     color: var(--color-ink-3);
-  }
-  .positions td:first-child {
-    font-size: 18px;
-  }
-  .positions :is(th, td):nth-child(3) {
-    display: none;
-  }
-  .positions th {
-    font-size: 16px;
   }
   /* later groups have an empty cell where A-Z sits on the first; on a phone it would indent them */
   .listHead > span:empty {

@@ -8,7 +8,7 @@
   grid-template-rows: 1fr auto auto;
   column-gap: 12px;
   align-items: end;
-  margin: 140px 22px 0;
+  margin-top: 140px;
 }
 .stack + section {
   margin-top: 140px;
@@ -48,7 +48,7 @@
   .stack {
     grid-template-columns: 1fr;
     grid-template-rows: none;
-    margin: 96px 4px 0;
+    margin-top: 96px;
   }
   .stack + section {
     margin-top: 96px;

@@ -1,6 +1,6 @@
-// Every word on /people. basement's People page (basement.studio/people) for three people: the
+// Every word on /people. basement's People page (basement.studio/people) for our crew: the
 // intro, the CRT wall of our work (components/people/wall.tsx), three values with a picture
-// each, the team list beside a picture per person, joining, open positions.
+// each, the team list beside a picture per person, joining.
 //
 // Pictures are photos the team will send: portraits for the crew grid, the studio for the values
 // and joining (shown in black and white, as basement does). A Picture without `src` renders as an
@@ -17,14 +17,11 @@ export type Person = {
   picture: Picture;
 };
 
-export type Position = { role: string; type: string; location: string; open: boolean };
-
 export type PeopleContent = {
   intro: { title: string; text: [string, string] };
   values: { title: string; items: { title: string; text: string; picture: Picture }[] };
   crew: { title: string; join: string; people: Person[] };
   join: { text: string; pictures: [Picture, Picture] };
-  positions: { title: string; columns: [string, string, string]; items: Position[] };
 };
 
 const well = (width: number, height: number, alt: string): Picture => ({ width, height, alt });
@@ -84,6 +81,13 @@ export const people = {
         picture: { src: "/people/crew/hitendra.webp", width: 596, height: 684, alt: "Hitendra Kawale" },
       },
       {
+        name: "Mayank Kudu",
+        role: "Frontend Engineer",
+        group: "Design and Engineering",
+        links: [{ label: "Site", href: "https://maynkudu.com" }],
+        picture: { src: "/people/crew/mayank.webp", width: 596, height: 684, alt: "Mayank Kudu" },
+      },
+      {
         name: "Siddhi Donode",
         role: "Chief Marketing Officer",
         group: "Marketing",
@@ -95,14 +99,5 @@ export const people = {
   join: {
     text: "If you want to take technology to its extreme with us, send us something you've made. We read every message, even when no role is listed.",
     pictures: [well(461, 624, ""), well(461, 750, "")],
-  },
-  positions: {
-    title: "Open positions",
-    columns: ["Role", "Type", "Location"],
-    items: [
-      { role: "Creative Developer", type: "Development", location: "Remote", open: false },
-      { role: "3D Artist", type: "Design", location: "Remote", open: false },
-      { role: "Brand Designer", type: "Design", location: "Remote", open: false },
-    ],
   },
 } satisfies PeopleContent;

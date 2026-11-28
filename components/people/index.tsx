@@ -60,46 +60,13 @@ export function PeopleCrew() {
 export function PeopleJoin() {
   const { text, pictures } = people.join;
   return (
-    <section className={`section grid-12 ${s.join}`} aria-label="Join us">
+    <section id="join" className={`section grid-12 ${s.join}`} aria-label="Join us">
       <Pic p={pictures[0]} className={s.joinA} />
       <Pic p={pictures[1]} className={s.joinB} />
       <p data-reveal="fade">
         {text}{" "}
         <a href={`mailto:${site.email}`}><span className="tube tube-line">{site.email}</span></a>
       </p>
-    </section>
-  );
-}
-
-export function PeoplePositions() {
-  const { title, columns, items } = people.positions;
-  return (
-    <section className={`section grid-12 ${s.positions}`} aria-labelledby="positions-title">
-      <h2 className="big-type" id="positions-title" data-reveal="fade">{title}</h2>
-      <table data-reveal="fade">
-        <thead>
-          <tr>
-            {columns.map((c) => <th key={c} scope="col">{c}</th>)}
-            <th scope="col"><span className="sr-only">Status</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((p) => (
-            <tr key={p.role} className={p.open ? s.open : undefined}>
-              <td>{p.role}</td>
-              <td>{p.type}</td>
-              <td>{p.location}</td>
-              <td>
-                {p.open ? (
-                  <a className="tube" href={`mailto:${site.email}?subject=${encodeURIComponent(p.role)}`}>Apply</a>
-                ) : (
-                  "(closed)"
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </section>
   );
 }

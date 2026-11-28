@@ -65,7 +65,7 @@ export function CrewBoard({ crew, join }: { crew: Person[]; join: string }) {
           </li>
         ))}
         <li className={s.joinTile} style={{ gridColumn: `span ${6 - (crew.length % 6)}` }}>
-          <a href="#positions-title"><span className="tube">{join} →</span></a>
+          <a href="#join"><span className="tube">{join} →</span></a>
         </li>
       </ul>
     </>

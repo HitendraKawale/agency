@@ -85,12 +85,13 @@
     overflow: clip;
   }
 
-  /* basement's grid: 12 columns, 12px gaps. Children span the row unless placed. */
+  /* basement's grid: 12 columns, 12px gaps. Children span the row unless placed. Column 1 starts on
+     the page padding, the same edge as the media panels (basement puts both at one edge); column 2
+     (.in) is the only indent. */
   .grid-12 {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     column-gap: 12px;
-    margin: 0 22px;
   }
   :where(.grid-12 > *) {
     grid-column: 1 / -1;
@@ -191,9 +192,6 @@
   @media (max-width: 760px) {
     .page {
       padding: 36px 16px 0;
-    }
-    .grid-12 {
-      margin: 0 4px;
     }
     .grid-12 > .in {
       grid-column: 1 / -1;

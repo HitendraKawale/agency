@@ -18,20 +18,6 @@ const projectLines: Line[] = showcase.projects.map((p) =>
     : [{ text: p.name, page: `showcase/${p.slug}` }, ` (${p.categories.join(", ")}, ${p.year})`],
 );
 
-const positions: Section = {
-  name: "OPEN_POSITIONS",
-  blocks: [
-    {
-      kind: "list",
-      lines: people.positions.items.map((p) =>
-        p.open
-          ? [{ text: p.role, href: `mailto:${site.email}?subject=${encodeURIComponent(p.role)}` }, ` (${p.type}, ${p.location})`]
-          : [`${p.role} (${p.type}, ${p.location}) `, { dim: "(closed)" }],
-      ),
-    },
-  ],
-};
-
 const clients = home.trusted.clients.map((c) => (c.kind === "logo" ? c.alt : c.label));
 
 const homeDoc: Doc = {
@@ -98,7 +84,6 @@ const homeDoc: Doc = {
       ],
     },
     { name: "SHOWCASE", blocks: [{ kind: "list", lines: projectLines }] },
-    positions,
     { name: "FAQ", blocks: [{ kind: "items", items: home.faq.items.map((f) => ({ title: [f.q], body: [[f.a]] })) }] },
     {
       name: "CONTACT",
@@ -215,7 +200,6 @@ const peopleDoc: Doc = {
       ],
     },
     { name: "VALUES", blocks: [{ kind: "items", items: people.values.items.map((v) => ({ title: [v.title], body: [[v.text]] })) }] },
-    positions,
   ],
 };
 

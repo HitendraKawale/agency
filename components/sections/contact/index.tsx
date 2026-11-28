@@ -9,7 +9,7 @@ export function Contact() {
   return (
     <section className="section grid-12" aria-labelledby="contact-title">
       <h2 className="s-title in" id="contact-title" data-reveal="fade">{title}</h2>
-      <p className={`big-type in ${s.ask}`} data-reveal="fade">
+      <p className={`big-type ${s.ask}`} data-reveal="fade">
         <a href={`mailto:${site.email}`}>
           {lines.map((l, i) => <span key={l}>{i > 0 && <br />}{l}</span>)}
           <span className={s.mail}><span className="tube tube-line">{site.email}</span></span>

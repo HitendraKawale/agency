@@ -11,21 +11,23 @@
   grid-row: 2;
   margin-top: 28px;
 }
+/* copy and button under the statement on the outer edge; only the title keeps column 2. The copy is
+   the site's body style (hero line, work body), with 24px between the two columns so they read apart */
 .cols {
-  grid-column: 2 / span 5;
+  grid-column: 1 / span 6;
   grid-row: 3;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 12px;
+  column-gap: 24px;
   margin-top: 72px;
 }
 .cols p {
-  font: 600 20px/1.05 var(--font-sans);
-  letter-spacing: -0.012em;
+  font: 400 20px/1.25 var(--font-sans);
+  letter-spacing: -0.01em;
   color: var(--color-ink-2);
 }
 .actions {
-  grid-column: 2 / span 5;
+  grid-column: 1 / span 6;
   grid-row: 4;
   margin-top: 48px;
 }

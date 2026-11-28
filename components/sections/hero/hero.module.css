@@ -8,18 +8,26 @@
   letter-spacing: -0.01em;
   text-transform: uppercase;
   text-wrap: balance;
-  margin: 56px 22px 0;
+  margin-top: 56px;
 }
 .word {
   display: inline-block;
 }
 
+/* on the 12 columns: the buttons in 1-6, the studio line from column 7, the line the FAQ answers and
+   the image reel start on */
 .row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(12, 1fr);
   align-items: start;
-  gap: 40px;
-  margin: 72px 22px 0;
+  column-gap: 12px;
+  margin-top: 72px;
+}
+.row > :first-child {
+  grid-column: 1 / span 6;
+}
+.line {
+  grid-column: 7 / span 5;
 }
 .line {
   color: var(--color-muted);
@@ -66,11 +74,16 @@
 
 @media (max-width: 760px) {
   .title {
-    margin: 40px 4px 0;
+    margin-top: 40px;
   }
   .row {
     grid-template-columns: 1fr;
-    margin: 40px 4px 0;
+    row-gap: 40px;
+    margin-top: 40px;
+  }
+  .row > :first-child,
+  .line {
+    grid-column: 1;
   }
   .panel {
     aspect-ratio: 4 / 5;

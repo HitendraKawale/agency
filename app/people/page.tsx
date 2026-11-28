@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Contact } from "@/components/sections/contact";
 import { Footer } from "@/components/sections/footer";
 import { Nav } from "@/components/sections/nav";
-import { PeopleCrew, PeopleIntro, PeopleJoin, PeoplePositions, PeopleValues, PeopleWall } from "@/components/people";
+import { PeopleCrew, PeopleIntro, PeopleJoin, PeopleValues, PeopleWall } from "@/components/people";
 import { people } from "@/content/people";
 import s from "@/components/people/people.module.css";
 
@@ -24,7 +24,6 @@ export default function PeoplePage() {
         <PeopleValues />
         <PeopleCrew />
         <PeopleJoin />
-        <PeoplePositions />
         <Contact />
         <Footer />
       </div>
