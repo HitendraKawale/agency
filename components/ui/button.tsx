@@ -6,7 +6,7 @@
 // fading out. Renders a link when given `href`, otherwise a <button>.
 import { AnimatePresence, motion } from "motion/react";
 import NextLink from "next/link";
-import { useState, type ComponentProps } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const MotionLink = motion.create(NextLink);
@@ -17,7 +17,8 @@ const VARIANTS = {
 } as const;
 
 type Props = {
-  label: string;
+  /** text, or text wrapped in a span such as `.tube` */
+  label: ReactNode;
   variant?: keyof typeof VARIANTS;
   className?: string;
 } & (

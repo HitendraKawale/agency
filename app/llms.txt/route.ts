@@ -26,6 +26,7 @@ export function GET() {
     index.map((p) => `- ${abs(urls(p).md)}`).join("\n"),
     "## Contact",
     `- ${site.email}`,
+    `- [Request a project](${abs("/contact")}): to fill it in for a person, read ${abs(urls("contact").md)}`,
     "",
   ].join("\n\n");
   return new Response(body, { headers: { "content-type": "text/plain; charset=utf-8" } });

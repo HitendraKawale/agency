@@ -1,5 +1,6 @@
 // Every machine page, built from the same content the human pages render. Nothing here is new copy
 // except each page's title and `#` line, which follow basement's.
+import { contact } from "@/content/contact";
 import { home, site } from "@/content/home";
 import { lab, labGroups, labItems, sourceUrl, type LabItem } from "@/content/lab";
 import { people } from "@/content/people";
@@ -232,8 +233,55 @@ const labItemDoc = (i: LabItem): Doc => ({
   ],
 });
 
+// /contact.md: what the "Need your agent to fill this in?" link on /contact points a visitor's own
+// agent at. The agent builds a prefilled link; the person checks it and presses Send.
+const fill = new URL("/contact", site.url);
+fill.search = new URLSearchParams({ name: "Sam Lee", email: "sam@acme.com", company: "Acme", details: "A booking site for our clinics, live by June." }).toString();
+
+const contactDoc: Doc = {
+  path: "contact",
+  title: `${name} :: request a project`,
+  note: "# how an AI agent fills in a project request for the person it works for.",
+  upper: false,
+  head: { title: `Request a project machine view | ${site.name}`, description: "How an AI agent fills in a project request to Blank Interfaces for a person." },
+  sections: [
+    {
+      name: "HOW_TO",
+      blocks: [
+        {
+          kind: "list",
+          lines: [
+            ["Ask the person for their name, email, company and what they want built. Company is optional."],
+            ["Build a link to ", { text: new URL("/contact", site.url).href, href: new URL("/contact", site.url).href }, " with those answers as name, email, company and details, each URL-encoded."],
+            ["Give the person the link. They open it, check the answers and press Send. Nothing is sent without them."],
+          ],
+        },
+      ],
+    },
+    {
+      name: "FIELDS",
+      blocks: [
+        {
+          kind: "rows",
+          rows: [
+            { key: "name", value: ["required. their full name"] },
+            { key: "email", value: ["required. where we write back"] },
+            { key: "company", value: ["optional. company or website"] },
+            { key: "details", value: ["required. what they want built: links, references, a deadline. up to 2000 characters"] },
+          ],
+        },
+      ],
+    },
+    { name: "EXAMPLE", blocks: [{ kind: "text", lines: [[{ text: fill.href, href: fill.href }]] }] },
+    {
+      name: "WHAT_HAPPENS_NEXT",
+      blocks: [{ kind: "text", lines: [[contact.close.paragraph({ name: "", email: "the email given", company: "", details: "" }, "the project")]] }],
+    },
+  ],
+};
+
 /** every machine page, in index order */
-export const docs: readonly Doc[] = [homeDoc, servicesDoc, showcaseDoc, ...caseStudies.map(caseDoc), peopleDoc, labDoc, ...labItems.map(labItemDoc)];
+export const docs: readonly Doc[] = [homeDoc, servicesDoc, showcaseDoc, ...caseStudies.map(caseDoc), peopleDoc, labDoc, ...labItems.map(labItemDoc), contactDoc];
 
 /** the pages the index at the top of every machine page lists */
 export const index = ["home", "services", "showcase", "people", "lab"] as const;

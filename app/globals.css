@@ -56,6 +56,23 @@
       opacity: 0.55;
     }
   }
+
+  /* a wrong or missing answer on /contact (creatoroly's request form) */
+  --animate-shake: shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  @keyframes shake {
+    15%,
+    85% {
+      translate: -3px 0;
+    }
+    30%,
+    70% {
+      translate: 5px 0;
+    }
+    45%,
+    55% {
+      translate: -6px 0;
+    }
+  }
 }
 
 @layer base {
@@ -132,14 +149,16 @@
      holds. Plays when the element, or the link it sits in, is hovered or focused. Their orange hover
      colour is left out: colour stays in the heat artwork.
        .tube        the flicker and a soft glow (nav links)
+       .tube-on     the same flicker, once, as it appears (the contact form's buttons lighting up)
        .tube-line   adds their hover underline (the contact address) */
   .tube {
     --tube: 100;
     opacity: calc(var(--tube) * 0.01);
     transition: opacity 0.06s linear;
   }
-  :is(a:hover, a:focus-visible) .tube,
-  .tube:is(:hover, :focus-visible) {
+  :is(a:hover, a:focus-visible, button:hover, button:focus-visible) .tube,
+  .tube:is(:hover, :focus-visible),
+  .tube-on {
     --tube: 50;
     animation: tube 0.3s 0.06s linear forwards;
     /* 60ms, not longer: basement pins the duration to the animation delay with !important. A
@@ -182,8 +201,9 @@
     opacity: 1;
   }
   @media (prefers-reduced-motion: reduce) {
-    :is(a:hover, a:focus-visible) .tube,
-    .tube:is(:hover, :focus-visible) {
+    :is(a:hover, a:focus-visible, button:hover, button:focus-visible) .tube,
+    .tube:is(:hover, :focus-visible),
+    .tube-on {
       --tube: 100;
       animation: none;
     }

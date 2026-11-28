@@ -14,7 +14,7 @@ export const site = {
     { label: "Blog", href: "#" },
     { label: "Lab", href: "/lab" },
   ],
-  contact: { label: "Contact Us", href: "#" },
+  contact: { label: "Contact Us", href: "/contact" },
 } as const;
 
 /** A logo image. `aspect` is width / height; tiles size logos to equal area from it. */
@@ -94,7 +94,7 @@ export const home = {
     headline: "A digital studio & branding powerhouse making cool shit that performs.",
     line: "Based in Mumbai and the UK, led by Aryan Kathawale and Hitendra Kawale.",
     actions: [
-      { label: "Start a project", href: "#", variant: "primary" },
+      { label: "Start a project", href: "/contact", variant: "primary" },
       { label: "See the work", href: "/showcase", variant: "quiet" },
     ],
     car: {
